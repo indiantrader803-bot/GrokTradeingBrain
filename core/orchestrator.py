@@ -258,16 +258,24 @@ class MasterOrchestrator:
                     mark = float(p.get("mark_price", 0) or 0)
                     upnl = float(p.get("unrealized_pnl", 0) or 0)
                     margin = float(p.get("margin", 0) or 0)
+                    prod = p.get("product", {})
+                    und = prod.get("underlying_asset", {})
                     exchange_positions.append({
                         "symbol": p.get("product_symbol", "N/A"),
+                        "coin_name": und.get("name", p.get("product_symbol", "")),
+                        "base_asset": und.get("symbol", p.get("product_symbol", "")),
                         "side": "BUY" if size > 0 else "SELL",
                         "size": abs(size),
                         "entry_price": entry,
                         "mark_price": mark,
                         "unrealized_pnl": upnl,
                         "margin": margin,
-                        "leverage": p.get("product", {}).get("default_leverage", "10x"),
-                        "liq_price": float(p.get("liquidation_price", 0) or 0)
+                        "leverage": prod.get("default_leverage", "10x"),
+                        "liq_price": float(p.get("liquidation_price", 0) or 0),
+                        "bankruptcy_price": float(p.get("bankruptcy_price", 0) or 0),
+                        "commission": float(p.get("commission", 0) or 0),
+                        "realized_funding": float(p.get("realized_funding", 0) or 0),
+                        "updated_at": p.get("updated_at", "")
                     })
                 
                 raw_wallets = await delta._request("GET", "/v2/wallet/balances")
