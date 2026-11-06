@@ -66,10 +66,17 @@ class DeltaAdapter(ExchangeAdapter):
     async def get_equity(self) -> float:
         try:
             data = await self._request("GET", "/v2/wallet/balances")
-            # Sum USDT balance
+            # First check overall net equity reported in meta
+            meta = data.get("meta", {})
+            if "net_equity" in meta and float(meta["net_equity"]) > 0:
+                return float(meta["net_equity"])
+
+            # Fallback: check USD / USDT balances
             for item in data.get("result", []):
-                if item.get("asset_symbol") == "USDT":
-                    return float(item.get("available_balance", 0))
+                if item.get("asset_symbol") in ["USD", "USDT"]:
+                    balance = float(item.get("balance", 0) or item.get("available_balance", 0))
+                    if balance > 0:
+                        return balance
             return 0.0
         except Exception as e:
             log.error("Delta get_equity error: %s", e)
@@ -136,8 +143,10 @@ class DeltaAdapter(ExchangeAdapter):
 
     async def get_open_positions(self) -> List[Dict]:
         try:
-            data = await self._request("GET", "/v2/positions")
-            return data.get("result", [])
+            data = await self._request("GET", "/v2/positions/margined")
+            positions = data.get("result", [])
+            # Only return positions that have actual size != 0
+            return [p for p in positions if float(p.get("size", 0)) != 0]
         except Exception as e:
             log.error("Delta positions error: %s", e)
             return []
