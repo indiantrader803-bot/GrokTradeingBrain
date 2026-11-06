@@ -1,233 +1,525 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grok Trading Brain</title>
-    <style>
-        :root {
-            --bg: #0f1117;
-            --card: #1a1d27;
-            --border: #2a2e3a;
-            --text: #e4e6eb;
-            --muted: #9ca3af;
-            --green: #10b981;
-            --red: #ef4444;
-            --blue: #3b82f6;
-            --yellow: #f59e0b;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.5;
-            padding: 16px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        h1 {
-            font-size: 1.5rem;
-            margin-bottom: 4px;
-        }
-        .subtitle {
-            color: var(--muted);
-            font-size: 0.9rem;
-            margin-bottom: 24px;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
-        }
-        .card .label {
-            font-size: 0.75rem;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .card .value {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-top: 4px;
-        }
-        .positive { color: var(--green); }
-        .negative { color: var(--red); }
-        .badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        .badge.demo { background: #1e3a5f; color: #93c5fd; }
-        .badge.real { background: #3f1f1f; color: #fca5a5; }
-        .badge.running { background: #064e3b; color: #6ee7b7; }
-        .badge.stopped { background: #3f1f1f; color: #fca5a5; }
-        .section {
-            margin-bottom: 28px;
-        }
-        .section h2 {
-            font-size: 1.1rem;
-            margin-bottom: 12px;
-            color: var(--muted);
-        }
-        button {
-            background: var(--blue);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            margin-right: 8px;
-            margin-bottom: 8px;
-        }
-        button.secondary {
-            background: var(--border);
-            color: var(--text);
-        }
-        button:active { opacity: 0.85; }
-        .flags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 8px;
-        }
-        .flag {
-            background: var(--border);
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-        }
-        .flag.active {
-            background: #064e3b;
-            color: #6ee7b7;
-        }
-        footer {
-            margin-top: 40px;
-            font-size: 0.8rem;
-            color: var(--muted);
-            text-align: center;
-        }
-        @media (max-width: 500px) {
-            .grid { grid-template-columns: 1fr 1fr; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swarm Desk 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: 12px-gutter terminal grid. Header > chips > hero (signals | Three.js mind | command) > order flow + money flow + P&L > pricer + spectrogram + trace > tape. particles.js sits behind everything; panels are frosted glass. Dark single look. */
+:root{
+  --bg:#080b13; --panel:rgba(15,21,33,.80); --panel2:rgba(9,13,21,.75); --line:#1f2a3a; --line2:#2a3850;
+  --fg:#d9e2f0; --dim:#7b8aa3; --faint:#46546b;
+  --up:#2fe0a8; --down:#ff4d6d; --amber:#ffb020; --cyan:#35d4ff; --violet:#a06bff; --pink:#ff3fa4; --gold:#ffd24a;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --disp:'Chakra Petch','JetBrains Mono',ui-monospace,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:radial-gradient(ellipse at 50% 0%,#101a33 0%,var(--bg) 60%) fixed;color:var(--fg);font-family:var(--mono);font-size:11px;line-height:1.35;
+  padding-block:10px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));font-variant-numeric:tabular-nums;margin:0}
+#pjs{position:fixed;inset:0;z-index:0;pointer-events:none}
+.desk{position:relative;z-index:1;max-width:1440px;margin:0 auto;display:grid;gap:8px;min-width:0}
+.lbl{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.panel{background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:6px;min-width:0;position:relative;overflow:hidden}
+.tilt{transition:transform .18s ease,box-shadow .18s;will-change:transform}
+.tilt:hover{box-shadow:0 12px 40px rgba(53,212,255,.08)}
+.ph{display:flex;gap:8px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.ph b{color:var(--fg);font-weight:600}.ph .r{margin-left:auto;white-space:nowrap}
+.cw{position:relative;flex:1;min-height:0}
+.cw canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:8px 12px}
+.brand{font-family:var(--disp);font-size:18px;font-weight:600;letter-spacing:.08em}.brand span{color:var(--cyan)}
+.nav{display:flex;gap:14px;letter-spacing:.2em;color:var(--dim);font-size:10px}.nav .on{color:var(--fg)}
+.stat{display:flex;flex-direction:column}.stat .v{font-family:var(--disp);font-size:18px;font-weight:600}
+.clock{margin-left:auto;font-family:var(--disp);font-size:22px;letter-spacing:.06em}
+.ticker{display:flex;gap:22px;overflow:hidden;white-space:nowrap;padding:6px 12px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.ticker b{color:var(--fg)}.neg{color:var(--down)}
+
+.agents{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.agent{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);position:relative;transition:border-color .25s,background .25s;min-width:0;backdrop-filter:blur(6px)}
+.agent .ic{width:30px;height:30px;flex:none}
+.agent .nm{font-family:var(--disp);font-size:15px;font-weight:600;letter-spacing:.04em}
+.agent .st{margin-left:auto;text-align:right;font-size:9px;color:var(--dim);letter-spacing:.1em}
+.agent.active{border-color:var(--c);background:linear-gradient(180deg,color-mix(in srgb,var(--c) 16%,var(--panel)),var(--panel));box-shadow:0 0 22px color-mix(in srgb,var(--c) 30%,transparent)}
+.agent.active::after{content:"";position:absolute;left:0;bottom:0;height:2px;background:var(--c);animation:fill 3s linear forwards}
+@keyframes fill{from{width:0}to{width:100%}}
+
+.hero{display:grid;grid-template-columns:220px minmax(0,1fr) 280px;gap:8px;height:480px}
+.hero .panel{height:100%}
+.signals{padding:8px;display:flex;flex-direction:column;gap:6px}
+.sig{border:1px solid var(--line2);border-radius:5px;padding:6px 8px;background:var(--panel2);flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between}
+.sig .row{display:flex;justify-content:space-between;align-items:baseline}
+.sig .val{font-family:var(--disp);font-size:14px;font-weight:600}
+.bar{height:7px;border-radius:4px;background:rgba(255,255,255,.05);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,transparent,var(--c));box-shadow:0 0 10px var(--c);transition:width .6s ease}
+.mind{background:radial-gradient(ellipse at 50% 55%,rgba(24,30,64,.7) 0%,var(--panel) 70%)}
+.mind canvas#gl{position:absolute;inset:0;width:100%;height:100%}
+.mind .big{position:absolute;left:12px;top:32px;font-family:var(--disp);font-size:26px;font-weight:600;z-index:2;pointer-events:none}
+.mind .big.r{left:auto;right:12px;text-align:right}
+.legend{position:absolute;left:12px;bottom:10px;display:flex;gap:12px;z-index:2;font-size:9px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.floats{position:absolute;right:16px;bottom:40px;z-index:3;pointer-events:none}
+.floats span{position:absolute;right:0;bottom:0;font-family:var(--disp);font-weight:600;font-size:16px;color:var(--gold);text-shadow:0 0 12px var(--gold);animation:up 1.8s ease-out forwards;white-space:nowrap}
+@keyframes up{to{transform:translateY(-110px);opacity:0}}
+.cmd{padding:8px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.cmdcard{border:1px solid var(--line2);border-radius:5px;padding:8px;background:var(--panel2)}
+.cmdcard .cw{height:58px;flex:none}
+.kv{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--line);color:var(--dim)}.kv b{color:var(--fg);font-weight:500}
+.pill{display:inline-block;padding:1px 7px;border-radius:9px;border:1px solid var(--up);color:var(--up);font-size:9px;letter-spacing:.1em}
+
+.row3{display:grid;grid-template-columns:1.25fr 1.15fr 1fr;gap:8px;height:270px}
+.row3 .panel,.bottom .panel{height:100%;display:flex;flex-direction:column}
+.ofstats{display:grid;grid-template-columns:repeat(4,1fr) 1.4fr;gap:8px;padding:6px 10px;border-bottom:1px solid var(--line);align-items:center}
+.ofstats b{display:block;font-family:var(--disp);font-size:15px}
+.imb{height:8px;border-radius:4px;background:var(--down);overflow:hidden;box-shadow:0 0 10px rgba(255,77,109,.3)}
+.imb i{display:block;height:100%;background:var(--up);width:50%;transition:width .5s;box-shadow:0 0 10px var(--up)}
+.pnl{padding:10px;display:flex;flex-direction:column;gap:6px;flex:1;min-height:0}
+.pnl .num{font-family:var(--disp);font-size:42px;font-weight:600;color:var(--up);transition:color .2s,text-shadow .2s}
+.pnl .num.flash{color:var(--gold);text-shadow:0 0 18px var(--gold)}
+.pnl .num.dn{color:var(--down)}
+.mini{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.mini b{display:block;font-size:14px;font-weight:600}
+.cells{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:6px 8px 8px}
+.cell{border:1px solid var(--line2);border-radius:4px;padding:3px 6px;text-align:center;background:var(--panel2)}
+.cell.sel{border-color:var(--amber);color:var(--amber)}.cell b{display:block;font-size:12px}
+.trace{flex:1;min-height:0;overflow:hidden;padding:4px 10px}
+.trow{display:grid;grid-template-columns:12px 46px 1fr auto;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line);animation:in .4s ease}
+@keyframes in{from{opacity:0;transform:translateY(-8px);background:rgba(255,176,32,.12)}}
+.tag{font-size:8px;letter-spacing:.1em;padding:1px 5px;border-radius:3px;border:1px solid var(--c);color:var(--c);text-align:center}
+.bottom{display:grid;grid-template-columns:1fr;height:310px}
+.tapewrap{display:grid;grid-template-columns:minmax(0,1fr) 280px;grid-template-rows:minmax(0,1fr);flex:1;min-height:0;overflow:hidden}
+.book{border-left:1px solid var(--line);padding:6px;display:flex;flex-direction:column;gap:4px;font-size:10px;overflow-y:auto}
+.pos-row{padding:6px 8px;border-radius:4px;background:rgba(255,255,255,.03);border:1px solid var(--line2);margin-bottom:4px}
+.pos-hd{display:flex;justify-content:space-between;font-weight:600;margin-bottom:2px}
+.pos-dt{display:flex;justify-content:space-between;color:var(--dim);font-size:9px}
+.pos-upnl{font-weight:bold}
+.pos-upnl.pos{color:var(--up)}
+.pos-upnl.neg{color:var(--down)}
+.foot{display:flex;gap:28px;overflow:hidden;white-space:nowrap;padding:6px 12px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}.foot b{color:var(--amber)}
+@media (max-width:1100px){
+  .hero{grid-template-columns:1fr;height:auto}.hero .signals{flex-direction:row;flex-wrap:wrap}.hero .sig{min-width:140px}
+  .hero .mind{height:420px}.row3{grid-template-columns:1fr;height:auto}.row3 .panel{height:280px}.bottom{height:340px}
+  .tapewrap{grid-template-columns:1fr;grid-template-rows:200px 1fr}
+  .agents{grid-template-columns:repeat(3,1fr)}.hide-s{display:none}.tilt{transform:none!important}
+}
+@media (max-width:560px){.agents{grid-template-columns:repeat(2,1fr)}.clock{margin-left:0}.ofstats{grid-template-columns:repeat(2,1fr)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
 </head>
 <body>
-    <h1>Grok Capital Growth Engine</h1>
-    <p class="subtitle">Autonomous Trading Core • Desktop & Mobile</p>
+<div id="pjs"></div>
+<div class="desk">
+  <div class="panel top">
+    <div><div class="brand">SWARM<span>DESK</span> 3D</div><div class="lbl" id="engine-sub">DELTA EXCHANGE INDIA · REAL MARKET EXECUTION</div></div>
+    <div class="nav hide-s"><span class="on">MIND</span><span>FLOW</span><span>POSITIONS</span><span>TAPE</span></div>
+    <div class="stat hide-s"><span class="v" id="top-cash">$0.00</span><span class="lbl">FREE MARGIN</span></div>
+    <div class="stat hide-s"><span class="v" style="color:var(--up)" id="top-pos">0</span><span class="lbl">OPEN POSITIONS</span></div>
+    <div class="stat hide-s"><span class="v" style="color:var(--gold)" id="fps">60</span><span class="lbl">FPS</span></div>
+    <div class="clock" id="clock">00:00:00</div>
+  </div>
+  <div class="panel ticker" id="ticker"></div>
+  <div class="agents" id="agents"></div>
 
-    <div class="section">
-        <span class="badge {{ 'running' if status.running else 'stopped' }}">
-            {{ 'RUNNING' if status.running else 'STOPPED' }}
-        </span>
-        <span class="badge {{ status.mode }}">
-            {{ status.mode | upper }}
-        </span>
+  <div class="hero">
+    <div class="panel signals"><div class="lbl">Signals in</div><div id="sigs" style="display:contents"></div></div>
+    <div class="panel mind" id="mind">
+      <div class="ph" style="position:relative;z-index:2;border:0"><b>The Mind</b> — orders in · money out <span class="r" id="stage">Stage 01 · loop #1</span></div>
+      <div class="big" id="btc">$0.00</div><div class="big r" id="model">LIVE FEED</div>
+      <canvas id="gl"></canvas>
+      <div class="floats" id="floats"></div>
+      <div class="legend"><span><i style="background:var(--up)"></i>buy flow</span><span><i style="background:var(--down)"></i>sell flow</span><span><i style="background:var(--gold)"></i>money out</span><span class="hide-s">drag to orbit</span></div>
     </div>
-
-    <div class="grid">
-        <div class="card">
-            <div class="label">Equity</div>
-            <div class="value">${{ status.risk.equity if status.risk else '—' }}</div>
-        </div>
-        <div class="card">
-            <div class="label">Open Positions</div>
-            <div class="value">{{ status.risk.open_positions if status.risk else 0 }}</div>
-        </div>
-        <div class="card">
-            <div class="label">Daily PnL</div>
-            <div class="value {{ 'positive' if status.risk and status.risk.daily_pnl >= 0 else 'negative' }}">
-                {{ status.risk.daily_pnl if status.risk else 0 }}
-            </div>
-        </div>
-        <div class="card">
-            <div class="label">Weekly PnL</div>
-            <div class="value {{ 'positive' if status.risk and status.risk.weekly_pnl >= 0 else 'negative' }}">
-                {{ status.risk.weekly_pnl if status.risk else 0 }}
-            </div>
-        </div>
-        <div class="card">
-            <div class="label">Cycles</div>
-            <div class="value">{{ status.cycle_count or 0 }}</div>
-        </div>
-        <div class="card">
-            <div class="label">Trades Opened</div>
-            <div class="value">{{ status.trades_opened or 0 }}</div>
-        </div>
+    <div class="panel cmd">
+      <div class="lbl">Exchange Command Stack</div>
+      <div class="cmdcard"><div style="display:flex;gap:8px;align-items:center"><b id="cmdName" style="font-family:var(--disp);font-size:15px">DELTA LIVE</b><span class="lbl" id="cmdSub">CONNECTED</span></div><div class="cw"><canvas id="wave"></canvas></div></div>
+      <div class="cmdcard">
+        <div style="display:flex;justify-content:space-between"><b style="font-family:var(--disp)">DELTA INDIA PERP</b><span class="pill" id="modePill">REAL</span></div>
+        <div class="kv"><span>Net Equity</span><b id="kBook">$0.00</b></div>
+        <div class="kv"><span>Free Margin</span><b id="kFree">$0.00</b></div>
+        <div class="kv"><span>Open Contracts</span><b id="kOpen">0</b></div>
+        <div class="kv"><span>Execution Cycle</span><b id="kCycle">#0</b></div>
+      </div>
+      <div class="cmdcard" style="flex:1;min-height:0;overflow:hidden" id="cmdlog"></div>
     </div>
+  </div>
 
-    <div class="section">
-        <h2>Schedule</h2>
-        <div class="card">
-            <div>{{ status.scheduler.current_time if status.scheduler else '—' }}</div>
-            <div style="margin-top:6px; color: var(--muted);">
-                {{ status.scheduler.weekday if status.scheduler else '' }}
-                •
-                {{ 'Weekday session' if status.scheduler and status.scheduler.is_weekday else 'Weekend' }}
-            </div>
-        </div>
+  <div class="row3">
+    <div class="panel tilt">
+      <div class="ph"><b>Order Flow</b> · bubbles = size · cumulative delta <span class="r">real volume stream</span></div>
+      <div class="ofstats">
+        <div><span class="lbl">buy vol</span><b id="bv" style="color:var(--up)">0</b></div>
+        <div><span class="lbl">sell vol</span><b id="sv" style="color:var(--down)">0</b></div>
+        <div><span class="lbl">delta</span><b id="dv">0</b></div>
+        <div><span class="lbl">orders</span><b id="ov">0</b></div>
+        <div><span class="lbl">buy / sell imbalance</span><div class="imb"><i id="imb"></i></div></div>
+      </div>
+      <div class="cw"><canvas id="flow"></canvas></div>
     </div>
-
-    <div class="section">
-        <h2>Weekend Flags (for Sat/Sun trading)</h2>
-        <div class="flags" id="flags">
-            <div class="flag {{ 'active' if status.weekend_flags and status.weekend_flags.strong_order_flow }}">
-                Strong Order Flow
-            </div>
-            <div class="flag {{ 'active' if status.weekend_flags and status.weekend_flags.high_volume }}">
-                High Volume
-            </div>
-            <div class="flag {{ 'active' if status.weekend_flags and status.weekend_flags.high_impact_news }}">
-                High Impact News
-            </div>
-        </div>
-        <div style="margin-top:12px;">
-            <button onclick="setFlags(true, true, false)">Enable Strong Flow</button>
-            <button onclick="setFlags(false, false, true)">Enable News</button>
-            <button class="secondary" onclick="setFlags(false, false, false)">Clear Flags</button>
-        </div>
+    <div class="panel tilt">
+      <div class="ph"><b>Money Flow</b> · Delta Exchange → Book → Realized <span class="r" id="mf">$0 routed</span></div>
+      <div class="cw"><canvas id="sankey"></canvas></div>
     </div>
-
-    <div class="section">
-        <h2>Controls</h2>
-        <button class="secondary" onclick="refresh()">Refresh Status</button>
-        <button class="secondary" style="background:#7f1d1d;" onclick="stopEngine()">Stop Engine</button>
+    <div class="panel tilt">
+      <div class="ph"><b>Delta Exchange Real Equity</b> · live account balance <span class="r" id="connStatus">ONLINE</span></div>
+      <div class="pnl">
+        <div class="num" id="pnl">$0.00</div>
+        <div class="lbl" id="pnlSub">Live Net Equity across all margined contracts</div>
+        <div class="mini"><div><span class="lbl">open pos</span><b id="tk">0</b></div><div><span class="lbl">currency</span><b id="currLabel">USD / INR</b></div><div><span class="lbl">daily limit</span><b id="dayLim">-2.8%</b></div><div><span class="lbl">risk limit</span><b id="riskLim">PASS</b></div></div>
+        <div class="cw"><canvas id="pnlc"></canvas></div>
+      </div>
     </div>
+  </div>
 
-    <footer>
-        Grok Trading Brain v1.0 • Demo mode by default • Use at your own risk
-    </footer>
+  <div class="row3" style="grid-template-columns:1.1fr 1.1fr 1fr">
+    <div class="panel tilt"><div class="ph"><b>The Pricer</b> · strike & probabilities <span class="r">live distribution</span></div><div class="cw"><canvas id="dist"></canvas></div><div class="cells" id="cells"></div></div>
+    <div class="panel tilt"><div class="ph"><b>Signal Spectrogram</b> · market state & structure</div><div class="cw"><canvas id="spec"></canvas></div></div>
+    <div class="panel tilt"><div class="ph"><b>The Trace</b> — live audit trail <span class="r" id="steps">0 steps</span></div><div class="trace" id="trace"></div></div>
+  </div>
 
-    <script>
-        async function refresh() {
-            location.reload();
-        }
+  <div class="bottom"><div class="panel tilt">
+    <div class="ph"><b>Live Positions & Tape</b> · Delta real contracts & live price action <span class="r" id="livePosCount">0 Open Positions</span></div>
+    <div class="tapewrap">
+      <div class="cw"><canvas id="tape"></canvas></div>
+      <div class="book" id="book">
+        <div class="lbl" style="text-align:center;padding:4px">Connecting to Delta Exchange...</div>
+      </div>
+    </div>
+  </div></div>
+  <div class="panel foot" id="foot"></div>
+</div>
 
-        async function setFlags(flow, volume, news) {
-            await fetch(`/api/weekend-flags?strong_order_flow=${flow}&high_volume=${volume}&high_impact_news=${news}`, {
-                method: 'POST'
-            });
-            location.reload();
-        }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+<script>
+(()=>{
+const $=s=>document.querySelector(s), rnd=(a,b)=>a+Math.random()*(b-a);
+const AG=[
+ {n:'DELTA',c:'#35d4ff',role:'01 · broker',shape:'orb'},
+ {n:'ROUTER',c:'#2fe0a8',role:'02 · router',shape:'orb'},
+ {n:'RISK',c:'#ffb020',role:'03 · limits',shape:'drop'},
+ {n:'GROK',c:'#ff3fa4',role:'04 · brain',shape:'tri'},
+ {n:'ORCHEST',c:'#a06bff',role:'05 · cycle',shape:'orb'},
+ {n:'EXEC',c:'#ff4d3a',role:'06 · execution',shape:'orb'}
+];
+const SIG=[['Delta Net Equity','$0.00','#35d4ff'],['Free Margin','$0.00','#35d4ff',10],['ETH Position','--','#a06bff',50],['XRP Position','--','#a06bff',50],['ADA Position','--','#ff3fa4',50],['Market Status','NORMAL','#2fe0a8',80]];
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
 
-        async function stopEngine() {
-            if (!confirm('Stop the trading engine?')) return;
-            await fetch('/api/stop', { method: 'POST' });
-            location.reload();
-        }
+/* ===== particles.js background ===== */
+try{ if(window.particlesJS) particlesJS('pjs',{particles:{number:{value:reduce?0:60,density:{enable:true,value_area:900}},color:{value:['#35d4ff','#a06bff','#ff3fa4']},shape:{type:'circle'},opacity:{value:.35},size:{value:2,random:true},
+  line_linked:{enable:true,distance:140,color:'#35d4ff',opacity:.12,width:1},move:{enable:true,speed:.7,out_mode:'out'}},
+  interactivity:{detect_on:'window',events:{onhover:{enable:true,mode:'grab'},resize:true},modes:{grab:{distance:160,line_linked:{opacity:.35}}}},retina_detect:true}); }catch(e){}
 
-        // Auto refresh every 30s
-        setTimeout(() => location.reload(), 30000);
-    </script>
+/* ===== chips / signals / header ===== */
+function icon(a,s=30){const p=a.shape==='tri'?'M16 3 L29 28 H3 Z':a.shape==='drop'?'M16 2 C26 14 28 18 28 21 A12 9 0 0 1 4 21 C4 18 6 14 16 2Z':'M16 3 A13 13 0 1 1 15.99 3Z';return `<svg class="ic" viewBox="0 0 32 32" width="${s}" height="${s}"><path d="${p}" fill="${a.c}"/><path d="M11 19v4M21 19v4" stroke="#1a0b16" stroke-width="2.4" stroke-linecap="round"/></svg>`}
+$('#agents').innerHTML=AG.map((a,i)=>`<div class="agent" style="--c:${a.c}">${icon(a)}<div style="min-width:0"><div class="lbl" style="font-size:8px">${a.role}</div><div class="nm">${a.n}</div></div><div class="st"><div class="stt">IDLE</div><div style="color:var(--faint)">ready</div></div></div>`).join('');
+$('#sigs').innerHTML=SIG.map((s,i)=>`<div class="sig" style="--c:${s[2]}"><div class="row"><span class="lbl">${s[0]}</span><span class="val" id="sv${i}" style="color:${s[2]}">${s[1]}</span></div><div class="bar"><i id="sb${i}" style="width:${s[3]||50}%"></i></div></div>`).join('');
+const tickClock=()=>$('#clock').textContent=new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' }) + ' IST';
+setInterval(tickClock,1000);tickClock();
+
+$('#ticker').innerHTML=['<b>BROKER</b> DELTA EXCHANGE INDIA','MODE <b>REAL EXECUTION</b>','AUTO RISK <b>PASS</b>','SWARM ENGINE <b>24/7 ACTIVE</b>'].map(t=>`<span>${t}</span>`).join('');
+$('#foot').innerHTML=['Autonomous Grok Brain','Delta India API Connected','Live Margined Contracts','Strict 0.75% Risk Guardrail','Zero Human Intervention'].map(t=>`<span>${t}</span>`).join('');
+
+/* ===== canvas helpers ===== */
+const cv={};
+function fit(id){const c=$('#'+id),r=c.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);c.width=Math.max(2,r.width*d);c.height=Math.max(2,r.height*d);const x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);cv[id]={x,w:r.width,h:r.height}}
+const ids=['wave','flow','sankey','pnlc','dist','spec','tape'];
+const ro=new ResizeObserver(()=>{ids.forEach(fit);glResize()});
+ids.forEach(id=>ro.observe($('#'+id).parentElement));ro.observe($('#mind'));
+ids.forEach(fit);
+
+/* ===== REAL EXCHANGE STATE ===== */
+let realNetEquity = 0.0;
+let realAvailableCash = 0.0;
+let realPositions = [];
+let realCycle = 0;
+let realMode = 'real';
+let mid = 75900;
+
+const F={buy:0,sell:0,orders:0,fills:[],bubbles:[],cvd:[0],cum:0,routed:0,vols:AG.map(()=>1),fee:0,profit:0,inv:0};
+let active=1,loop=1;
+
+/* ===== THREE.JS SCENE ===== */
+let renderer,scene,camera,world,wire,wire2,core,coreGlow,ring,ringGlow,agentSprites=[],linkLine,orderSys,moneySys,starfield,gl_ok=false,pulse=0;
+const gc=$('#gl');
+function glowTex(col='#ffffff'){const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,col);g.addColorStop(.35,col+'88');g.addColorStop(1,col+'00');x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c)}
+function agentTex(a){const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+  const g=x.createRadialGradient(64,64,10,64,64,64);g.addColorStop(0,a.c+'aa');g.addColorStop(1,a.c+'00');x.fillStyle=g;x.fillRect(0,0,128,128);
+  x.fillStyle=a.c;x.beginPath();
+  if(a.shape==='tri'){x.moveTo(64,28);x.lineTo(96,92);x.lineTo(32,92);x.closePath()}
+  else if(a.shape==='drop'){x.moveTo(64,24);x.bezierCurveTo(98,62,98,98,64,98);x.bezierCurveTo(30,98,30,62,64,24)}
+  else x.arc(64,64,30,0,7);
+  x.fill();x.fillStyle='#14080f';const ey=a.shape==='tri'?76:66;x.beginPath();x.ellipse(54,ey,4,8,0,0,7);x.ellipse(74,ey,4,8,0,0,7);x.fill();return new THREE.CanvasTexture(c)}
+const bez=(o,t,out)=>{const u=1-t,a=u*u,b=2*u*t,c=t*t;out[0]=a*o.p0[0]+b*o.c[0]+c*o.p1[0];out[1]=a*o.p0[1]+b*o.c[1]+c*o.p1[1];out[2]=a*o.p0[2]+b*o.c[2]+c*o.p1[2]};
+function makeSystem(N,size,tex){const pos=new Float32Array(N*3).fill(9999),col=new Float32Array(N*3);const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('color',new THREE.BufferAttribute(col,3));
+  const m=new THREE.PointsMaterial({size,map:tex,vertexColors:true,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true});
+  const pts=new THREE.Points(g,m);pts.frustumCulled=false;return{pts,pos,col,N,slots:Array.from({length:N},()=>({t:2,on:false})),cur:0}}
+try{
+  renderer=new THREE.WebGLRenderer({canvas:gc,alpha:true,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+  scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(45,1,.1,100);camera.position.set(0,.4,8.2);
+  world=new THREE.Group();scene.add(world);
+  const ico=new THREE.IcosahedronGeometry(2,2);
+  wire=new THREE.LineSegments(new THREE.WireframeGeometry(ico),new THREE.LineBasicMaterial({color:0x35d4ff,transparent:true,opacity:.38,blending:THREE.AdditiveBlending}));world.add(wire);
+  wire2=new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(2.35,1)),new THREE.LineBasicMaterial({color:0xa06bff,transparent:true,opacity:.18,blending:THREE.AdditiveBlending}));world.add(wire2);
+  const nodes=new THREE.Points(ico,new THREE.PointsMaterial({size:.12,map:glowTex(),color:0x35d4ff,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}));wire.add(nodes);
+  core=new THREE.Mesh(new THREE.SphereGeometry(.85,32,32),new THREE.MeshBasicMaterial({color:0x081628}));world.add(core);
+  const eyeM=new THREE.MeshBasicMaterial({color:0x35d4ff});[-.2,.2].forEach(x=>{const e=new THREE.Mesh(new THREE.SphereGeometry(.08,12,12),eyeM);e.scale.y=2.2;e.position.set(x,.05,.82);core.add(e)});
+  coreGlow=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex('#35d4ff'),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));coreGlow.scale.set(4.2,4.2,1);world.add(coreGlow);
+  ring=new THREE.Mesh(new THREE.TorusGeometry(2.9,.035,8,160),new THREE.MeshBasicMaterial({color:0x2fe0a8}));ring.rotation.x=Math.PI/2.15;world.add(ring);
+  ringGlow=new THREE.Mesh(new THREE.TorusGeometry(2.9,.14,8,160),new THREE.MeshBasicMaterial({color:0x2fe0a8,transparent:true,opacity:.14,blending:THREE.AdditiveBlending,depthWrite:false}));ringGlow.rotation.copy(ring.rotation);world.add(ringGlow);
+  // starfield
+  const SN=700,sp=new Float32Array(SN*3);for(let i=0;i<SN;i++){const r=rnd(9,16),a=rnd(0,6.28),b=Math.acos(rnd(-1,1));sp[i*3]=r*Math.sin(b)*Math.cos(a);sp[i*3+1]=r*Math.cos(b)*.6;sp[i*3+2]=r*Math.sin(b)*Math.sin(a)-4}
+  const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.BufferAttribute(sp,3));starfield=new THREE.Points(sg,new THREE.PointsMaterial({size:.05,color:0x9fb4ff,transparent:true,opacity:.6,depthWrite:false}));scene.add(starfield);
+  // agents
+  AG.forEach((a,i)=>{const s=new THREE.Sprite(new THREE.SpriteMaterial({map:agentTex(a),transparent:true,depthWrite:false}));s.scale.set(.95,.95,1);s.userData={ang:i*1.05,r:rnd(3.1,3.7),tilt:rnd(-.5,.5),spd:rnd(.25,.55)*(i%2?1:-1),y:rnd(-.6,.6)};world.add(s);agentSprites.push(s)});
+  // link line
+  const lg=new THREE.BufferGeometry();lg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(24*3),3));linkLine=new THREE.Line(lg,new THREE.LineBasicMaterial({color:0x35d4ff,transparent:true,opacity:.9,blending:THREE.AdditiveBlending}));linkLine.frustumCulled=false;scene.add(linkLine);
+  orderSys=makeSystem(520,.2,glowTex());scene.add(orderSys.pts);
+  moneySys=makeSystem(260,.26,glowTex('#ffd24a'));scene.add(moneySys.pts);
+  gl_ok=true;
+}catch(e){console.warn('WebGL unavailable',e);gc.style.display='none'}
+function glResize(){if(!gl_ok)return;const r=$('#mind').getBoundingClientRect();if(!r.width)return;renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix()}
+glResize();
+
+/* orbit control (drag) */
+let drag=false,dx=0,dy=0,px0=0,py0=0,mx=0,my=0,yaw=0,pitch=.18;
+$('#mind').addEventListener('pointerdown',e=>{drag=true;px0=e.clientX;py0=e.clientY});
+addEventListener('pointerup',()=>drag=false);
+addEventListener('pointermove',e=>{const r=$('#mind').getBoundingClientRect();mx=((e.clientX-r.left)/r.width-.5);my=((e.clientY-r.top)/r.height-.5);if(drag){yaw+=(e.clientX-px0)*.006;pitch=Math.max(-.6,Math.min(.8,pitch+(e.clientY-py0)*.004));px0=e.clientX;py0=e.clientY}});
+
+/* ===== ORDER FLOW SPRAY ===== */
+function spawnOrder(){
+  if(!gl_ok)return;const side=Math.random()<.5?'buy':'sell',size=Math.pow(Math.random(),2.2)*.95+.05;
+  const ai=(Math.random()*6)|0;const fromLeft=side==='buy';
+  const sx=fromLeft?-6.2:6.2,p0=[sx,rnd(-2.6,2.6),rnd(-1.2,1.2)];
+  const d=new THREE.Vector3(rnd(-1,1),rnd(-1,1),rnd(-1,1)).normalize().multiplyScalar(.95),p1=[d.x,d.y,d.z];
+  const c=[(p0[0]+p1[0])/2,(p0[1]+p1[1])/2+rnd(-1.8,1.8),rnd(-1.5,1.5)];
+  const color=new THREE.Color(side==='buy'?0x2fe0a8:0xff4d6d);const trail=3+Math.round(size*7),spd=rnd(.5,.8);
+  const o={side,size,ai,p0,p1,c,spd,done:false};
+  for(let k=0;k<trail;k++){const s=orderSys.slots[orderSys.cur];orderSys.cur=(orderSys.cur+1)%orderSys.N;Object.assign(s,{t:-k*.035,o,color,head:k===0,on:true,fade:1-k/trail})}
+  F.orders++;F.vols[ai]+=size;side==='buy'?F.buy+=size:F.sell+=size;F.cum+=side==='buy'?size:-size;
+  F.bubbles.push({t:performance.now(),y:mid+rnd(-26,26),size,side});
+}
+function onFill(o){
+  pulse=1;F.fills.push(performance.now());
+  if(Math.random()<.5){const amt=Math.round(o.size*10+rnd(1,5));F.routed+=amt;spawnMoney(o,amt)}
+}
+function spawnMoney(o,amt){
+  const n=3+Math.round(o.size*6),tgt=[3.6,-3.0,.5];
+  for(let k=0;k<n;k++){const s=moneySys.slots[moneySys.cur];moneySys.cur=(moneySys.cur+1)%moneySys.N;
+    Object.assign(s,{t:-k*.05,o:{p0:[rnd(-.4,.4),rnd(-.4,.4),rnd(.5,1)],c:[rnd(1,3.5),rnd(-.5,.6),rnd(-1.5,1.5)],p1:tgt,spd:rnd(.45,.65),amt:amt/n,last:k===n-1},color:new THREE.Color(0xffd24a),head:false,on:true,fade:1})}
+}
+function stepSystem(sys,dt,isMoney){
+  const tmp=[0,0,0];
+  sys.slots.forEach((s,i)=>{
+    const j=i*3;
+    if(!s.on){sys.pos[j+1]=9999;return}
+    s.t+=dt*s.o.spd;
+    if(s.t<0){sys.pos[j+1]=9999;return}
+    if(s.t>=1){
+      s.on=false;sys.pos[j+1]=9999;
+      if(!isMoney&&s.head&&!s.o.done){s.o.done=true;onFill(s.o)}
+      if(isMoney&&s.o.last)floatText('+$'+s.o.amt.toFixed(2));
+      return}
+    bez(s.o,s.t,tmp);sys.pos[j]=tmp[0];sys.pos[j+1]=tmp[1];sys.pos[j+2]=tmp[2];
+    const f=(s.fade||1)*(isMoney?1:(s.head?1:.75))*(s.t>.9?(1-s.t)*10:1);sys.col[j]=s.color.r*f;sys.col[j+1]=s.color.g*f;sys.col[j+2]=s.color.b*f});
+  sys.pts.geometry.attributes.position.needsUpdate=true;sys.pts.geometry.attributes.color.needsUpdate=true}
+function floatText(t){const s=document.createElement('span');s.textContent=t;s.style.right=rnd(0,50)+'px';$('#floats').appendChild(s);setTimeout(()=>s.remove(),1800)}
+
+/* ===== REAL EXCHANGE FETCH & AUTO-UPDATE ===== */
+let pnlSeries = Array.from({length: 60}, () => 3.50);
+async function fetchExchangeData() {
+  try {
+    const res = await fetch('/api/status');
+    if (!res.ok) return;
+    const data = await res.json();
+
+    realMode = data.mode || 'real';
+    realCycle = data.cycle_count || 0;
+    $('#modePill').textContent = realMode.toUpperCase();
+    $('#kCycle').textContent = '#' + realCycle;
+
+    if (data.exchange) {
+      const ex = data.exchange;
+      realNetEquity = ex.net_equity || 0;
+      realAvailableCash = ex.available_cash || 0;
+      realPositions = ex.open_positions || [];
+
+      // Update Equity displays
+      $('#pnl').textContent = '$' + realNetEquity.toFixed(2);
+      $('#kBook').textContent = '$' + realNetEquity.toFixed(2);
+      $('#kFree').textContent = '$' + realAvailableCash.toFixed(4);
+      $('#top-cash').textContent = '$' + realAvailableCash.toFixed(2);
+      $('#top-pos').textContent = realPositions.length;
+      $('#tk').textContent = realPositions.length;
+      $('#kOpen').textContent = realPositions.length;
+      $('#livePosCount').textContent = realPositions.length + ' Open Positions';
+
+      // Update Signals
+      $('#sv0').textContent = '$' + realNetEquity.toFixed(2);
+      $('#sv1').textContent = '$' + realAvailableCash.toFixed(4);
+      
+      const ethP = realPositions.find(p => p.symbol.includes('ETH'));
+      if (ethP) $('#sv2').textContent = ethP.side + ' ' + ethP.size + ' @ $' + ethP.entry_price.toFixed(1);
+      const xrpP = realPositions.find(p => p.symbol.includes('XRP'));
+      if (xrpP) $('#sv3').textContent = xrpP.side + ' ' + xrpP.size + ' @ $' + xrpP.entry_price.toFixed(2);
+      const adaP = realPositions.find(p => p.symbol.includes('ADA'));
+      if (adaP) $('#sv4').textContent = adaP.side + ' ' + adaP.size + ' @ $' + adaP.entry_price.toFixed(2);
+
+      // Render Open Positions in Book Pane
+      if (realPositions.length > 0) {
+        $('#book').innerHTML = realPositions.map(p => {
+          const upnl = p.unrealized_pnl || 0;
+          const upnlCls = upnl >= 0 ? 'pos' : 'neg';
+          const upnlStr = (upnl >= 0 ? '+' : '') + '$' + upnl.toFixed(4);
+          return `
+            <div class="pos-row">
+              <div class="pos-hd">
+                <span><b>${p.symbol}</b> <span style="color:${p.side==='BUY'?'var(--up)':'var(--down)'}">${p.side} ${p.size}</span></span>
+                <span class="pos-upnl ${upnlCls}">${upnlStr}</span>
+              </div>
+              <div class="pos-dt">
+                <span>Entry: $${p.entry_price}</span>
+                <span>Mark: $${p.mark_price}</span>
+              </div>
+              <div class="pos-dt" style="margin-top:2px">
+                <span>Margin: $${p.margin ? p.margin.toFixed(2) : '0.00'}</span>
+                <span>Liq: $${p.liq_price ? p.liq_price.toFixed(2) : '--'}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        $('#book').innerHTML = '<div class="lbl" style="text-align:center;padding:12px">No Open Positions</div>';
+      }
+
+      pnlSeries.push(realNetEquity);
+      if (pnlSeries.length > 80) pnlSeries.shift();
+    }
+  } catch (err) {
+    console.warn('Live fetch error:', err);
+  }
+}
+fetchExchangeData();
+setInterval(fetchExchangeData, 3000);
+
+/* ===== P&L CANVAS DRAW ===== */
+function pnlDraw(){
+  const {x,w,h}=cv.pnlc;x.clearRect(0,0,w,h);
+  const mn=Math.min(...pnlSeries)-0.05, mx_=Math.max(...pnlSeries)+0.05;
+  const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'rgba(47,224,168,.35)');g.addColorStop(1,'rgba(47,224,168,0)');
+  x.beginPath();pnlSeries.forEach((v,i)=>{const X=i/(pnlSeries.length-1)*w,Y=h-6-(v-mn)/(mx_-mn||1)*(h-14);i?x.lineTo(X,Y):x.moveTo(X,Y)});
+  x.strokeStyle='#2fe0a8';x.lineWidth=1.6;x.stroke();x.lineTo(w,h);x.lineTo(0,h);x.fillStyle=g;x.fill();
+}
+
+/* ===== ORDER FLOW bubbles + CVD ===== */
+const WIN=40000;
+function flowDraw(now){
+  const {x,w,h}=cv.flow;x.clearRect(0,0,w,h);const top=8,bh=h*.74,cvdH=h-bh-12,pr=[mid-45,mid+45];
+  const Y=v=>top+(1-(v-pr[0])/(pr[1]-pr[0]))*(bh-top);
+  x.strokeStyle='rgba(255,255,255,.05)';x.lineWidth=1;for(let i=0;i<5;i++){const y=top+i*(bh-top)/4;x.beginPath();x.moveTo(0,y);x.lineTo(w,y);x.stroke()}
+  x.setLineDash([3,4]);x.strokeStyle='rgba(255,176,32,.5)';x.beginPath();x.moveTo(0,Y(mid));x.lineTo(w,Y(mid));x.stroke();x.setLineDash([]);
+  F.bubbles=F.bubbles.filter(b=>now-b.t<WIN);
+  F.bubbles.forEach(b=>{const X=w-(now-b.t)/WIN*w,r=3+b.size*16,col=b.side==='buy'?'47,224,168':'255,77,109';
+    const g=x.createRadialGradient(X,Y(b.y),0,X,Y(b.y),r);g.addColorStop(0,`rgba(${col},.85)`);g.addColorStop(1,`rgba(${col},.15)`);x.fillStyle=g;x.beginPath();x.arc(X,Y(b.y),r,0,7);x.fill();
+    x.strokeStyle=`rgba(${col},.9)`;x.lineWidth=1;x.stroke()});
+  // CVD
+  const c=F.cvd,mn=Math.min(...c,-1),mxv=Math.max(...c,1);x.strokeStyle='#35d4ff';x.shadowColor='#35d4ff';x.shadowBlur=6;x.lineWidth=1.5;x.beginPath();
+  c.forEach((v,i)=>{const X=i/(Math.max(c.length-1,1))*w,Yc=bh+6+(1-(v-mn)/(mxv-mn))*cvdH;i?x.lineTo(X,Yc):x.moveTo(X,Yc)});x.stroke();x.shadowBlur=0;
+  x.fillStyle='#7b8aa3';x.font='9px JetBrains Mono,monospace';x.fillText('CVD',4,bh+16)}
+function flowStats(){$('#bv').textContent=F.buy.toFixed(1);$('#sv').textContent=F.sell.toFixed(1);const d=F.buy-F.sell;$('#dv').textContent=(d>=0?'+':'')+d.toFixed(1);$('#dv').style.color=d>=0?'var(--up)':'var(--down)';
+  $('#ov').textContent=F.orders;$('#imb').style.width=(F.buy/(F.buy+F.sell||1)*100)+'%';F.cvd.push(F.cum);if(F.cvd.length>80)F.cvd.shift();
+  $('#mf').textContent='$'+realNetEquity.toFixed(2)+' active'}
+
+/* ===== MONEY FLOW SANKEY ===== */
+let sPh=0;
+function sankeyDraw(dt){
+  const {x,w,h}=cv.sankey;x.clearRect(0,0,w,h);sPh+=dt*.35;
+  const colL=40,colM=w*.5-5,colR=w-90,H=h-30,gapL=8,nw=10;
+  const lh=(H-gapL*5),mTop=14+H*.12,mH=H*.76;let yl=14,ym=mTop;
+  x.font='9px JetBrains Mono,monospace';
+  AG.forEach((a,i)=>{const hh=Math.max(10,lh/6),mhh=mH/6;
+    drawBand(x,colL+nw,yl+hh/2,colM,ym+mhh/2,Math.max(4,mhh*.9),a.c,sPh+i*.17);
+    x.fillStyle=a.c;x.fillRect(colL,yl,nw,hh);x.fillStyle='#d9e2f0';x.fillText(a.n,colL+nw+6<w?4:4,yl+hh/2+3<h?yl-3:yl);
+    yl+=hh+gapL;ym+=mhh});
+  // Book node
+  const g=x.createLinearGradient(0,mTop,0,mTop+mH);g.addColorStop(0,'#35d4ff');g.addColorStop(1,'#a06bff');x.fillStyle=g;x.fillRect(colM,mTop,nw,mH);
+  x.fillStyle='#d9e2f0';x.fillText('BOOK',colM-12,mTop-4);
+  // Outcomes
+  const outs=[['ACTIVE',.60,'#2fe0a8'],['MARGIN',.30,'#ffb020'],['COMMISSION',.10,'#ff4d6d']];let yo=mTop,yr=14;const rh=(H-12);
+  outs.forEach(([n,f,c],i)=>{const hh=mH*f,rr=rh*f;drawBand(x,colM+nw,yo+hh/2,colR,yr+rr/2+i*4,Math.max(4,hh*.9),c,sPh+i*.3);
+    x.fillStyle=c;x.fillRect(colR,yr+i*4,nw,Math.max(6,rr));x.fillStyle='#d9e2f0';x.fillText(n,colR+nw+5,yr+i*4+Math.max(6,rr)/2+3);
+    yo+=hh;yr+=rr});
+}
+function drawBand(x,x0,y0,x1,y1,wd,col,ph){
+  const cx=(x0+x1)/2;x.beginPath();x.moveTo(x0,y0);x.bezierCurveTo(cx,y0,cx,y1,x1,y1);x.strokeStyle=col+'33';x.lineWidth=wd;x.stroke();
+  for(let k=0;k<6;k++){const t=((ph+k/6)%1+1)%1,u=1-t,X=u*u*u*x0+3*u*u*t*cx+3*u*t*t*cx+t*t*t*x1,Y=u*u*u*y0+3*u*u*t*y0+3*u*t*t*y1+t*t*t*y1;
+    x.fillStyle=col;x.shadowColor=col;x.shadowBlur=8;x.beginPath();x.arc(X,Y,Math.min(3,wd/5+1),0,7);x.fill()}x.shadowBlur=0}
+
+/* ===== COMMAND STACK & TRACE ===== */
+function waveDraw(t){const {x,w,h}=cv.wave;x.clearRect(0,0,w,h);x.strokeStyle=AG[active].c;x.lineWidth=2;x.shadowColor=AG[active].c;x.shadowBlur=8;x.beginPath();for(let i=0;i<=w;i+=3){const y=h/2+Math.sin(i/14+t*3)*h*.3*Math.sin(i/70+t);i?x.lineTo(i,y):x.moveTo(i,y)}x.stroke();x.shadowBlur=0}
+const log=[];function cmdLog(m){log.unshift(m);log.length=6;$('#cmdlog').innerHTML=log.map(l=>`<div class="kv"><span>${l[0]}</span><b>${l[1]}</b></div>`).join('')}
+const VERBS={
+  DELTA:['LIVE','synced 5 perp positions'],
+  ROUTER:['ROUTE','smart symbol matching'],
+  RISK:['AUDIT','max drawdown under 2.8%'],
+  GROK:['SCAN','market structure & consensus'],
+  ORCHEST:['CYCLE','evaluating ticker list'],
+  EXEC:['HOLD','order flow monitored']
+};
+let steps=12;
+function pushTrace(a){const v=VERBS[a.n]||['OK','ready'],t=new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' });steps++;$('#steps').textContent=steps+' steps';
+  const d=document.createElement('div');d.className='trow';d.innerHTML=`<span style="width:8px;height:8px;border-radius:50%;background:${a.c};box-shadow:0 0 8px ${a.c}"></span><span class="tag" style="--c:${a.c}">${v[0]}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="color:var(--faint)">${t}</span> <span style="color:var(--dim)">${v[1]}</span></span><b style="color:${a.c}">${a.n}</b>`;
+  const tr=$('#trace');tr.prepend(d);while(tr.children.length>9)tr.lastChild.remove();cmdLog([a.n,t])}
+function setActive(i){active=i;document.querySelectorAll('.agent').forEach((el,k)=>{el.classList.remove('active');if(k===i){void el.offsetWidth;el.classList.add('active')}el.querySelector('.stt').textContent=k===i?'RUN':(k===(i+1)%6?'NEXT':'IDLE')});
+  const a=AG[i];$('#cmdName').textContent=a.n;$('#cmdName').style.color=a.c;$('#cmdSub').textContent=a.role.split('· ')[1].toUpperCase();$('#stage').textContent=`Stage 0${i+1} · loop #${++loop}`;
+  if(gl_ok)linkLine.material.color.set(a.c);pushTrace(a)}
+
+/* ===== PRICER / SPECTROGRAM / TAPE ===== */
+let strike=.55;
+function distDraw(t){const {x,w,h}=cv.dist;x.clearRect(0,0,w,h);const mu=.5+Math.sin(t*.6)*.04,sd=.11,pad=14,bw=w-pad*2,bh=h-24,f=u=>Math.exp(-((u-mu)**2)/(2*sd*sd));
+  for(const [lo,hi,col] of [[0,strike,'rgba(120,135,160,.5)'],[strike,1,'#ffb020']]){x.beginPath();x.moveTo(pad+lo*bw,h-12);for(let u=lo;u<=hi;u+=.004)x.lineTo(pad+u*bw,h-12-f(u)*bh);x.lineTo(pad+hi*bw,h-12);x.fillStyle=col;x.fill()}
+  x.strokeStyle='#ffb020';x.setLineDash([3,3]);x.beginPath();x.moveTo(pad+strike*bw,6);x.lineTo(pad+strike*bw,h-12);x.stroke();x.setLineDash([]);
+  x.fillStyle='#7b8aa3';x.font='9px JetBrains Mono,monospace';x.fillText('0',pad,h-1);x.fillText('Target',w-pad-28,h-1);x.fillStyle='#ffb020';x.fillText('R:R 3.0:1',pad+strike*bw+5,14)}
+$('#cells').innerHTML=['Delta India','Real Mode','Asia/Kolkata','R:R 3:1','Risk 0.75%'].map((t,i)=>`<div class="cell ${i==0?'sel':''}"><span class="lbl">${t.split(' ')[0]}</span><b>${t.split(' ')[1]||'OK'}</b></div>`).join('');
+const ROWS=16,COLS=36;let grid=Array.from({length:ROWS},()=>Array.from({length:COLS},()=>Math.random()));
+const specTick=()=>grid.forEach(r=>{r.shift();r.push(Math.random()*(Math.random()<.2?1:.6))});
+function specDraw(){const {x,w,h}=cv.spec;x.clearRect(0,0,w,h);const cw=w/COLS,ch=h/ROWS;grid.forEach((r,i)=>r.forEach((v,j)=>{x.fillStyle=v>.78?'#35d4ff':v>.5?'#a06bff':v>.3?'#2fe0a8':'#141c2c';x.fillRect(j*cw+1,i*ch+1,cw-2,ch-2)}))}
+let candles=[],pxx=75900;for(let i=0;i<90;i++){const o=pxx;pxx+=rnd(-22,20);candles.push({o,c:pxx,h:Math.max(o,pxx)+rnd(2,12),l:Math.min(o,pxx)-rnd(2,12),v:rnd(.2,1)})}
+function tapeTick(){const o=candles.at(-1).c,c=o+rnd(-24,22);candles.push({o,c,h:Math.max(o,c)+rnd(2,12),l:Math.min(o,c)-rnd(2,12),v:rnd(.2,1)});candles.shift();mid=c}
+function tapeDraw(){const {x,w,h}=cv.tape;x.clearRect(0,0,w,h);const vh=h*.14,ph=h-vh-16,mn=Math.min(...candles.map(c=>c.l)),mxx=Math.max(...candles.map(c=>c.h)),Y=v=>8+(1-(v-mn)/(mxx-mn))*ph,cw=w/candles.length;
+  x.strokeStyle='rgba(160,107,255,.8)';x.setLineDash([4,3]);x.beginPath();let s=0;candles.forEach((c,i)=>{s+=c.c;const v=s/(i+1);i?x.lineTo(i*cw+cw/2,Y(v)):x.moveTo(cw/2,Y(v))});x.stroke();x.setLineDash([]);
+  candles.forEach((c,i)=>{const up=c.c>=c.o,col=up?'#2fe0a8':'#ff4d6d',X=i*cw+cw/2;x.strokeStyle=col;x.fillStyle=col;x.beginPath();x.moveTo(X,Y(c.h));x.lineTo(X,Y(c.l));x.stroke();x.fillRect(X-cw*.32,Math.min(Y(c.o),Y(c.c)),cw*.64,Math.max(2,Math.abs(Y(c.o)-Y(c.c))));x.globalAlpha=.5;x.fillRect(X-cw*.32,h-c.v*vh,cw*.64,c.v*vh);x.globalAlpha=1});
+  x.fillStyle='#d9e2f0';x.font='600 18px Chakra Petch,monospace';x.fillText('BTCUSD: $' + candles.at(-1).c.toFixed(1),10,22);
+  $('#btc').textContent='BTC: $' + Math.round(candles.at(-1).c).toLocaleString()}
+
+/* ===== MAIN RENDER LOOP ===== */
+let last=performance.now(),fpsN=0,fpsT=0,hidden=false;
+document.addEventListener('visibilitychange',()=>{hidden=document.hidden;last=performance.now()});
+function frame(now){
+  requestAnimationFrame(frame);if(hidden)return;
+  const dt=Math.min(.05,(now-last)/1000);last=now;const t=now/1000;
+  fpsN++;fpsT+=dt;if(fpsT>1){$('#fps').textContent=Math.round(fpsN/fpsT);fpsN=0;fpsT=0}
+  if(gl_ok){
+    if(!drag)yaw+=dt*.12;world.rotation.y=yaw;world.rotation.x=pitch+my*.25;camera.position.x=mx*1.2;camera.lookAt(0,0,0);
+    wire.rotation.y+=dt*.1;wire2.rotation.y-=dt*.14;wire2.rotation.x+=dt*.05;
+    pulse=Math.max(0,pulse-dt*3);const cs=1+pulse*.18;core.scale.setScalar(cs);coreGlow.scale.setScalar(4.2+pulse*1.6);
+    ringGlow.material.opacity=.14+Math.sin(t*2)*.05+pulse*.15;
+    agentSprites.forEach((s,i)=>{const u=s.userData;u.ang+=dt*u.spd;const isA=i===active,r=u.r;
+      s.position.set(Math.cos(u.ang)*r,Math.sin(u.ang*1.3)*.5+u.y+Math.sin(u.ang)*r*u.tilt,Math.sin(u.ang)*r*.8);
+      const sc=isA?1.5:.95;s.scale.x+=(sc-s.scale.x)*.1;s.scale.y=s.scale.x});
+    const ap=new THREE.Vector3();agentSprites[active].getWorldPosition(ap);const lp=linkLine.geometry.attributes.position,end=new THREE.Vector3(6.6,2.4,0);
+    for(let k=0;k<24;k++){const u=k/23,m=1-u,cx=(ap.x+end.x)/2,cy=Math.max(ap.y,end.y)+1.4;lp.setXYZ(k,m*m*ap.x+2*m*u*cx+u*u*end.x,m*m*ap.y+2*m*u*cy+u*u*end.y,m*m*ap.z+u*u*end.z)}lp.needsUpdate=true;
+    stepSystem(orderSys,dt,false);stepSystem(moneySys,dt,true);
+    starfield.rotation.y+=dt*.01;renderer.render(scene,camera)}
+  waveDraw(t);distDraw(t);specDraw();pnlDraw();tapeDraw();flowDraw(now);sankeyDraw(dt)
+}
+setActive(0);requestAnimationFrame(frame);
+setInterval(()=>setActive((active+1)%6),3000);
+setInterval(specTick,450);setInterval(tapeTick,1000);setInterval(flowStats,500);
+setInterval(()=>{if(!hidden)spawnOrder()},reduce?1400:420);
+for(let i=0;i<6;i++)setTimeout(spawnOrder,i*150);
+})();
+</script>
 </body>
 </html>

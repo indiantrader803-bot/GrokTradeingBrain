@@ -126,7 +126,7 @@ async def dashboard(request: Request):
 async def api_status():
     if not orchestrator:
         return {"error": "Orchestrator not running"}
-    return orchestrator.get_status()
+    return await orchestrator.get_live_exchange_data()
 
 
 @app.post("/api/weekend-flags")

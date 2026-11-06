@@ -242,6 +242,63 @@ class MasterOrchestrator:
             }
         }
 
+    async def get_live_exchange_data(self) -> dict:
+        exchange_positions = []
+        wallet_balances = {}
+        net_equity = 0.0
+        available_balance = 0.0
+
+        if "delta" in self.adapters:
+            delta = self.adapters["delta"]
+            try:
+                raw_positions = await delta.get_open_positions()
+                for p in raw_positions:
+                    size = float(p.get("size", 0))
+                    entry = float(p.get("entry_price", 0) or 0)
+                    mark = float(p.get("mark_price", 0) or 0)
+                    upnl = float(p.get("unrealized_pnl", 0) or 0)
+                    margin = float(p.get("margin", 0) or 0)
+                    exchange_positions.append({
+                        "symbol": p.get("product_symbol", "N/A"),
+                        "side": "BUY" if size > 0 else "SELL",
+                        "size": abs(size),
+                        "entry_price": entry,
+                        "mark_price": mark,
+                        "unrealized_pnl": upnl,
+                        "margin": margin,
+                        "leverage": p.get("product", {}).get("default_leverage", "10x"),
+                        "liq_price": float(p.get("liquidation_price", 0) or 0)
+                    })
+                
+                raw_wallets = await delta._request("GET", "/v2/wallet/balances")
+                meta = raw_wallets.get("meta", {})
+                net_equity = float(meta.get("net_equity", 0) or 0)
+                for item in raw_wallets.get("result", []):
+                    sym = item.get("asset_symbol")
+                    bal = float(item.get("balance", 0) or 0)
+                    avail = float(item.get("available_balance", 0) or 0)
+                    if bal > 0 or avail > 0:
+                        wallet_balances[sym] = {
+                            "balance": bal,
+                            "available": avail,
+                            "inr": float(item.get("balance_inr", 0) or 0)
+                        }
+                        if sym in ["USD", "USDT"]:
+                            available_balance += avail
+            except Exception as e:
+                log.error("Error fetching live exchange data: %s", e)
+
+        base_status = self.get_status()
+        base_status["exchange"] = {
+            "name": "Delta Exchange India",
+            "net_equity": net_equity,
+            "available_cash": available_balance,
+            "wallets": wallet_balances,
+            "open_positions": exchange_positions,
+            "open_positions_count": len(exchange_positions)
+        }
+        return base_status
+
     # Methods you can call from the dashboard or external systems
     def set_weekend_flags(
         self,
