@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swarm Desk · Login</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#080b13; --panel:rgba(15,21,33,.85); --panel2:rgba(9,13,21,.90); --line:#1f2a3a;
+  --fg:#d9e2f0; --dim:#7b8aa3; --up:#2fe0a8; --down:#ff4d6d; --cyan:#35d4ff; --mono:'JetBrains Mono',monospace; --disp:'Chakra Petch',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:radial-gradient(ellipse at 50% 0%,#101a33 0%,var(--bg) 60%) fixed;
+  color:var(--fg);font-family:var(--mono);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;
+}
+.auth-box{
+  background:var(--panel);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:10px;width:100%;max-width:400px;
+  padding:28px 24px;box-shadow:0 12px 40px rgba(53,212,255,.08);position:relative;
+}
+.brand{font-family:var(--disp);font-size:22px;font-weight:600;letter-spacing:.08em;text-align:center;margin-bottom:4px}
+.brand span{color:var(--cyan)}
+.sub{text-align:center;font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:24px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.field input{
+  width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:10px 12px;color:var(--fg);
+  font-family:var(--mono);font-size:13px;outline:none;transition:border-color .2s;
+}
+.field input:focus{border-color:var(--cyan);box-shadow:0 0 10px rgba(53,212,255,.2)}
+.btn{
+  width:100%;background:linear-gradient(90deg, #35d4ff, #2fe0a8);border:none;border-radius:6px;padding:11px;color:#080b13;
+  font-family:var(--disp);font-size:14px;font-weight:600;letter-spacing:.06em;cursor:pointer;margin-top:8px;transition:opacity .2s;
+}
+.btn:hover{opacity:.9}
+.switch{text-align:center;font-size:11px;margin-top:18px;color:var(--dim)}
+.switch a{color:var(--cyan);text-decoration:none;font-weight:600}
+.alert{background:rgba(255,77,109,.15);border:1px solid var(--down);color:var(--down);padding:8px 12px;border-radius:6px;font-size:11px;margin-bottom:16px}
+.super-badge{
+  background:rgba(255,176,32,.1);border:1px solid #ffb020;color:#ffb020;border-radius:4px;padding:8px;font-size:9.5px;
+  line-height:1.4;margin-top:16px;text-align:left;
+}
+</style>
+</head>
+<body>
+<div class="auth-box">
+  <div class="brand">SWARM<span>DESK</span> 3D</div>
+  <div class="sub">Delta Exchange India · Terminal Login</div>
+
+  {% if error %}
+  <div class="alert">{{ error }}</div>
+  {% endif %}
+
+  <form method="POST" action="/login">
+    <div class="field">
+      <label>Username</label>
+      <input type="text" name="username" placeholder="Enter username" required autofocus>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" name="password" placeholder="••••••••••••" required>
+    </div>
+    <button type="submit" class="btn">AUTHENTICATE & ENTER</button>
+  </form>
+
+  <div class="super-badge">
+    <b>Default Superadmin Credentials:</b><br>
+    Username: <span style="color:#fff">superadmin</span><br>
+    Password: <span style="color:#fff">SuperAdmin@2026</span>
+  </div>
+
+  <div class="switch">
+    Need a new trader account? <a href="/signup">Sign up here</a>
+  </div>
+</div>
+</body>
+</html>

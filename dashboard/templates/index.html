@@ -149,6 +149,10 @@ body{background:radial-gradient(ellipse at 50% 0%,#101a33 0%,var(--bg) 60%) fixe
     <div class="stat hide-s" onclick="openDetailsModal('positions')" style="cursor:pointer"><span class="v" style="color:var(--up)" id="top-pos">0</span><span class="lbl">OPEN POSITIONS</span></div>
     <div class="stat hide-s"><span class="v" style="color:var(--gold)" id="fps">60</span><span class="lbl">FPS</span></div>
     <div class="clock" id="clock">00:00:00</div>
+    <div style="display:flex;align-items:center;gap:8px;padding-left:12px;border-left:1px solid var(--line)">
+      <span style="font-size:10px;color:var(--cyan);font-weight:600">👤 {{ username or 'SUPERADMIN' }}</span>
+      <a href="/logout" style="color:var(--down);text-decoration:none;font-size:9.5px;padding:3px 7px;border:1px solid var(--line);border-radius:4px">LOGOUT</a>
+    </div>
   </div>
   <div class="panel ticker" id="ticker"></div>
   <div class="agents" id="agents"></div>

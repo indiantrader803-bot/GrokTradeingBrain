@@ -3,11 +3,19 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request, Form, Response
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import uvicorn
+
+from core.auth import (
+    authenticate_user,
+    register_user,
+    create_session_token,
+    verify_session_token,
+    get_users
+)
 
 import os
 from dotenv import load_dotenv
@@ -110,14 +118,87 @@ app = FastAPI(
 )
 
 
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    token = request.cookies.get("session_token")
+    if token and verify_session_token(token):
+        return RedirectResponse("/", status_code=302)
+    return templates.TemplateResponse("login.html", {"request": request, "error": None})
+
+
+@app.post("/login", response_class=HTMLResponse)
+async def handle_login(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...)
+):
+    user = authenticate_user(username, password)
+    if not user:
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "error": "Invalid username or password. Check credentials."}
+        )
+    token = create_session_token(user["username"])
+    response = RedirectResponse("/", status_code=302)
+    response.set_cookie(key="session_token", value=token, max_age=86400 * 30, httponly=True)
+    return response
+
+
+@app.get("/signup", response_class=HTMLResponse)
+async def signup_page(request: Request):
+    return templates.TemplateResponse("signup.html", {"request": request, "error": None})
+
+
+@app.post("/signup", response_class=HTMLResponse)
+async def handle_signup(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...),
+    confirm_password: str = Form(...)
+):
+    if len(password) < 6:
+        return templates.TemplateResponse(
+            "signup.html",
+            {"request": request, "error": "Password must be at least 6 characters long."}
+        )
+    if password != confirm_password:
+        return templates.TemplateResponse(
+            "signup.html",
+            {"request": request, "error": "Passwords do not match."}
+        )
+    ok = register_user(username, password)
+    if not ok:
+        return templates.TemplateResponse(
+            "signup.html",
+            {"request": request, "error": "Username already taken. Please choose another."}
+        )
+    token = create_session_token(username.lower().strip())
+    response = RedirectResponse("/", status_code=302)
+    response.set_cookie(key="session_token", value=token, max_age=86400 * 30, httponly=True)
+    return response
+
+
+@app.get("/logout")
+async def logout():
+    response = RedirectResponse("/login", status_code=302)
+    response.delete_cookie("session_token")
+    return response
+
+
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
+    token = request.cookies.get("session_token")
+    current_user = verify_session_token(token) if token else None
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+
     status = orchestrator.get_status() if orchestrator else {}
     return templates.TemplateResponse(
         "index.html",
         {
             "request": request,
-            "status": status
+            "status": status,
+            "username": current_user
         }
     )
 
