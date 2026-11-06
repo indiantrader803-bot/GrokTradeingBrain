@@ -51,23 +51,39 @@ async def lifespan(app: FastAPI):
         server_ip=server_ip
     )
 
-    adapters = {
-        "paper": PaperAdapter(starting_equity=config.starting_equity)
-    }
+    # When in REAL mode and real exchange is configured, do not add paper adapter
+    # so risk calculations strictly use the live exchange balance.
+    adapters = {}
 
     delta_key = os.getenv("DELTA_INDIA_API_KEY", "").strip()
     delta_secret = os.getenv("DELTA_INDIA_API_SECRET", "").strip()
     delta_url = os.getenv("DELTA_INDIA_BASE_URL", "https://api.india.delta.exchange").strip()
 
     if delta_key and delta_secret:
-        adapters["delta"] = DeltaAdapter(
+        delta_adapter = DeltaAdapter(
             api_key=delta_key,
             api_secret=delta_secret,
             base_url=delta_url
         )
+        adapters["delta"] = delta_adapter
         log.info("Delta Exchange India adapter registered (API Key configured)")
+
+        # Query live balance from exchange to calibrate starting_equity
+        if trading_mode == TradingMode.REAL:
+            try:
+                live_equity = await delta_adapter.get_equity()
+                if live_equity > 0:
+                    config.starting_equity = live_equity
+                    log.info("Calibrated starting equity from live Delta exchange balance: $%.2f", live_equity)
+            except Exception as e:
+                log.warning("Could not pre-fetch live equity: %s", e)
     else:
         log.info("Delta Exchange India adapter not activated (DELTA_INDIA_API_KEY or DELTA_INDIA_API_SECRET not set in .env)")
+
+    # Only fallback to paper if in DEMO mode or no real exchange configured
+    if trading_mode == TradingMode.DEMO or not adapters:
+        adapters["paper"] = PaperAdapter(starting_equity=config.starting_equity)
+
 
     orchestrator = MasterOrchestrator(config, adapters)
     background_task = asyncio.create_task(orchestrator.start())
