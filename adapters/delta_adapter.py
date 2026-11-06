@@ -32,6 +32,7 @@ class DeltaAdapter(ExchangeAdapter):
         self.api_secret = api_secret
         self.base_url = base_url.rstrip("/")
         self.client = httpx.AsyncClient(timeout=30.0)
+        self.product_map: Dict[str, int] = {}
 
     def _sign(self, method: str, path: str, query: str = "", body: str = "") -> Dict[str, str]:
         timestamp = str(int(time.time()))
@@ -94,6 +95,42 @@ class DeltaAdapter(ExchangeAdapter):
             log.error("Delta get_price error (%s): %s", symbol, e)
             return 0.0
 
+    async def get_product_id(self, symbol: str) -> Optional[int]:
+        clean = symbol.upper().replace("/", "").replace("-", "").replace("_", "")
+        if clean.endswith("USDT"):
+            clean = clean.replace("USDT", "USD")
+        if clean in self.product_map:
+            return self.product_map[clean]
+        try:
+            r = await self._request("GET", "/v2/products", params={"contract_types": "perpetual_futures"})
+            for p in r.get("result", []):
+                self.product_map[p.get("symbol")] = p.get("id")
+            return self.product_map.get(clean)
+        except Exception as e:
+            log.warning("Could not fetch product map: %s", e)
+            return None
+
+    async def get_candles(self, symbol: str, resolution: str = "5m", limit_hours: int = 6) -> List[Dict[str, Any]]:
+        clean = symbol.upper().replace("/", "").replace("-", "").replace("_", "")
+        if clean.endswith("USDT"):
+            clean = clean.replace("USDT", "USD")
+        now = int(time.time())
+        start = now - 3600 * limit_hours
+        try:
+            r = await self.client.get(f"{self.base_url}/v2/history/candles", params={
+                "resolution": resolution,
+                "symbol": clean,
+                "start": start,
+                "end": now
+            })
+            if r.status_code == 200:
+                data = r.json()
+                return data.get("result", [])
+            return []
+        except Exception as e:
+            log.error("Delta get_candles error (%s): %s", symbol, e)
+            return []
+
     async def place_order(
         self,
         symbol: str,
@@ -107,10 +144,12 @@ class DeltaAdapter(ExchangeAdapter):
         if clean.endswith("USDT"):
             clean = clean.replace("USDT", "USD")
 
+        product_id = await self.get_product_id(clean)
+
         body = {
-            "product_id": None,          # You should resolve product_id from symbol
+            "product_id": product_id,
             "product_symbol": clean,
-            "size": size,
+            "size": int(round(size)) if int(round(size)) > 0 else 1,
             "side": side.lower(),
             "order_type": "market_order" if order_type == "market" else "limit_order",
         }

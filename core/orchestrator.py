@@ -209,23 +209,118 @@ class MasterOrchestrator:
         """
         return PlatformRouter.get_best_platform(symbol, self.adapters)
 
-    async def _get_market_data_placeholder(self, symbol: str) -> Dict[str, Any]:
+    async def _analyze_market_vwap(self, symbol: str) -> Dict[str, Any]:
         """
-        PLACEHOLDER – Replace this entire method with your real
-        NVIDIA Super Brain + structure detection later.
+        Real Market Structure & VWAP (Volume-Weighted Average Price) Strategy Engine.
+        Calculates VWAP from live Delta 5m candles, detects demand/supply zones, and determines
+        trend structure with asymmetric R:R.
         """
-        # Safe default: no trade
-        return {
-            "price": 100.0,
-            "structure": "range",
-            "zone": None,
-            "stop_loss": 95.0,
-            "take_profit": 115.0,
-            "risk_reward": 3.0,
-            "consensus_score": 0.50
-        }
+        adapter = self.adapters.get("delta")
+        if not adapter or not hasattr(adapter, "get_candles"):
+            return {
+                "price": 100.0,
+                "structure": "range",
+                "zone": None,
+                "stop_loss": 95.0,
+                "take_profit": 115.0,
+                "risk_reward": 3.0,
+                "consensus_score": 0.50
+            }
 
-    def get_status(self) -> dict:
+        try:
+            candles = await adapter.get_candles(symbol, resolution="5m", limit_hours=6)
+            if not candles or len(candles) < 20:
+                current_price = await adapter.get_price(symbol)
+                return {
+                    "price": current_price or 100.0,
+                    "structure": "range",
+                    "zone": None,
+                    "stop_loss": 0,
+                    "take_profit": 0,
+                    "risk_reward": 0,
+                    "consensus_score": 0.5
+                }
+
+            # Calculate VWAP: sum(typical_price * volume) / sum(volume)
+            cum_vol = 0.0
+            cum_pv = 0.0
+            for c in candles:
+                typical_price = (float(c["high"]) + float(c["low"]) + float(c["close"])) / 3.0
+                vol = float(c.get("volume", 1.0))
+                cum_vol += vol
+                cum_pv += typical_price * vol
+
+            vwap = (cum_pv / cum_vol) if cum_vol > 0 else float(candles[-1]["close"])
+            current_price = float(candles[-1]["close"])
+            prev_price = float(candles[-2]["close"])
+
+            # High & Low of the window
+            recent_candles = candles[-20:]
+            highest_high = max(float(c["high"]) for c in recent_candles)
+            lowest_low = min(float(c["low"]) for c in recent_candles)
+
+            # Standard Deviation / Bands around VWAP
+            variance = sum(((float(c["close"]) - vwap) ** 2) for c in recent_candles) / len(recent_candles)
+            std_dev = variance ** 0.5 if variance > 0 else (current_price * 0.005)
+
+            # Trend & Zone Determination based on VWAP
+            if current_price > vwap and current_price >= prev_price:
+                structure = "bullish"
+                zone = "demand" if current_price <= (vwap + std_dev * 0.8) else "range"
+                stop_loss = round(min(lowest_low, vwap - std_dev), 2)
+                risk_dist = abs(current_price - stop_loss)
+                take_profit = round(current_price + (risk_dist * 3.2), 2)
+                rr = 3.2
+                consensus = 0.85
+            elif current_price < vwap and current_price <= prev_price:
+                structure = "bearish"
+                zone = "supply" if current_price >= (vwap - std_dev * 0.8) else "range"
+                stop_loss = round(max(highest_high, vwap + std_dev), 2)
+                risk_dist = abs(stop_loss - current_price)
+                take_profit = round(current_price - (risk_dist * 3.2), 2)
+                rr = 3.2
+                consensus = 0.85
+            else:
+                structure = "range"
+                zone = None
+                stop_loss = current_price * 0.98
+                take_profit = current_price * 1.05
+                rr = 2.5
+                consensus = 0.60
+
+            log.info(
+                "VWAP Scan | %s | Price: %.2f | VWAP: %.2f | Structure: %s | Zone: %s",
+                symbol, current_price, vwap, structure, zone
+            )
+
+            return {
+                "price": current_price,
+                "vwap": round(vwap, 2),
+                "structure": structure,
+                "zone": zone,
+                "stop_loss": stop_loss,
+                "take_profit": take_profit,
+                "risk_reward": rr,
+                "consensus_score": consensus
+            }
+
+        except Exception as e:
+            log.error("Error in _analyze_market_vwap (%s): %s", symbol, e)
+            return {
+                "price": 100.0,
+                "structure": "range",
+                "zone": None,
+                "stop_loss": 95.0,
+                "take_profit": 115.0,
+                "risk_reward": 3.0,
+                "consensus_score": 0.50
+            }
+
+    async def _evaluate_symbol(self, symbol: str):
+        market_data = await self._analyze_market_vwap(symbol)
+        consensus = market_data.get("consensus_score", 0.0)
+
+        signal = self.strategy.evaluate(symbol, market_data, consensus)
         return {
             "running": self.running,
             "mode": self.config.mode.value,
