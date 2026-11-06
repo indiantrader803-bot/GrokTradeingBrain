@@ -42,11 +42,13 @@ async def lifespan(app: FastAPI):
     trading_mode = TradingMode.REAL if mode_str == "real" else TradingMode.DEMO
     starting_eq = float(os.getenv("STARTING_EQUITY", "1000.0"))
     check_interval = int(os.getenv("CHECK_INTERVAL_SECONDS", "60"))
+    server_ip = os.getenv("SERVER_IP", "127.0.0.1")
 
     config = SystemConfig(
         mode=trading_mode,
         starting_equity=starting_eq,
-        check_interval_seconds=check_interval
+        check_interval_seconds=check_interval,
+        server_ip=server_ip
     )
 
     adapters = {

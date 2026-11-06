@@ -52,6 +52,9 @@ class SystemConfig:
     check_interval_seconds: int = 60
     starting_equity: float = 1000.0
     timezone: str = "Asia/Kolkata"
+    server_host: str = "0.0.0.0"
+    server_port: int = 8000
+    server_ip: str = "127.0.0.1"
 
     risk: RiskConfig = field(default_factory=RiskConfig)
     strategy: StrategyConfig = field(default_factory=StrategyConfig)
