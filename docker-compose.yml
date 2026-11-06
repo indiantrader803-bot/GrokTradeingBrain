@@ -1,0 +1,12 @@
+services:
+  grok-trading-brain:
+    build: .
+    container_name: grok_trading_brain
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
