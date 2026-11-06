@@ -9,9 +9,15 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from core.config import SystemConfig, TradingMode
 from core.orchestrator import MasterOrchestrator
 from adapters.paper import PaperAdapter
+from adapters.delta_adapter import DeltaAdapter
 
 # Logging setup
 logging.basicConfig(
@@ -32,21 +38,38 @@ templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "dashbo
 async def lifespan(app: FastAPI):
     global orchestrator, background_task
 
+    mode_str = os.getenv("TRADING_MODE", "demo").lower()
+    trading_mode = TradingMode.REAL if mode_str == "real" else TradingMode.DEMO
+    starting_eq = float(os.getenv("STARTING_EQUITY", "1000.0"))
+    check_interval = int(os.getenv("CHECK_INTERVAL_SECONDS", "60"))
+
     config = SystemConfig(
-        mode=TradingMode.DEMO,
-        starting_equity=1000.0,
-        check_interval_seconds=60
+        mode=trading_mode,
+        starting_equity=starting_eq,
+        check_interval_seconds=check_interval
     )
 
-    # Start with paper adapter only.
-    # Later you add real adapters here.
     adapters = {
         "paper": PaperAdapter(starting_equity=config.starting_equity)
     }
 
+    delta_key = os.getenv("DELTA_INDIA_API_KEY", "").strip()
+    delta_secret = os.getenv("DELTA_INDIA_API_SECRET", "").strip()
+    delta_url = os.getenv("DELTA_INDIA_BASE_URL", "https://api.india.delta.exchange").strip()
+
+    if delta_key and delta_secret:
+        adapters["delta"] = DeltaAdapter(
+            api_key=delta_key,
+            api_secret=delta_secret,
+            base_url=delta_url
+        )
+        log.info("Delta Exchange India adapter registered (API Key configured)")
+    else:
+        log.info("Delta Exchange India adapter not activated (DELTA_INDIA_API_KEY or DELTA_INDIA_API_SECRET not set in .env)")
+
     orchestrator = MasterOrchestrator(config, adapters)
     background_task = asyncio.create_task(orchestrator.start())
-    log.info("Application started in DEMO mode")
+    log.info("Application started in %s mode", trading_mode.value.upper())
 
     yield
 
