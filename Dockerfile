@@ -11,7 +11,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Expose FastAPI / Dashboard port
-EXPOSE 8000
+# Default port (Railway/Render automatically provides PORT)
+ENV PORT=8000
+EXPOSE ${PORT}
 
-CMD ["python", "-m", "app.main"]
+CMD ["sh", "-c", "python -m app.main"]
+
