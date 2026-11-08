@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swarm Desk · Exchange API Settings</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#080b13; --panel:rgba(15,21,33,.85); --panel2:rgba(9,13,21,.90); --line:#1f2a3a;
+  --fg:#d9e2f0; --dim:#7b8aa3; --up:#2fe0a8; --down:#ff4d6d; --amber:#ffb020; --cyan:#35d4ff;
+  --mono:'JetBrains Mono',monospace; --disp:'Chakra Petch',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:radial-gradient(ellipse at 50% 0%,#101a33 0%,var(--bg) 60%) fixed;
+  color:var(--fg);font-family:var(--mono);min-height:100vh;padding:16px;font-size:12px;
+}
+.container{max-width:1100px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--panel);border:1px solid var(--line);border-radius:8px;margin-bottom:16px}
+.brand{font-family:var(--disp);font-size:20px;font-weight:600}
+.brand span{color:var(--cyan)}
+.nav{display:flex;gap:12px}
+.nav a{color:var(--dim);text-decoration:none;padding:6px 12px;border-radius:4px;border:1px solid transparent;font-size:11px}
+.nav a.active,.nav a:hover{color:var(--fg);border-color:var(--cyan);background:rgba(53,212,255,.08)}
+.grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:20px;margin-bottom:16px}
+.card-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.card-hd b{font-family:var(--disp);font-size:16px;color:var(--cyan)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:10.5px;color:var(--dim);margin-bottom:6px;text-transform:uppercase}
+.field input,.field select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:10px 12px;color:var(--fg);font-family:var(--mono);font-size:12px}
+.field input:focus,.field select:focus{border-color:var(--cyan);outline:none}
+.btn{background:linear-gradient(90deg, #35d4ff, #2fe0a8);color:#080b13;border:none;border-radius:6px;padding:11px 18px;font-weight:600;cursor:pointer;font-family:var(--disp);font-size:13px;width:100%}
+.ip-box{background:rgba(53,212,255,.05);border:1px dashed var(--cyan);border-radius:6px;padding:14px;margin-bottom:16px}
+.ip-val{font-size:18px;font-weight:bold;color:var(--cyan);letter-spacing:1px;margin:6px 0}
+.badge{padding:2px 8px;border-radius:10px;font-size:9.5px;font-weight:bold}
+.badge.green{background:rgba(47,224,168,.15);color:var(--up);border:1px solid var(--up)}
+.badge.gray{background:rgba(255,255,255,.05);color:var(--dim);border:1px solid var(--line)}
+.key-item{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:12px;margin-bottom:10px}
+.alert-ok{background:rgba(47,224,168,.12);border:1px solid var(--up);color:var(--up);padding:10px 14px;border-radius:6px;margin-bottom:16px}
+@media (max-width:850px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <div class="brand">SWARM<span>DESK</span> // API KEYS</div>
+      <div style="font-size:10px;color:var(--dim)">Connect Exchange APIs & Outbound Whitelist Management (User: {{ username }})</div>
+    </div>
+    <div class="nav">
+      <a href="/">3D Terminal</a>
+      <a href="/admin">Admin Dashboard</a>
+      <a href="/strategy">My Strategy</a>
+      <a href="/api-keys" class="active">API Keys</a>
+      <a href="/positions">Open Positions</a>
+      <a href="/logout" style="color:var(--down)">Logout</a>
+    </div>
+  </header>
+
+  {% if success %}
+  <div class="alert-ok">{{ success }}</div>
+  {% endif %}
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-hd">
+        <b>Connect Your Choice Exchange</b>
+        <span class="badge green">PRIVATE &amp; ENCRYPTED</span>
+      </div>
+      <p style="color:var(--dim);margin-bottom:16px;line-height:1.4">
+        Your API credentials are tied strictly to your account <b>{{ username }}</b>. No other user can access or view your exchange connection.
+      </p>
+
+      <form method="POST" action="/api-keys">
+        <div class="field">
+          <label>Select Exchange</label>
+          <select name="exchange" required>
+            <option value="delta">Delta Exchange India (Perpetual Futures)</option>
+            <option value="coinbase">Coinbase Advanced</option>
+            <option value="coinswitch">CoinSwitch India</option>
+            <option value="myfundedperps">MyFundedPerps</option>
+            <option value="mt5">MetaTrader 5 (MT5 Broker)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>API Key / Account ID</label>
+          <input type="text" name="api_key" placeholder="Paste your exchange API key" required>
+        </div>
+
+        <div class="field">
+          <label>API Secret / Private Password</label>
+          <input type="password" name="api_secret" placeholder="Paste your exchange API secret" required>
+        </div>
+
+        <div class="field">
+          <label>API Base URL (Optional / Pre-filled)</label>
+          <input type="text" name="base_url" placeholder="https://api.india.delta.exchange" value="https://api.india.delta.exchange">
+        </div>
+
+        <button type="submit" class="btn">SAVE &amp; CONNECT EXCHANGE</button>
+      </form>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-hd"><b>Your Outbound Server Whitelist IP</b></div>
+        <p style="color:var(--dim);margin-bottom:10px">
+          When creating an API key on Delta Exchange or any broker, enter this static outbound IP into their <b>IP Whitelist</b> field:
+        </p>
+        <div class="ip-box">
+          <div style="font-size:10px;text-transform:uppercase;color:var(--dim)">Cloud Node Outbound IP:</div>
+          <div class="ip-val">{{ server_ip }}</div>
+          <div style="font-size:10px;color:var(--dim)">Copy and whitelist this IP address on your exchange account for maximum security.</div>
+        </div>
+
+        <div style="font-size:11px;color:var(--dim);line-height:1.5">
+          <b>Required API Permissions to check on Exchange:</b><br>
+          &bull; Read Balance / Portfolio: <b>Yes</b><br>
+          &bull; Trade / Place Orders: <b>Yes</b><br>
+          &bull; Withdrawals: <b style="color:var(--down)">NO (Never enable withdrawal permission)</b>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><b>Your Active Exchange Connections</b></div>
+        {% if user_keys %}
+          {% for ex_name, kdata in user_keys.items() %}
+          <div class="key-item">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <b style="color:var(--cyan);text-transform:uppercase">{{ ex_name }}</b>
+              <span class="badge green">CONFIGURED</span>
+            </div>
+            <div style="color:var(--dim);font-size:10.5px">Key: {{ kdata.api_key[:6] }}••••••••{{ kdata.api_key[-4:] if kdata.api_key|length > 10 else '' }}</div>
+            <div style="color:var(--dim);font-size:10px">Updated: {{ kdata.updated_at }}</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="color:var(--dim);padding:10px;text-align:center">No personal API keys added yet. Add your exchange credentials above.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -23,12 +23,35 @@ def ensure_users_file():
             users = {}
 
     # Always ensure superadmin exists with the latest configured password
-    users["superadmin"] = {
-        "username": "superadmin",
-        "password_hash": target_hash,
-        "role": "superadmin",
-        "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
-    }
+    if "superadmin" not in users:
+        users["superadmin"] = {
+            "username": "superadmin",
+            "password_hash": target_hash,
+            "role": "superadmin",
+            "api_keys": {},
+            "strategy": {
+                "name": "Superadmin VWAP Growth",
+                "min_rr": 3.2,
+                "risk_per_trade_pct": 0.75,
+                "min_consensus_score": 0.78,
+                "vwap_window_hours": 6,
+                "strategy_type": "vwap_bands"
+            },
+            "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
+        }
+    else:
+        users["superadmin"]["password_hash"] = target_hash
+        if "api_keys" not in users["superadmin"]:
+            users["superadmin"]["api_keys"] = {}
+        if "strategy" not in users["superadmin"]:
+            users["superadmin"]["strategy"] = {
+                "name": "Superadmin VWAP Growth",
+                "min_rr": 3.2,
+                "risk_per_trade_pct": 0.75,
+                "min_consensus_score": 0.78,
+                "vwap_window_hours": 6,
+                "strategy_type": "vwap_bands"
+            }
 
     with open(USERS_FILE, "w") as f:
         json.dump(users, f, indent=2)
@@ -68,10 +91,49 @@ def register_user(username: str, password: str, role: str = "trader") -> bool:
         "username": uname,
         "password_hash": hash_password(password),
         "role": role,
+        "api_keys": {},
+        "strategy": {
+            "name": f"{uname}'s Alpha Strategy",
+            "min_rr": 3.0,
+            "risk_per_trade_pct": 0.75,
+            "min_consensus_score": 0.78,
+            "vwap_window_hours": 6,
+            "strategy_type": "vwap_bands"
+        },
         "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
     }
     save_users(users)
     return True
+
+def get_user_data(username: str) -> Optional[dict]:
+    users = get_users()
+    return users.get(username.lower().strip())
+
+def update_user_api_key(username: str, exchange: str, api_key: str, api_secret: str, base_url: str = "") -> bool:
+    users = get_users()
+    uname = username.lower().strip()
+    if uname not in users:
+        return False
+    if "api_keys" not in users[uname]:
+        users[uname]["api_keys"] = {}
+    users[uname]["api_keys"][exchange.lower()] = {
+        "api_key": api_key.strip(),
+        "api_secret": api_secret.strip(),
+        "base_url": base_url.strip(),
+        "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
+    }
+    save_users(users)
+    return True
+
+def update_user_strategy(username: str, strategy_data: dict) -> bool:
+    users = get_users()
+    uname = username.lower().strip()
+    if uname not in users:
+        return False
+    users[uname]["strategy"] = strategy_data
+    save_users(users)
+    return True
+
 
 def create_session_token(username: str) -> str:
     timestamp = str(int(time.time()))

@@ -14,7 +14,10 @@ from core.auth import (
     register_user,
     create_session_token,
     verify_session_token,
-    get_users
+    get_users,
+    get_user_data,
+    update_user_api_key,
+    update_user_strategy
 )
 
 import os
@@ -261,6 +264,120 @@ async def coins_page(request: Request):
             "indices": indices,
             "forex": forex,
             "username": current_user
+        }
+    )
+
+
+@app.get("/api-keys", response_class=HTMLResponse)
+async def api_keys_page(request: Request):
+    token = request.cookies.get("session_token")
+    current_user = verify_session_token(token) if token else None
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+
+    user_info = get_user_data(current_user) or {}
+    server_ip = os.getenv("SERVER_IP", "45.251.233.150")
+    return templates.TemplateResponse(
+        "api_keys.html",
+        {
+            "request": request,
+            "username": current_user,
+            "user_keys": user_info.get("api_keys", {}),
+            "server_ip": server_ip,
+            "success": None
+        }
+    )
+
+
+@app.post("/api-keys", response_class=HTMLResponse)
+async def save_api_keys(
+    request: Request,
+    exchange: str = Form(...),
+    api_key: str = Form(...),
+    api_secret: str = Form(...),
+    base_url: str = Form("https://api.india.delta.exchange")
+):
+    token = request.cookies.get("session_token")
+    current_user = verify_session_token(token) if token else None
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+
+    update_user_api_key(current_user, exchange, api_key, api_secret, base_url)
+    user_info = get_user_data(current_user) or {}
+    server_ip = os.getenv("SERVER_IP", "45.251.233.150")
+
+    return templates.TemplateResponse(
+        "api_keys.html",
+        {
+            "request": request,
+            "username": current_user,
+            "user_keys": user_info.get("api_keys", {}),
+            "server_ip": server_ip,
+            "success": f"Successfully updated and connected your private API credentials for {exchange.upper()}!"
+        }
+    )
+
+
+@app.get("/strategy", response_class=HTMLResponse)
+async def strategy_page(request: Request):
+    token = request.cookies.get("session_token")
+    current_user = verify_session_token(token) if token else None
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+
+    user_info = get_user_data(current_user) or {}
+    strat = user_info.get("strategy", {
+        "name": f"{current_user}'s Strategy",
+        "min_rr": 3.0,
+        "risk_per_trade_pct": 0.75,
+        "min_consensus_score": 0.78,
+        "vwap_window_hours": 6,
+        "strategy_type": "vwap_bands"
+    })
+
+    return templates.TemplateResponse(
+        "strategy.html",
+        {
+            "request": request,
+            "username": current_user,
+            "strategy": strat,
+            "success": None
+        }
+    )
+
+
+@app.post("/strategy", response_class=HTMLResponse)
+async def save_strategy(
+    request: Request,
+    name: str = Form(...),
+    strategy_type: str = Form(...),
+    min_rr: float = Form(3.0),
+    risk_per_trade_pct: float = Form(0.75),
+    min_consensus_score: float = Form(0.78),
+    vwap_window_hours: int = Form(6)
+):
+    token = request.cookies.get("session_token")
+    current_user = verify_session_token(token) if token else None
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+
+    new_strat = {
+        "name": name,
+        "strategy_type": strategy_type,
+        "min_rr": float(min_rr),
+        "risk_per_trade_pct": float(risk_per_trade_pct),
+        "min_consensus_score": float(min_consensus_score),
+        "vwap_window_hours": int(vwap_window_hours)
+    }
+    update_user_strategy(current_user, new_strat)
+
+    return templates.TemplateResponse(
+        "strategy.html",
+        {
+            "request": request,
+            "username": current_user,
+            "strategy": new_strat,
+            "success": "Strategy configuration updated and actively applied to your trading profile!"
         }
     )
 
