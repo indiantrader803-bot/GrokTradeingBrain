@@ -393,11 +393,12 @@ class MasterOrchestrator:
                             available_balance += avail
             except Exception as e:
                 log.error("Error fetching live exchange data: %s", e)
-                # Do not insert an invalid mock dict into exchange_positions, which breaks UI parsing
+                self._last_ex_error = str(e)
                 exchange_positions = []
 
         base_status = self.get_status()
         base_status["adapters_present"] = list(self.adapters.keys())
+        base_status["debug_msg"] = str(getattr(self, "_last_ex_error", "OK"))
         base_status["exchange"] = {
             "name": "Delta Exchange India",
             "net_equity": net_equity,
