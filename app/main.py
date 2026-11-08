@@ -295,7 +295,7 @@ async def api_keys_page(request: Request):
         return RedirectResponse("/login", status_code=302)
 
     user_info = get_user_data(current_user) or {}
-    server_ip = os.getenv("SERVER_IP", "45.251.233.150")
+    server_ip = os.getenv("SERVER_IP", "152.55.180.93")
     return templates.TemplateResponse(
         "api_keys.html",
         {
@@ -323,7 +323,7 @@ async def save_api_keys(
 
     update_user_api_key(current_user, exchange, api_key, api_secret, base_url)
     user_info = get_user_data(current_user) or {}
-    server_ip = os.getenv("SERVER_IP", "45.251.233.150")
+    server_ip = os.getenv("SERVER_IP", "152.55.180.93")
 
     return templates.TemplateResponse(
         "api_keys.html",
