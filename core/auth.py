@@ -11,17 +11,27 @@ SECRET_KEY = os.getenv("AUTH_SECRET_KEY", "swarmdesk-superadmin-secret-key-999")
 
 def ensure_users_file():
     os.makedirs(DATA_DIR, exist_ok=True)
-    if not os.path.exists(USERS_FILE):
-        default_users = {
-            "superadmin": {
-                "username": "superadmin",
-                "password_hash": hash_password("SuperAdmin@2026"),
-                "role": "superadmin",
-                "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
-            }
-        }
-        with open(USERS_FILE, "w") as f:
-            json.dump(default_users, f, indent=2)
+    target_password = os.getenv("SUPERADMIN_PASSWORD", "Myjobmail@1234")
+    target_hash = hash_password(target_password)
+    
+    users = {}
+    if os.path.exists(USERS_FILE):
+        try:
+            with open(USERS_FILE, "r") as f:
+                users = json.load(f)
+        except Exception:
+            users = {}
+
+    # Always ensure superadmin exists with the latest configured password
+    users["superadmin"] = {
+        "username": "superadmin",
+        "password_hash": target_hash,
+        "role": "superadmin",
+        "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
+    }
+
+    with open(USERS_FILE, "w") as f:
+        json.dump(users, f, indent=2)
 
 def hash_password(password: str) -> str:
     return hashlib.sha256((password + SECRET_KEY).encode()).hexdigest()
