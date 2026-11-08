@@ -660,9 +660,21 @@ async function fetchExchangeData() {
         $('#live-money-breakdown').textContent = `$0.00 in Trades · $${realAvailableCash.toFixed(2)} 100% Free Cash`;
       }
 
-      if (realPositions[0]) $('#sv2').textContent = realPositions[0].symbol + ' ' + realPositions[0].side;
-      if (realPositions[1]) $('#sv3').textContent = realPositions[1].symbol + ' ' + realPositions[1].side;
-      if (realPositions[2]) $('#sv4').textContent = realPositions[2].symbol + ' ' + realPositions[2].side;
+      if (realPositions[0] && realPositions[0].symbol) {
+        $('#sv2').textContent = realPositions[0].symbol + ' ' + (realPositions[0].side || '');
+      } else {
+        $('#sv2').textContent = '--';
+      }
+      if (realPositions[1] && realPositions[1].symbol) {
+        $('#sv3').textContent = realPositions[1].symbol + ' ' + (realPositions[1].side || '');
+      } else {
+        $('#sv3').textContent = '--';
+      }
+      if (realPositions[2] && realPositions[2].symbol) {
+        $('#sv4').textContent = realPositions[2].symbol + ' ' + (realPositions[2].side || '');
+      } else {
+        $('#sv4').textContent = '--';
+      }
 
       // Update Globe Overlaid Asset Icons
       const iconsContainer = $('#globeIcons');

@@ -393,7 +393,8 @@ class MasterOrchestrator:
                             available_balance += avail
             except Exception as e:
                 log.error("Error fetching live exchange data: %s", e)
-                exchange_positions = [{"debug_error": str(e)}]
+                # Do not insert an invalid mock dict into exchange_positions, which breaks UI parsing
+                exchange_positions = []
 
         base_status = self.get_status()
         base_status["adapters_present"] = list(self.adapters.keys())
