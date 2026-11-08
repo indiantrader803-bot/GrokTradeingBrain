@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swarm Desk · Positions Manager</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#080b13; --panel:rgba(15,21,33,.85); --panel2:rgba(9,13,21,.90); --line:#1f2a3a;
+  --fg:#d9e2f0; --dim:#7b8aa3; --up:#2fe0a8; --down:#ff4d6d; --amber:#ffb020; --cyan:#35d4ff;
+  --mono:'JetBrains Mono',monospace; --disp:'Chakra Petch',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:radial-gradient(ellipse at 50% 0%,#101a33 0%,var(--bg) 60%) fixed;
+  color:var(--fg);font-family:var(--mono);min-height:100vh;padding:16px;font-size:12px;
+}
+.container{max-width:1200px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--panel);border:1px solid var(--line);border-radius:8px;margin-bottom:16px}
+.brand{font-family:var(--disp);font-size:20px;font-weight:600}
+.brand span{color:var(--cyan)}
+.nav{display:flex;gap:12px}
+.nav a{color:var(--dim);text-decoration:none;padding:6px 12px;border-radius:4px;border:1px solid transparent;font-size:11px}
+.nav a.active,.nav a:hover{color:var(--fg);border-color:var(--cyan);background:rgba(53,212,255,.08)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:16px}
+.card-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.card-hd b{font-family:var(--disp);font-size:16px;color:var(--cyan)}
+.table-wrap{border:1px solid var(--line);border-radius:8px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:11.5px;text-align:left}
+th{background:rgba(255,255,255,.02);padding:10px 14px;color:var(--dim);font-weight:600;border-bottom:1px solid var(--line)}
+td{padding:12px 14px;border-bottom:1px solid var(--line)}
+tr:hover td{background:rgba(255,255,255,.01)}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <div class="brand">SWARM<span>DESK</span> // POSITIONS</div>
+      <div style="font-size:10px;color:var(--dim)">Detailed Real-time Delta Margined Contracts Portfolio</div>
+    </div>
+    <div class="nav">
+      <a href="/">3D Terminal</a>
+      <a href="/admin">Admin Dashboard</a>
+      <a href="/positions" class="active">Open Positions</a>
+      <a href="/coins">Monitored Assets</a>
+      <a href="/logout" style="color:var(--down)">Logout</a>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="card-hd">
+      <b>Live Open Contracts ({{ exchange.open_positions|length }})</b>
+      <span style="color:var(--dim)">Auto-synced with Delta Exchange India API</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <th>Side</th>
+            <th>Contracts</th>
+            <th>Entry Price</th>
+            <th>Mark Price</th>
+            <th>Unrealized PnL</th>
+            <th>Margin Locked</th>
+            <th>Leverage</th>
+            <th>Liquidation Price</th>
+            <th>Commission</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in exchange.open_positions %}
+          <tr>
+            <td>
+              <b style="color:var(--cyan);font-size:13px">{{ p.symbol }}</b>
+              <div style="font-size:10px;color:var(--dim)">{{ p.coin_name }}</div>
+            </td>
+            <td>
+              <span style="font-weight:bold;color:{% if p.side == 'BUY' %}var(--up){% else %}var(--down){% endif %}">
+                {{ p.side }}
+              </span>
+            </td>
+            <td><b>{{ p.size }}</b></td>
+            <td>${{ p.entry_price }}</td>
+            <td>${{ p.mark_price }}</td>
+            <td>
+              <span style="font-size:13px;font-weight:bold;color:{% if p.unrealized_pnl >= 0 %}var(--up){% else %}var(--down){% endif %}">
+                {% if p.unrealized_pnl >= 0 %}+{% endif %}${{ "%.4f"|format(p.unrealized_pnl) }} USD
+              </span>
+            </td>
+            <td>${{ "%.2f"|format(p.margin or 0) }}</td>
+            <td style="color:var(--amber)">{{ p.leverage }}</td>
+            <td style="color:var(--down);font-weight:600">${{ "%.2f"|format(p.liq_price or 0) }}</td>
+            <td style="color:var(--dim)">${{ "%.4f"|format(p.commission or 0) }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="10" style="text-align:center;color:var(--dim);padding:24px">No active contracts found on Delta Exchange India</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>

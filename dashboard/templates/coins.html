@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swarm Desk · Monitored Assets</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#080b13; --panel:rgba(15,21,33,.85); --panel2:rgba(9,13,21,.90); --line:#1f2a3a;
+  --fg:#d9e2f0; --dim:#7b8aa3; --up:#2fe0a8; --down:#ff4d6d; --amber:#ffb020; --cyan:#35d4ff;
+  --mono:'JetBrains Mono',monospace; --disp:'Chakra Petch',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:radial-gradient(ellipse at 50% 0%,#101a33 0%,var(--bg) 60%) fixed;
+  color:var(--fg);font-family:var(--mono);min-height:100vh;padding:16px;font-size:12px;
+}
+.container{max-width:1200px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--panel);border:1px solid var(--line);border-radius:8px;margin-bottom:16px}
+.brand{font-family:var(--disp);font-size:20px;font-weight:600}
+.brand span{color:var(--cyan)}
+.nav{display:flex;gap:12px}
+.nav a{color:var(--dim);text-decoration:none;padding:6px 12px;border-radius:4px;border:1px solid transparent;font-size:11px}
+.nav a.active,.nav a:hover{color:var(--fg);border-color:var(--cyan);background:rgba(53,212,255,.08)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:16px}
+.card-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.card-hd b{font-family:var(--disp);font-size:16px;color:var(--cyan)}
+.coins-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:10px}
+.coin-box{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:4px}
+.coin-box b{font-size:14px;color:var(--cyan)}
+.coin-box .sub{font-size:10px;color:var(--dim)}
+.status-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;background:rgba(47,224,168,.15);color:var(--up);border:1px solid var(--up);margin-top:6px;width:fit-content}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <div class="brand">SWARM<span>DESK</span> // ASSETS</div>
+      <div style="font-size:10px;color:var(--dim)">Monitored Coin Universe & Multi-Exchange Scanners</div>
+    </div>
+    <div class="nav">
+      <a href="/">3D Terminal</a>
+      <a href="/admin">Admin Dashboard</a>
+      <a href="/positions">Open Positions</a>
+      <a href="/coins" class="active">Monitored Assets</a>
+      <a href="/logout" style="color:var(--down)">Logout</a>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="card-hd">
+      <b>Broader Delta Exchange Perpetuals Watchlist ({{ coins|length }} Coins)</b>
+      <span style="color:var(--dim)">Scanned every 60 seconds with VWAP Demand/Supply Engine</span>
+    </div>
+    <div class="coins-grid">
+      {% for c in coins %}
+      <div class="coin-box">
+        <b>{{ c }}</b>
+        <div class="sub">Delta Exchange India Perp</div>
+        <div class="status-pill">ACTIVE SCANNER</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">
+      <b>Traditional & Macro Assets (MT5 Bridge)</b>
+      <span style="color:var(--dim)">Metals, Indices, and Forex Pairs</span>
+    </div>
+    <div class="coins-grid">
+      {% for a in metals + indices + forex %}
+      <div class="coin-box">
+        <b style="color:var(--amber)">{{ a }}</b>
+        <div class="sub">Macro / Traditional Asset</div>
+        <div class="status-pill" style="border-color:var(--amber);color:var(--amber);background:rgba(255,176,32,.1)">MT5 ROUTED</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+</body>
+</html>

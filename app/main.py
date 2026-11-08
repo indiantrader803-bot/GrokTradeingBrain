@@ -203,6 +203,68 @@ async def dashboard(request: Request):
     )
 
 
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_dashboard(request: Request):
+    token = request.cookies.get("session_token")
+    current_user = verify_session_token(token) if token else None
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+
+    status_data = await orchestrator.get_live_exchange_data() if orchestrator else {}
+    return templates.TemplateResponse(
+        "admin.html",
+        {
+            "request": request,
+            "status": status_data,
+            "exchange": status_data.get("exchange", {}),
+            "username": current_user
+        }
+    )
+
+
+@app.get("/positions", response_class=HTMLResponse)
+async def positions_page(request: Request):
+    token = request.cookies.get("session_token")
+    current_user = verify_session_token(token) if token else None
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+
+    status_data = await orchestrator.get_live_exchange_data() if orchestrator else {}
+    return templates.TemplateResponse(
+        "positions.html",
+        {
+            "request": request,
+            "exchange": status_data.get("exchange", {}),
+            "username": current_user
+        }
+    )
+
+
+@app.get("/coins", response_class=HTMLResponse)
+async def coins_page(request: Request):
+    token = request.cookies.get("session_token")
+    current_user = verify_session_token(token) if token else None
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+
+    coins = orchestrator.config.strategy.crypto_majors if orchestrator else []
+    metals = orchestrator.config.strategy.metals if orchestrator else []
+    indices = orchestrator.config.strategy.indices if orchestrator else []
+    forex = orchestrator.config.strategy.forex_majors if orchestrator else []
+
+    return templates.TemplateResponse(
+        "coins.html",
+        {
+            "request": request,
+            "coins": coins,
+            "metals": metals,
+            "indices": indices,
+            "forex": forex,
+            "username": current_user
+        }
+    )
+
+
 @app.get("/api/status")
 async def api_status():
     if not orchestrator:

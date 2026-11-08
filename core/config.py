@@ -23,20 +23,25 @@ class RiskConfig:
 
 @dataclass
 class StrategyConfig:
-    # Major crypto
+    # Broader Crypto Universe on Delta Exchange India (Majors + DeFi + Memecoins + Layer 1s)
     crypto_majors: List[str] = field(default_factory=lambda: [
-        "BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT"
+        "BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT",
+        "ADA/USDT", "AVAX/USDT", "LINK/USDT", "DOGE/USDT", "PEPE/USDT",
+        "WIF/USDT", "SHIB/USDT", "SUI/USDT", "NEAR/USDT", "APT/USDT",
+        "LDO/USDT", "POPCAT/USDT", "RENDER/USDT", "TAO/USDT", "FET/USDT",
+        "ARB/USDT", "OP/USDT", "INJ/USDT", "TIA/USDT", "KAS/USDT"
     ])
 
-    # Traditional assets (via MT5 later)
-    metals: List[str] = field(default_factory=lambda: ["XAUUSD"])
-    indices: List[str] = field(default_factory=lambda: ["US30", "US100"])
+    # Traditional assets (via MT5)
+    metals: List[str] = field(default_factory=lambda: ["XAUUSD", "XAGUSD"])
+    indices: List[str] = field(default_factory=lambda: ["US30", "US100", "SPX"])
     forex_majors: List[str] = field(default_factory=lambda: [
-        "EURUSD", "GBPUSD", "USDJPY"
+        "EURUSD", "GBPUSD", "USDJPY", "AUDUSD"
     ])
 
     min_consensus_score: float = 0.78
     min_consensus_high_risk: float = 0.88   # memecoins / low liquidity
+
 
 
 @dataclass
