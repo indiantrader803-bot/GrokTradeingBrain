@@ -382,8 +382,10 @@ class MasterOrchestrator:
                             available_balance += avail
             except Exception as e:
                 log.error("Error fetching live exchange data: %s", e)
+                exchange_positions = [{"debug_error": str(e)}]
 
         base_status = self.get_status()
+        base_status["adapters_present"] = list(self.adapters.keys())
         base_status["exchange"] = {
             "name": "Delta Exchange India",
             "net_equity": net_equity,
