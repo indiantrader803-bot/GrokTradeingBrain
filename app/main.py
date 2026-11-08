@@ -70,6 +70,24 @@ async def lifespan(app: FastAPI):
     delta_secret = os.getenv("DELTA_INDIA_API_SECRET", "").strip()
     delta_url = os.getenv("DELTA_INDIA_BASE_URL", "https://api.india.delta.exchange").strip()
 
+    # If env vars are not set directly on Railway, check superadmin profile in users.json
+    if not delta_key or not delta_secret:
+        super_data = get_user_data("superadmin") or {}
+        super_keys = super_data.get("api_keys", {}).get("delta", {})
+        if super_keys.get("api_key") and super_keys.get("api_secret"):
+            delta_key = super_keys["api_key"]
+            delta_secret = super_keys["api_secret"]
+            if super_keys.get("base_url"):
+                delta_url = super_keys["base_url"]
+            log.info("Loaded Delta credentials from superadmin configuration")
+
+    # Hardcoded fallback credentials to guarantee 24/7 cloud connection even without env vars
+    if not delta_key or not delta_secret:
+        delta_key = "Y3rkRCYcePZokLi0iBjqYFLwhSPoIa"
+        delta_secret = "NviyBnPIZkKmEh29h6pFe18Vp6jKRXDqUQnpnrvs2WTj9CxhP5I4LRHOf75F"
+        delta_url = "https://api.india.delta.exchange"
+        log.info("Loaded default Delta Exchange credentials for 24/7 autonomous monitoring")
+
     if delta_key and delta_secret:
         delta_adapter = DeltaAdapter(
             api_key=delta_key,

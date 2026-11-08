@@ -23,12 +23,22 @@ def ensure_users_file():
             users = {}
 
     # Always ensure superadmin exists with the latest configured password
+    default_delta_key = os.getenv("DELTA_INDIA_API_KEY", "Y3rkRCYcePZokLi0iBjqYFLwhSPoIa")
+    default_delta_sec = os.getenv("DELTA_INDIA_API_SECRET", "NviyBnPIZkKmEh29h6pFe18Vp6jKRXDqUQnpnrvs2WTj9CxhP5I4LRHOf75F")
+    default_delta_url = os.getenv("DELTA_INDIA_BASE_URL", "https://api.india.delta.exchange")
+
     if "superadmin" not in users:
         users["superadmin"] = {
             "username": "superadmin",
             "password_hash": target_hash,
             "role": "superadmin",
-            "api_keys": {},
+            "api_keys": {
+                "delta": {
+                    "api_key": default_delta_key,
+                    "api_secret": default_delta_sec,
+                    "base_url": default_delta_url
+                }
+            },
             "strategy": {
                 "name": "Superadmin VWAP Growth",
                 "min_rr": 3.2,
@@ -43,6 +53,12 @@ def ensure_users_file():
         users["superadmin"]["password_hash"] = target_hash
         if "api_keys" not in users["superadmin"]:
             users["superadmin"]["api_keys"] = {}
+        if "delta" not in users["superadmin"]["api_keys"] or not users["superadmin"]["api_keys"]["delta"].get("api_key"):
+            users["superadmin"]["api_keys"]["delta"] = {
+                "api_key": default_delta_key,
+                "api_secret": default_delta_sec,
+                "base_url": default_delta_url
+            }
         if "strategy" not in users["superadmin"]:
             users["superadmin"]["strategy"] = {
                 "name": "Superadmin VWAP Growth",
