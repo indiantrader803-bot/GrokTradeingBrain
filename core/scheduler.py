@@ -44,6 +44,10 @@ class TradingScheduler:
         if self.is_weekday():
             return True, "Weekday – normal trading session"
 
+        # Weekend 24/7 Crypto rule
+        if getattr(self.config, "trade_weekends_247_crypto", True):
+            return True, "Weekend – 24/7 crypto perpetuals active"
+
         # Weekend logic
         if not self.config.trade_weekends_only_on_strong_flow:
             return False, "Weekend trading is disabled"

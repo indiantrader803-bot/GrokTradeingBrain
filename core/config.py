@@ -42,8 +42,10 @@ class StrategyConfig:
 @dataclass
 class ScheduleConfig:
     trade_weekdays: bool = True                 # Mon-Fri
-    trade_weekends_only_on_strong_flow: bool = True
+    trade_weekends_247_crypto: bool = True       # Crypto trades 24/7 365 days
+    trade_weekends_only_on_strong_flow: bool = False
     high_impact_news_window_minutes: int = 90
+
 
 
 @dataclass

@@ -127,11 +127,7 @@ class MasterOrchestrator:
                 log.error("Manage position error (%s): %s", pos.symbol, e)
 
     async def _evaluate_symbol(self, symbol: str):
-        # -------------------------------------------------------
-        # THIS IS WHERE YOU CONNECT YOUR REAL SUPER BRAIN LATER
-        # For now we use a placeholder market_data structure.
-        # -------------------------------------------------------
-        market_data = await self._get_market_data_placeholder(symbol)
+        market_data = await self._analyze_market_vwap(symbol)
         consensus = market_data.get("consensus_score", 0.0)
 
         signal = self.strategy.evaluate(symbol, market_data, consensus)
@@ -316,11 +312,7 @@ class MasterOrchestrator:
                 "consensus_score": 0.50
             }
 
-    async def _evaluate_symbol(self, symbol: str):
-        market_data = await self._analyze_market_vwap(symbol)
-        consensus = market_data.get("consensus_score", 0.0)
-
-        signal = self.strategy.evaluate(symbol, market_data, consensus)
+    def get_status(self) -> dict:
         return {
             "running": self.running,
             "mode": self.config.mode.value,

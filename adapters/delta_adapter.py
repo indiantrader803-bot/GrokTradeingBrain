@@ -85,14 +85,17 @@ class DeltaAdapter(ExchangeAdapter):
 
     async def get_price(self, symbol: str) -> float:
         try:
-            # Delta uses symbols like BTCUSD, ETHUSD
             clean = symbol.upper().replace("/", "").replace("-", "").replace("_", "")
             if clean.endswith("USDT"):
                 clean = clean.replace("USDT", "USD")
             data = await self._request("GET", f"/v2/tickers/{clean}")
-            return float(data.get("result", {}).get("close", 0) or data.get("result", {}).get("mark_price", 0))
+            res = data.get("result")
+            if isinstance(res, dict):
+                return float(res.get("close", 0) or res.get("mark_price", 0) or 0)
+            return 0.0
         except Exception as e:
-            log.error("Delta get_price error (%s): %s", symbol, e)
+            log.debug("Delta get_price not available for %s: %s", symbol, e)
+            return 0.0
             return 0.0
 
     async def get_product_id(self, symbol: str) -> Optional[int]:
