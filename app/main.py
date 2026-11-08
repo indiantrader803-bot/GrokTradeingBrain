@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import httpx
 from contextlib import asynccontextmanager
 from pathlib import Path
 
