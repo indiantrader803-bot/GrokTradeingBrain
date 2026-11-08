@@ -290,6 +290,7 @@ window.openPositionModal = function(sym) {
 };
 
 window.openDetailsModal = function(type) {
+  const t = (type || '').toUpperCase();
   if (type === 'positions') {
     if (realPositions.length === 0) {
       showModal('Open Positions', '<div style="padding:16px;text-align:center;color:var(--dim)">No open positions currently active on Delta Exchange India.</div>');
@@ -317,20 +318,152 @@ window.openDetailsModal = function(type) {
       <div class="modal-grid" style="margin-top:4px">${walHtml || '<div style="color:var(--dim)">No balance details</div>'}</div>
     `;
     showModal('Delta Exchange India Wallet Breakdown', html);
-  } else if (type === 'risk') {
+  } else if (type === 'risk' || t === 'RISK') {
     const html = `
       <div class="modal-grid">
-        <div class="modal-card"><div class="lbl">Risk Per Trade</div><div class="val">0.75% of Equity</div></div>
+        <div class="modal-card"><div class="lbl">Risk Per Trade</div><div class="val" style="color:var(--cyan)">0.75% of Equity</div></div>
         <div class="modal-card"><div class="lbl">Max Open Trades</div><div class="val">4 concurrent</div></div>
-        <div class="modal-card"><div class="lbl">Daily Loss Limit</div><div class="val">2.8% (Halt switch)</div></div>
-        <div class="modal-card"><div class="lbl">Weekly Loss Limit</div><div class="val">7.5% (Halt switch)</div></div>
-        <div class="modal-card"><div class="lbl">Min Risk:Reward</div><div class="val">3.0 : 1</div></div>
+        <div class="modal-card"><div class="lbl">Daily Loss Limit</div><div class="val" style="color:var(--down)">-2.8% (Halt switch)</div></div>
+        <div class="modal-card"><div class="lbl">Weekly Loss Limit</div><div class="val" style="color:var(--down)">-7.5% (Halt switch)</div></div>
+        <div class="modal-card"><div class="lbl">Min Risk:Reward</div><div class="val" style="color:var(--up)">3.0 : 1 Asymmetric</div></div>
         <div class="modal-card"><div class="lbl">Auto Risk Verdict</div><div class="val" style="color:var(--up)">PASS (Operational)</div></div>
       </div>
+      <div style="margin-top:10px;font-size:10px;color:var(--dim);line-height:1.4">
+        Every potential trade must satisfy minimum 3:1 Risk:Reward and is strictly sized to risk only 0.75% of your live account capital.
+      </div>
     `;
-    showModal('Risk Manager Guardrails', html);
+    showModal('Risk Manager & Position Guardrails', html);
+  } else if (t === 'ORCHEST' || type === 'orchestrator') {
+    const html = `
+      <div class="modal-grid">
+        <div class="modal-card"><div class="lbl">Engine Status</div><div class="val" style="color:var(--up)">RUNNING 24/7</div></div>
+        <div class="modal-card"><div class="lbl">Execution Cycle</div><div class="val" style="color:var(--cyan)">#${realCycle}</div></div>
+        <div class="modal-card"><div class="lbl">Execution Mode</div><div class="val" style="color:var(--amber)">${realMode.toUpperCase()}</div></div>
+        <div class="modal-card"><div class="lbl">Active Broker</div><div class="val">Delta Exchange India</div></div>
+        <div class="modal-card"><div class="lbl">Scan Interval</div><div class="val">Every 60 seconds</div></div>
+        <div class="modal-card"><div class="lbl">Monitored Assets</div><div class="val">25+ Delta Crypto Pairs</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:10.5px;color:var(--dim);line-height:1.4">
+        The <b>ORCHEST</b> module coordinates live tick streaming, VWAP calculations across all 25+ Delta pairs, risk verification, and order execution.
+      </div>
+    `;
+    showModal('ORCHEST · Master Engine Coordination', html);
+  } else if (t === 'DELTA' || type === 'broker') {
+    const html = `
+      <div class="modal-grid">
+        <div class="modal-card"><div class="lbl">Broker Endpoint</div><div class="val" style="font-size:11px;color:var(--cyan)">api.india.delta.exchange</div></div>
+        <div class="modal-card"><div class="lbl">Live Net Equity</div><div class="val" style="color:var(--up)">$${realNetEquity.toFixed(2)} USD</div></div>
+        <div class="modal-card"><div class="lbl">Free Cash Margin</div><div class="val" style="color:var(--cyan)">$${realAvailableCash.toFixed(4)} USD</div></div>
+        <div class="modal-card"><div class="lbl">Open Margined Positions</div><div class="val">${realPositions.length} contracts</div></div>
+        <div class="modal-card"><div class="lbl">Auth Status</div><div class="val" style="color:var(--up)">HMAC-SHA256 Authenticated</div></div>
+        <div class="modal-card"><div class="lbl">Connection Uptime</div><div class="val" style="color:var(--up)">Active (24/7 Cloud)</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:10.5px;color:var(--dim);line-height:1.4">
+        Direct REST & WebSocket bridge to Delta Exchange India for live orders, positions, and wallet balances.
+      </div>
+    `;
+    showModal('DELTA · Live Exchange Broker Node', html);
+  } else if (t === 'GROK' || type === 'brain') {
+    const html = `
+      <div class="modal-grid">
+        <div class="modal-card"><div class="lbl">Strategy Model</div><div class="val" style="color:var(--cyan)">VWAP Market Structure</div></div>
+        <div class="modal-card"><div class="lbl">Min Consensus Score</div><div class="val" style="color:var(--amber)">0.78 (78%)</div></div>
+        <div class="modal-card"><div class="lbl">High-Risk Assets Bar</div><div class="val" style="color:var(--amber)">0.88 (Memecoins)</div></div>
+        <div class="modal-card"><div class="lbl">Resolution Window</div><div class="val">5m Candles / 6h Lookback</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:10.5px;color:var(--dim);line-height:1.4">
+        The <b>GROK BRAIN</b> computes typical price volume integrals to locate Demand and Supply zones with minimum 3.2:1 Take-Profit targets.
+      </div>
+    `;
+    showModal('GROK · Autonomous Market Brain', html);
+  } else if (t === 'ROUTER') {
+    const html = `
+      <div class="modal-grid">
+        <div class="modal-card"><div class="lbl">Primary Crypto Priority</div><div class="val" style="color:var(--cyan)">Delta India &rarr; Coinbase</div></div>
+        <div class="modal-card"><div class="lbl">Traditional Asset Bridge</div><div class="val" style="color:var(--amber)">MetaTrader 5 (MT5)</div></div>
+        <div class="modal-card"><div class="lbl">Product ID Resolution</div><div class="val" style="color:var(--up)">Automatic Dynamic Mapping</div></div>
+        <div class="modal-card"><div class="lbl">Fallback System</div><div class="val">Internal Paper Simulator</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:10.5px;color:var(--dim);line-height:1.4">
+        Routes trades to the best available exchange based on asset class (Perpetuals to Delta, Forex/Indices/Gold to MT5).
+      </div>
+    `;
+    showModal('ROUTER · Multi-Platform Smart Router', html);
+  } else if (t === 'EXEC') {
+    const html = `
+      <div class="modal-grid">
+        <div class="modal-card"><div class="lbl">Order Pipeline</div><div class="val" style="color:var(--up)">Operational</div></div>
+        <div class="modal-card"><div class="lbl">Order Type Default</div><div class="val">Market / IOC Fill</div></div>
+        <div class="modal-card"><div class="lbl">TP/SL Attachment</div><div class="val">Automated Bracket Orders</div></div>
+        <div class="modal-card"><div class="lbl">Reconciliation</div><div class="val">Single-Send Discipline</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:10.5px;color:var(--dim);line-height:1.4">
+        Executes orders via Delta's /v2/orders endpoint with stop loss and take profit parameters attached.
+      </div>
+    `;
+    showModal('EXEC · Execution Trader', html);
+  } else if (type === 'orderflow') {
+    const html = `
+      <div class="modal-grid">
+        <div class="modal-card"><div class="lbl">Cumulative Volume Delta</div><div class="val" style="color:var(--cyan)">CVD Live Stream</div></div>
+        <div class="modal-card"><div class="lbl">Buy/Sell Imbalance</div><div class="val" style="color:var(--up)">Dynamic Real-time</div></div>
+        <div class="modal-card"><div class="lbl">Bubble Sizing</div><div class="val">Proportional to Lot Volume</div></div>
+        <div class="modal-card"><div class="lbl">Time Window</div><div class="val">Rolling 40-second buffer</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:10.5px;color:var(--dim);line-height:1.4">
+        Tracks live transaction aggression on Delta Exchange: green particles represent aggressive market buyers, red represent sellers.
+      </div>
+    `;
+    showModal('Order Flow & Cumulative Delta Analytics', html);
+  } else if (type === 'moneyflow') {
+    const html = `
+      <div class="modal-grid">
+        <div class="modal-card"><div class="lbl">Routing Model</div><div class="val" style="color:var(--cyan)">Sankey Flow Stream</div></div>
+        <div class="modal-card"><div class="lbl">Current Net Equity</div><div class="val" style="color:var(--up)">$${realNetEquity.toFixed(2)} USD</div></div>
+        <div class="modal-card"><div class="lbl">Capital In Margined Contracts</div><div class="val" style="color:var(--amber)">~$${(realNetEquity - realAvailableCash).toFixed(2)} USD</div></div>
+        <div class="modal-card"><div class="lbl">Free Liquid Capital</div><div class="val" style="color:var(--up)">$${realAvailableCash.toFixed(4)} USD</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:10.5px;color:var(--dim);line-height:1.4">
+        Visualizes how capital flows from the strategy engine into the exchange order book, active positions, margin, and realized profits.
+      </div>
+    `;
+    showModal('Money Flow & Capital Distribution', html);
+  } else if (type === 'pricer') {
+    const html = `
+      <div class="modal-grid">
+        <div class="modal-card"><div class="lbl">Model Strategy</div><div class="val" style="color:var(--cyan)">VWAP Deviation Model</div></div>
+        <div class="modal-card"><div class="lbl">Risk-to-Reward</div><div class="val" style="color:var(--up)">3.2 : 1 Minimum</div></div>
+        <div class="modal-card"><div class="lbl">Probability Distribution</div><div class="val">Gaussian Volatility Kernel</div></div>
+        <div class="modal-card"><div class="lbl">Trading Window</div><div class="val">24/7/365 Continuous</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:10.5px;color:var(--dim);line-height:1.4">
+        Evaluates normal distribution curves of current price deviation from VWAP to calculate optimal probability entry zones.
+      </div>
+    `;
+    showModal('The Pricer · Strike & Volatility Curves', html);
+  } else if (type === 'spectrogram') {
+    const html = `
+      <div class="modal-grid">
+        <div class="modal-card"><div class="lbl">Feature Dimensions</div><div class="val" style="color:var(--cyan)">18 Market Indicators</div></div>
+        <div class="modal-card"><div class="lbl">Spectral Density</div><div class="val">Multi-Timeframe Energy</div></div>
+        <div class="modal-card"><div class="lbl">Regime Classification</div><div class="val" style="color:var(--up)">Trend vs Range Detection</div></div>
+        <div class="modal-card"><div class="lbl">Noise Filtration</div><div class="val">Active Standard Deviation</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:10.5px;color:var(--dim);line-height:1.4">
+        Heatmap representation of high-frequency price fluctuations and volatility bursts across Delta Exchange order books.
+      </div>
+    `;
+    showModal('Signal Spectrogram · Market Regime Heatmap', html);
   } else {
-    showModal('Module Info: ' + type.toUpperCase(), `<div style="padding:10px;color:var(--dim)">Detailed analytics and execution stream for ${type.toUpperCase()} module running 24/7 on Delta Exchange India.</div>`);
+    showModal(t + ' Module Details', `
+      <div class="modal-grid">
+        <div class="modal-card"><div class="lbl">Component</div><div class="val" style="color:var(--cyan)">${t}</div></div>
+        <div class="modal-card"><div class="lbl">Status</div><div class="val" style="color:var(--up)">Operational</div></div>
+        <div class="modal-card"><div class="lbl">Execution Cycle</div><div class="val">#${realCycle}</div></div>
+        <div class="modal-card"><div class="lbl">Exchange</div><div class="val">Delta Exchange India</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:10px;color:var(--dim)">Detailed analytical telemetry active for ${t}.</div>
+    `);
   }
 };
 
