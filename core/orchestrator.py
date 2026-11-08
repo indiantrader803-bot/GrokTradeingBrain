@@ -329,14 +329,25 @@ class MasterOrchestrator:
             }
         }
 
-    async def get_live_exchange_data(self) -> dict:
+    async def get_live_exchange_data(
+        self,
+        custom_key: Optional[str] = None,
+        custom_secret: Optional[str] = None,
+        custom_url: Optional[str] = None
+    ) -> dict:
         exchange_positions = []
         wallet_balances = {}
         net_equity = 0.0
         available_balance = 0.0
 
-        if "delta" in self.adapters:
+        delta = None
+        if custom_key and custom_secret:
+            from adapters.delta_adapter import DeltaAdapter
+            delta = DeltaAdapter(api_key=custom_key, api_secret=custom_secret, base_url=custom_url or "https://api.india.delta.exchange")
+        elif "delta" in self.adapters:
             delta = self.adapters["delta"]
+
+        if delta:
             try:
                 raw_positions = await delta.get_open_positions()
                 for p in raw_positions:

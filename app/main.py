@@ -401,10 +401,33 @@ async def save_strategy(
 
 
 @app.get("/api/status")
-async def api_status():
+async def api_status(request: Request):
     if not orchestrator:
         return {"error": "Orchestrator not running"}
-    return await orchestrator.get_live_exchange_data()
+    
+    # Check if a user is logged in
+    token = request.cookies.get("session_token")
+    current_user = verify_session_token(token) if token else None
+
+    user_api_key = None
+    user_api_secret = None
+    user_base_url = None
+
+    if current_user:
+        u_data = get_user_data(current_user) or {}
+        delta_cfg = u_data.get("api_keys", {}).get("delta", {})
+        if delta_cfg.get("api_key") and delta_cfg.get("api_secret"):
+            user_api_key = delta_cfg["api_key"]
+            user_api_secret = delta_cfg["api_secret"]
+            user_base_url = delta_cfg.get("base_url")
+
+    # If the active adapter on the server is getting a 401 (e.g. cloud IP restriction),
+    # or if this user has custom keys, use the user's keys or current adapter
+    return await orchestrator.get_live_exchange_data(
+        custom_key=user_api_key,
+        custom_secret=user_api_secret,
+        custom_url=user_base_url
+    )
 
 
 @app.post("/api/weekend-flags")
@@ -427,11 +450,14 @@ async def set_weekend_flags(
     }}
 
 
-@app.post("/api/stop")
-async def stop_trading():
-    if orchestrator:
-        orchestrator.stop()
-    return {"ok": True, "message": "Stop signal sent"}
+@app.get("/api/outbound-ip")
+async def get_outbound_ip():
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            res = await client.get("https://api.ipify.org?format=json")
+            return res.json()
+    except Exception as e:
+        return {"ip": "unknown", "error": str(e)}
 
 
 if __name__ == "__main__":
