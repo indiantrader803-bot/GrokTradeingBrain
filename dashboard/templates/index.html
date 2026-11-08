@@ -162,6 +162,30 @@ body{background:radial-gradient(ellipse at 50% 0%,#101a33 0%,var(--bg) 60%) fixe
     </div>
   </div>
   <div class="panel ticker" id="ticker"></div>
+
+  <!-- Live Active Trades & Money Allocation Banner -->
+  <div class="panel" style="padding:10px 14px;background:linear-gradient(90deg, rgba(53,212,255,.07), rgba(47,224,168,.07));border-color:var(--cyan);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--up);box-shadow:0 0 8px var(--up)"></span>
+        <b style="font-family:var(--disp);color:var(--cyan);font-size:12px">ACTIVE EXCHANGE:</b>
+        <span style="font-weight:600" id="live-ex-name">Delta Exchange India</span>
+      </div>
+      <div style="padding-left:10px;border-left:1px solid var(--line2)">
+        <span class="lbl">RUNNING TRADES:</span>
+        <b id="live-active-trades-tag" style="color:var(--amber);margin-left:4px">1 Position (BTCUSD SELL)</b>
+      </div>
+      <div style="padding-left:10px;border-left:1px solid var(--line2)">
+        <span class="lbl">WHERE IS THE MONEY?</span>
+        <b id="live-money-breakdown" style="color:var(--up);margin-left:4px">$0.76 in Margin · $2.77 Free Cash</b>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="openDetailsModal('positions')" class="pill" style="border-color:var(--cyan);color:var(--cyan);cursor:pointer;background:transparent;padding:4px 10px">VIEW ACTIVE TRADES</button>
+      <button onclick="openDetailsModal('wallet')" class="pill" style="border-color:var(--up);color:var(--up);cursor:pointer;background:transparent;padding:4px 10px">INSPECT WALLETS</button>
+    </div>
+  </div>
+
   <div class="agents" id="agents"></div>
 
   <div class="hero">
@@ -624,6 +648,18 @@ async function fetchExchangeData() {
       $('#sv0').textContent = '$' + realNetEquity.toFixed(2);
       $('#sv1').textContent = '$' + realAvailableCash.toFixed(4);
       
+      // Update Real-time Active Trades & Money Bar
+      const totalMarginInPositions = realPositions.reduce((acc, p) => acc + (p.margin || 0), 0);
+      $('#live-ex-name').textContent = ex.name || 'Delta Exchange India';
+      if (realPositions.length > 0) {
+        const posSummaries = realPositions.map(p => `${p.symbol} (${p.side} ${p.size})`).join(', ');
+        $('#live-active-trades-tag').textContent = `${realPositions.length} Active: ${posSummaries}`;
+        $('#live-money-breakdown').textContent = `$${totalMarginInPositions.toFixed(2)} in Positions · $${realAvailableCash.toFixed(2)} Free Cash (Total $${realNetEquity.toFixed(2)})`;
+      } else {
+        $('#live-active-trades-tag').textContent = '0 Active (Monitoring 25+ Delta Pairs)';
+        $('#live-money-breakdown').textContent = `$0.00 in Trades · $${realAvailableCash.toFixed(2)} 100% Free Cash`;
+      }
+
       if (realPositions[0]) $('#sv2').textContent = realPositions[0].symbol + ' ' + realPositions[0].side;
       if (realPositions[1]) $('#sv3').textContent = realPositions[1].symbol + ' ' + realPositions[1].side;
       if (realPositions[2]) $('#sv4').textContent = realPositions[2].symbol + ' ' + realPositions[2].side;
