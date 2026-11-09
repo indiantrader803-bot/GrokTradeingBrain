@@ -451,6 +451,62 @@ async def set_weekend_flags(
     }}
 
 
+@app.post("/api/restart")
+async def restart_system():
+    global orchestrator, background_task
+    if orchestrator:
+        orchestrator.stop()
+    if background_task:
+        background_task.cancel()
+        try:
+            await background_task
+        except asyncio.CancelledError:
+            pass
+    
+    # Reinitialize configuration & adapters
+    mode_str = os.getenv("TRADING_MODE", "real").lower()
+    trading_mode = TradingMode.REAL if mode_str == "real" else TradingMode.DEMO
+    starting_eq = float(os.getenv("STARTING_EQUITY", "1000.0"))
+    check_interval = int(os.getenv("CHECK_INTERVAL_SECONDS", "60"))
+    server_ip = os.getenv("SERVER_IP", "152.55.181.14")
+
+    config = SystemConfig(
+        mode=trading_mode,
+        starting_equity=starting_eq,
+        check_interval_seconds=check_interval,
+        server_ip=server_ip
+    )
+
+    adapters = {}
+    delta_key = os.getenv("DELTA_INDIA_API_KEY", "Y3rkRCYcePZokLi0iBjqYFLwhSPoIa").strip()
+    delta_secret = os.getenv("DELTA_INDIA_API_SECRET", "NviyBnPIZkKmEh29h6pFe18Vp6jKRXDqUQnpnrvs2WTj9CxhP5I4LRHOf75F").strip()
+    delta_url = os.getenv("DELTA_INDIA_BASE_URL", "https://api.india.delta.exchange").strip()
+
+    delta_adapter = DeltaAdapter(
+        api_key=delta_key,
+        api_secret=delta_secret,
+        base_url=delta_url
+    )
+    adapters["delta"] = delta_adapter
+    try:
+        live_eq = await delta_adapter.get_equity()
+        if live_eq > 0:
+            config.starting_equity = live_eq
+    except Exception:
+        pass
+
+    orchestrator = MasterOrchestrator(config, adapters)
+    background_task = asyncio.create_task(orchestrator.start())
+    return {"ok": True, "message": "Entire trading system restarted successfully! Monday-Friday trading active."}
+
+
+@app.post("/api/stop")
+async def stop_trading():
+    if orchestrator:
+        orchestrator.stop()
+    return {"ok": True, "message": "Stop signal sent"}
+
+
 @app.get("/api/outbound-ip")
 async def get_outbound_ip():
     try:
