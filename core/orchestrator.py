@@ -11,6 +11,7 @@ from .scheduler import TradingScheduler
 from .router import PlatformRouter
 from strategies.capital_growth import GrokCapitalGrowthStrategy
 from adapters.base import ExchangeAdapter
+from .groq_analyst import GroqAnalystAI
 
 log = logging.getLogger("Orchestrator")
 
@@ -38,6 +39,7 @@ class MasterOrchestrator:
         self.risk = RiskManager(config.risk, config.starting_equity)
         self.strategy = GrokCapitalGrowthStrategy(config.strategy)
         self.scheduler = TradingScheduler(config.schedule, config.timezone)
+        self.groq_ai = GroqAnalystAI()
         self.running = False
         self.last_cycle_at: Optional[datetime] = None
         self.cycle_count = 0
@@ -270,6 +272,31 @@ class MasterOrchestrator:
         # Sort highest score first
         scored_candidates.sort(key=lambda x: x["analyst_score"], reverse=True)
         best_candidate = scored_candidates[0]
+
+        # ── 3.5. GROQ ULTRA-FAST LLM DEEP REASONING VERIFICATION ────────
+        try:
+            ai_verdict = await self.groq_ai.evaluate_trade_candidate(
+                symbol=best_candidate["symbol"],
+                price=best_candidate["entry_price"],
+                direction=best_candidate["direction"],
+                stop_loss=best_candidate["stop_loss"],
+                take_profit=best_candidate["take_profit"],
+                vwap=best_candidate.get("vwap", best_candidate["entry_price"]),
+                structure=best_candidate.get("structure", "bullish"),
+                change_24h=best_candidate.get("change_24h", 0.0),
+                volume_usd=best_candidate.get("volume_usd", 0.0),
+                account_equity=self.risk.equity
+            )
+            ai_approved = ai_verdict.get("approved", True)
+            ai_reason = ai_verdict.get("reasoning", "")
+            if not ai_approved:
+                self._add_logger_event("ANALYST", f"Groq AI rejected ${best_candidate['symbol']}: {ai_reason}")
+                self.agent_stats["executor_last_action"] = f"AI vetoed {best_candidate['symbol']}"
+                return
+            else:
+                self._add_logger_event("ANALYST", f"Groq AI approved ${best_candidate['symbol']}: {ai_reason}")
+        except Exception as ai_err:
+            log.warning("Groq AI check skipped on error: %s", ai_err)
 
         # Check existing positions limit (max 3)
         open_positions = list(self.risk.get_open_positions())
