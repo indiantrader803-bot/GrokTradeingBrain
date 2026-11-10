@@ -194,24 +194,56 @@ class MasterOrchestrator:
 
     async def _run_6agent_market_scan(self):
         """
-        Runs the full 6-agent pipeline across all coins on Delta Exchange.
+        Runs the full 6-agent pipeline across BOTH Delta Exchange and Coinbase Advanced.
         """
-        adapter = self.adapters.get("delta")
-        if not adapter:
-            log.warning("No Delta adapter present for full-market scan")
+        for platform_name in ["delta", "coinbase"]:
+            adapter = self.adapters.get(platform_name)
+            if not adapter:
+                continue
+
+            try:
+                await self._run_exchange_scan(platform_name, adapter)
+            except Exception as e:
+                log.error("Market scan error on %s: %s", platform_name, e)
+
+    async def _run_exchange_scan(self, platform_name: str, adapter):
+        # ── 1. SCOUT AGENT ───────────────────────────────────────
+        perp_tickers = []
+        if platform_name == "delta":
+            try:
+                tickers_res = await adapter._request("GET", "/v2/tickers")
+                raw_tickers = tickers_res.get("result", [])
+            except Exception as e:
+                log.warning("Delta tickers request error: %s", e)
+                raw_tickers = []
+            perp_tickers = [t for t in raw_tickers if t.get("contract_type") == "perpetual_futures" or "USD" in t.get("symbol", "")]
+        elif platform_name == "coinbase":
+            try:
+                from coinbase.rest import RESTClient
+                c_client = getattr(adapter, "client", None) or RESTClient()
+                prods = c_client.get_public_products(limit=40)
+                prod_list = getattr(prods, "products", [])
+                for p in prod_list:
+                    pid = getattr(p, "product_id", "")
+                    if pid.endswith("-USD"):
+                        price_val = float(getattr(p, "price", 0) or 0)
+                        vol_val = float(getattr(p, "volume_24h", 0) or 0)
+                        perp_tickers.append({
+                            "symbol": pid,
+                            "close": price_val,
+                            "mark_price": price_val,
+                            "change_24h": 0.0,
+                            "volume_24h": vol_val,
+                            "contract_type": "spot"
+                        })
+            except Exception as e:
+                log.warning("Coinbase products request error: %s", e)
+                perp_tickers = []
+
+        if not perp_tickers:
             return
 
-        # ── 1. SCOUT AGENT ───────────────────────────────────────
-        try:
-            tickers_res = await adapter._request("GET", "/v2/tickers")
-            raw_tickers = tickers_res.get("result", [])
-        except Exception as e:
-            log.warning("Scout tickers request error: %s", e)
-            raw_tickers = []
-
-        # Filter only perpetual contracts
-        perp_tickers = [t for t in raw_tickers if t.get("contract_type") == "perpetual_futures" or "USD" in t.get("symbol", "")]
-        self.agent_stats["scout_pairs_count"] = len(perp_tickers) if perp_tickers else len(raw_tickers)
+        self.agent_stats["scout_pairs_count"] = len(perp_tickers)
 
         # Build live top movers for the scrolling ticker tape
         valid_movers = []
@@ -223,7 +255,8 @@ class MasterOrchestrator:
                 valid_movers.append({"symbol": sym, "price": p, "change": chg})
 
         valid_movers.sort(key=lambda x: abs(x["change"]), reverse=True)
-        self.agent_stats["live_ticker_tape"] = valid_movers[:12]
+        if valid_movers:
+            self.agent_stats["live_ticker_tape"] = valid_movers[:12]
 
         survivors = []
         cycle_kills = 0
@@ -237,21 +270,21 @@ class MasterOrchestrator:
                 if kill_category and kill_category in self.agent_stats["why_they_died"]:
                     self.agent_stats["why_they_died"][kill_category] += 1
                 if len(self.agent_stats["recent_kills"]) < 20 and cycle_kills % 4 == 0:
-                    self._add_logger_event("FILTER", f"killed ${sym} · {reason}")
+                    self._add_logger_event("FILTER", f"killed ${sym} ({platform_name}) · {reason}")
             else:
                 survivors.append(t)
 
         self.agent_stats["filter_killed_count"] += cycle_kills
-        total_scanned = max(1, self.agent_stats["scout_pairs_count"])
+        total_scanned = max(1, len(perp_tickers))
         self.agent_stats["filter_killed_pct"] = round((cycle_kills / total_scanned) * 100.0, 1)
 
         # ── 3. ANALYST AGENT (Scores Survivors) ───────────────────
         scored_candidates = []
         self.agent_stats["analyst_scored_count"] = len(survivors)
 
-        for s in survivors[:15]:  # Analyze top liquid survivors in detail
+        for s in survivors[:15]:
             sym = s.get("symbol", "")
-            market_data = await self._analyze_market_vwap(sym)
+            market_data = await self._analyze_market_vwap(sym, platform=platform_name)
             analysis = self.strategy.analyze_coin(sym, market_data, ticker_stats=s)
             if not analysis:
                 continue
@@ -259,17 +292,16 @@ class MasterOrchestrator:
             score = analysis["analyst_score"]
             if not analysis["analyst_passed"]:
                 self.agent_stats["why_they_died"]["Analyst score < 0.6"] += 1
-                self._add_logger_event("ANALYST", f"killed ${sym} · score {score:.2f} < 0.60")
+                self._add_logger_event("ANALYST", f"killed ${sym} ({platform_name}) · score {score:.2f} < 0.60")
             else:
                 scored_candidates.append(analysis)
-                self._add_logger_event("ANALYST", f"passed ${sym} · score {score:.2f} (Structure: {analysis['structure']})")
+                self._add_logger_event("ANALYST", f"passed ${sym} ({platform_name}) · score {score:.2f} ({analysis['structure']})")
 
         # ── 4. EXECUTOR AGENT (Size <= 8% of stack) ───────────────
         if not scored_candidates:
-            self.agent_stats["executor_last_action"] = "nothing passed yet"
+            self.agent_stats["executor_last_action"] = f"waiting for survivor ({platform_name})"
             return
 
-        # Sort highest score first
         scored_candidates.sort(key=lambda x: x["analyst_score"], reverse=True)
         best_candidate = scored_candidates[0]
 
@@ -313,36 +345,38 @@ class MasterOrchestrator:
         allocated_capital = total_equity * (self.strategy.max_stack_alloc_pct / 100.0)
         entry_price = best_candidate["entry_price"]
         
-        # Calculate real Delta contracts using contract_value & leverage
-        try:
-            r = await adapter._request("GET", "/v2/products", params={"contract_types": "perpetual_futures"})
-            clean_sym = best_candidate["symbol"].upper().replace("/", "").replace("USDT", "USD")
-            prod = next((p for p in r.get("result", []) if p.get("symbol") == clean_sym), None)
-            contract_val = float(prod.get("contract_value", 1.0) if prod else 1.0)
-        except Exception:
-            contract_val = 1.0
+        contract_val = 1.0
+        if platform_name == "delta":
+            try:
+                r = await adapter._request("GET", "/v2/products", params={"contract_types": "perpetual_futures"})
+                clean_sym = best_candidate["symbol"].upper().replace("/", "").replace("USDT", "USD")
+                prod = next((p for p in r.get("result", []) if p.get("symbol") == clean_sym), None)
+                contract_val = float(prod.get("contract_value", 1.0) if prod else 1.0)
+            except Exception:
+                contract_val = 1.0
 
         notional_per_contract = entry_price * contract_val
         if notional_per_contract > 0:
-            # Leverage allows small balance ($1.60) to afford micro contract units
-            leverage = 5.0
-            order_size = int((allocated_capital * leverage) / notional_per_contract)
-            if order_size <= 0:
-                order_size = 1
+            leverage = 5.0 if platform_name == "delta" else 1.0
+            order_size = max(0.0001, round((allocated_capital * leverage) / notional_per_contract, 4))
+            if platform_name == "delta":
+                order_size = max(1, int(order_size))
         else:
             order_size = 1
 
         # Check total contract margin requirement against equity
-        margin_required = (order_size * notional_per_contract) / 5.0
-        if margin_required > (total_equity * 0.40):  # Cap single trade margin to 40% of small balance
-            order_size = max(1, int((total_equity * 0.40 * 5.0) / notional_per_contract))
+        margin_required = (order_size * notional_per_contract) / (5.0 if platform_name == "delta" else 1.0)
+        if margin_required > (total_equity * 0.40):
+            order_size = max(1 if platform_name == "delta" else 0.0001, (total_equity * 0.40) / notional_per_contract)
+            if platform_name == "delta":
+                order_size = int(order_size)
 
         # ── 5. RISK AGENT CHECK ───────────────────────────────────
         risk_amount = abs(entry_price - best_candidate["stop_loss"]) * contract_val * order_size
         allowed, risk_reason = self.risk.can_open_new_position(risk_amount)
         if not allowed:
             log.info("Risk rejected %s: %s", best_candidate["symbol"], risk_reason)
-            self._add_logger_event("RISK", f"rejected {best_candidate['symbol']}: {risk_reason}")
+            self._add_logger_event("RISK", f"rejected {best_candidate['symbol']} ({platform_name}): {risk_reason}")
             return
 
         # Execute live trade
@@ -358,7 +392,7 @@ class MasterOrchestrator:
             position = Position(
                 id=order_id,
                 symbol=best_candidate["symbol"],
-                platform="delta",
+                platform=platform_name,
                 side=best_candidate["direction"],
                 size=order_size,
                 entry_price=entry_price,
@@ -371,16 +405,16 @@ class MasterOrchestrator:
             self.trades_opened += 1
             self.signals_generated += 1
 
-            action_desc = f"bought ${best_candidate['symbol']} · ${allocated_capital:.2f} · 8% of stack" if best_candidate["direction"] == "BUY" else f"shorted ${best_candidate['symbol']} · ${allocated_capital:.2f} · 8% of stack"
+            action_desc = f"bought ${best_candidate['symbol']} ({platform_name}) · ${allocated_capital:.2f}" if best_candidate["direction"] == "BUY" else f"shorted ${best_candidate['symbol']} ({platform_name}) · ${allocated_capital:.2f}"
             self.agent_stats["executor_last_action"] = action_desc
             self._add_logger_event("EXECUTOR", action_desc)
-            self._add_logger_event("RISK", f"stop set ${best_candidate['symbol']} -6% hard | trail +12%")
+            self._add_logger_event("RISK", f"stop set ${best_candidate['symbol']} ({platform_name}) -6% hard | trail +12%")
 
-            log.info("GROK BOT TRADE OPENED | %s | Order: %s", best_candidate["symbol"], order_id)
+            log.info("GROK BOT TRADE OPENED | %s on %s | Order: %s", best_candidate["symbol"], platform_name, order_id)
 
         except Exception as e:
-            log.error("Grok order execution failed (%s): %s", best_candidate["symbol"], e)
-            self._add_logger_event("EXECUTOR", f"execution error on {best_candidate['symbol']}: {e}")
+            log.error("Grok order execution failed (%s on %s): %s", best_candidate["symbol"], platform_name, e)
+            self._add_logger_event("EXECUTOR", f"execution error on {best_candidate['symbol']} ({platform_name}): {e}")
 
     def _add_logger_event(self, role: str, text: str):
         now_str = datetime.now().strftime("%H:%M")
@@ -395,8 +429,8 @@ class MasterOrchestrator:
             self.agent_stats["recent_kills"].pop()
         self.agent_stats["logger_reasons_count"] += 1
 
-    async def _analyze_market_vwap(self, symbol: str) -> Dict[str, Any]:
-        adapter = self.adapters.get("delta")
+    async def _analyze_market_vwap(self, symbol: str, platform: str = "delta") -> Dict[str, Any]:
+        adapter = self.adapters.get(platform) or self.adapters.get("delta")
         if not adapter or not hasattr(adapter, "get_candles"):
             return {"price": 100.0, "vwap": 100.0, "structure": "range", "zone": None, "consensus_score": 0.50}
 
