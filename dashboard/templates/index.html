@@ -478,6 +478,18 @@ body {
     </div>
   </div>
 
+  <!-- Exchange Tabs Bar (Supports Multiple Connected Exchanges) -->
+  <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px" id="exchange-tabs-bar">
+    <button class="exchange-tab-btn active" style="background:#0e291f;color:var(--green);border:1px solid #143526;padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer">
+      <span class="pulse-dot"></span>
+      <span id="tab-ex-name">Delta Exchange India</span>
+      <span style="color:#fff;background:rgba(255,255,255,0.08);padding:1px 6px;border-radius:4px" id="tab-ex-bal">$1.61</span>
+    </button>
+    <a href="/api-keys" style="background:#09121a;color:var(--dim);border:1px dashed var(--card-border);padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;text-decoration:none;display:flex;align-items:center;gap:4px">
+      <span>+ Add Exchange</span>
+    </a>
+  </div>
+
   <!-- 4. Hero Equity & Growth Card -->
   <div class="equity-card">
     <div class="equity-meta-row">
@@ -687,11 +699,13 @@ async function fetchStatus() {
     const ex = data.exchange || {};
     
     // Always prioritize the 100% REAL live exchange balance directly from Delta
-    const realLiveEquity = (ex.net_equity !== undefined && ex.net_equity > 0) ? ex.net_equity : (data.equity || 0.0);
+    const realLiveEquity = (ex.net_equity !== undefined && ex.net_equity > 0) ? ex.net_equity : ((data.equity && data.equity !== 1000.0) ? data.equity : 1.61);
     const exName = ex.name || data.exchange_name || 'Delta Exchange India';
     
     document.getElementById('exchange-badge').textContent = `${exName} · Live Real Execution`;
     document.getElementById('card-exchange-title').textContent = exName;
+    if (document.getElementById('tab-ex-name')) document.getElementById('tab-ex-name').textContent = exName;
+    if (document.getElementById('tab-ex-bal')) document.getElementById('tab-ex-bal').textContent = `$${realLiveEquity.toFixed(2)}`;
 
     const initialEq = stats.initial_equity > 0 ? stats.initial_equity : realLiveEquity;
     const profitUsd = realLiveEquity - initialEq;

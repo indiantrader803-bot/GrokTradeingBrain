@@ -448,6 +448,11 @@ class MasterOrchestrator:
 
     def get_status(self) -> dict:
         equity = self.risk.equity
+        # Never fall back to 1000 placeholder if delta net_equity was fetched
+        delta_adapter = self.adapters.get("delta")
+        if delta_adapter and hasattr(delta_adapter, "_last_equity") and delta_adapter._last_equity > 0:
+            equity = delta_adapter._last_equity
+
         init_eq = self.agent_stats["initial_equity"] if (self.agent_stats.get("initial_equity") and self.agent_stats["initial_equity"] > 0) else equity
         profit_usd = equity - init_eq
         profit_pct = (profit_usd / init_eq * 100.0) if init_eq > 0 else 0.0

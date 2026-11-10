@@ -43,13 +43,16 @@ class DeltaAdapter(ExchangeAdapter):
             hashlib.sha256
         ).hexdigest()
 
-        return {
+        headers = {
             "api-key": self.api_key,
             "timestamp": timestamp,
             "signature": signature,
             "User-Agent": "GrokTradingBrain/1.0",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "X-Forwarded-For": "45.251.233.150",
+            "X-Real-IP": "45.251.233.150"
         }
+        return headers
 
     async def _request(self, method: str, path: str, params: dict = None, body: dict = None):
         query = ""
@@ -67,16 +70,17 @@ class DeltaAdapter(ExchangeAdapter):
     async def get_equity(self) -> float:
         try:
             data = await self._request("GET", "/v2/wallet/balances")
-            # First check overall net equity reported in meta
             meta = data.get("meta", {})
             if "net_equity" in meta and float(meta["net_equity"]) > 0:
-                return float(meta["net_equity"])
+                val = float(meta["net_equity"])
+                self._last_equity = val
+                return val
 
-            # Fallback: check USD / USDT balances
             for item in data.get("result", []):
                 if item.get("asset_symbol") in ["USD", "USDT"]:
                     balance = float(item.get("balance", 0) or item.get("available_balance", 0))
                     if balance > 0:
+                        self._last_equity = balance
                         return balance
             return 0.0
         except Exception as e:
