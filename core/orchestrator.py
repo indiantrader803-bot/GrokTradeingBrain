@@ -490,12 +490,18 @@ class MasterOrchestrator:
                         }
                         if sym in ["USD", "USDT"]:
                             available_balance += avail
+                
+                # CRITICAL: Automatically update risk equity directly from real live exchange balance
+                if net_equity > 0:
+                    self.risk.update_equity(net_equity)
             except Exception as e:
                 log.error("Error fetching live exchange data: %s", e)
                 self._last_ex_error = str(e)
                 exchange_positions = []
 
         base_status = self.get_status()
+        if net_equity > 0:
+            base_status["equity"] = round(net_equity, 2)
         base_status["adapters_present"] = list(self.adapters.keys())
         base_status["debug_msg"] = str(getattr(self, "_last_ex_error", "OK"))
         base_status["exchange"] = {
