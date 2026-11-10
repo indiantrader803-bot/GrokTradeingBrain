@@ -112,8 +112,8 @@ async def lifespan(app: FastAPI):
 
     # Coinbase Advanced / Derivatives Integration
     from adapters.coinbase_adapter import CoinbaseAdapter
-    cb_key = os.getenv("COINBASE_API_KEY", "organizations/6d27216d-8101-495c-b234-352cf7881f1d/apiKeys/ba871b98-8766-4869-914b-80fbd3740042").strip()
-    cb_sec = os.getenv("COINBASE_API_SECRET", "t9ZPhTag67jqCUorAIj+8QrSSOsgG6PB0pwErxuYacukDTvc5AoDpYJxFN4M0aNfSpO3e2ODXQOuOjQFsyws0Q==").strip()
+    cb_key = os.getenv("COINBASE_API_KEY", "organizations/6d27216d-8101-495c-b234-352cf7881f1d/apiKeys/6775c2e9-869c-4199-8590-4f3e25203924").strip()
+    cb_sec = os.getenv("COINBASE_API_SECRET", "s0GodfBoqDywb7L6bEMACstYYjwilS7a7GJ2LFno9fJnZJOoUHRxlI2KpirqbOgzZGoVjByTw/OiQcHzsFGdPQ==").strip()
     if cb_key and cb_sec:
         adapters["coinbase"] = CoinbaseAdapter(api_key=cb_key, api_secret=cb_sec)
         log.info("Coinbase Advanced Trade adapter registered (CDP Key configured)")
@@ -497,8 +497,8 @@ async def restart_system():
     )
     adapters["delta"] = delta_adapter
     
-    cb_key = os.getenv("COINBASE_API_KEY", "organizations/6d27216d-8101-495c-b234-352cf7881f1d/apiKeys/ba871b98-8766-4869-914b-80fbd3740042").strip()
-    cb_sec = os.getenv("COINBASE_API_SECRET", "t9ZPhTag67jqCUorAIj+8QrSSOsgG6PB0pwErxuYacukDTvc5AoDpYJxFN4M0aNfSpO3e2ODXQOuOjQFsyws0Q==").strip()
+    cb_key = os.getenv("COINBASE_API_KEY", "organizations/6d27216d-8101-495c-b234-352cf7881f1d/apiKeys/6775c2e9-869c-4199-8590-4f3e25203924").strip()
+    cb_sec = os.getenv("COINBASE_API_SECRET", "s0GodfBoqDywb7L6bEMACstYYjwilS7a7GJ2LFno9fJnZJOoUHRxlI2KpirqbOgzZGoVjByTw/OiQcHzsFGdPQ==").strip()
     if cb_key and cb_sec:
         from adapters.coinbase_adapter import CoinbaseAdapter
         adapters["coinbase"] = CoinbaseAdapter(api_key=cb_key, api_secret=cb_sec)
