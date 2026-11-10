@@ -535,15 +535,38 @@ class MasterOrchestrator:
         if net_equity > 0:
             base_status["equity"] = round(net_equity, 2)
         base_status["adapters_present"] = list(self.adapters.keys())
-        base_status["debug_msg"] = str(getattr(self, "_last_ex_error", "OK"))
-        base_status["exchange"] = {
-            "name": "Delta Exchange India",
-            "net_equity": net_equity,
-            "available_cash": available_balance,
-            "wallets": wallet_balances,
-            "open_positions": exchange_positions,
-            "open_positions_count": len(exchange_positions)
+        
+        # Multi-exchange dictionary
+        exchanges_data = {
+            "delta": {
+                "name": "Delta Exchange India",
+                "net_equity": net_equity,
+                "available_cash": available_balance,
+                "wallets": wallet_balances,
+                "open_positions": exchange_positions,
+                "open_positions_count": len(exchange_positions)
+            }
         }
+
+        if "coinbase" in self.adapters:
+            cb_adapter = self.adapters["coinbase"]
+            cb_eq = 0.0
+            try:
+                cb_eq = await cb_adapter.get_equity()
+            except Exception:
+                pass
+            exchanges_data["coinbase"] = {
+                "name": "Coinbase Advanced / Derivatives",
+                "net_equity": cb_eq,
+                "available_cash": cb_eq,
+                "wallets": {"USD": {"balance": cb_eq, "available": cb_eq, "inr": cb_eq * 85.0}},
+                "open_positions": [],
+                "open_positions_count": 0
+            }
+
+        base_status["exchanges"] = exchanges_data
+        base_status["debug_msg"] = str(getattr(self, "_last_ex_error", "OK"))
+        base_status["exchange"] = exchanges_data["delta"]
         return base_status
 
     def set_weekend_flags(

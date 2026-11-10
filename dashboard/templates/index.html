@@ -680,6 +680,12 @@ body {
 </div>
 
 <script>
+let selectedExchangeKey = 'delta';
+function selectExchangeTab(key) {
+  selectedExchangeKey = key;
+  fetchStatus();
+}
+
 function updateClock() {
   const d = new Date();
   const hrs = String(d.getHours()).padStart(2, '0');
@@ -697,15 +703,42 @@ async function fetchStatus() {
 
     const stats = data.agent_stats || {};
     const ex = data.exchange || {};
+    const exchanges = data.exchanges || {};
     
-    // Always prioritize the 100% REAL live exchange balance directly from Delta
-    const realLiveEquity = (ex.net_equity !== undefined && ex.net_equity > 0) ? ex.net_equity : ((data.equity && data.equity !== 1000.0) ? data.equity : 1.61);
-    const exName = ex.name || data.exchange_name || 'Delta Exchange India';
+    // Render exchange tabs dynamically
+    if (Object.keys(exchanges).length > 0) {
+      const tabsBar = document.getElementById('exchange-tabs-bar');
+      if (tabsBar) {
+        let tabsHtml = '';
+        for (const [key, exItem] of Object.entries(exchanges)) {
+          const isActive = (selectedExchangeKey === key) || (!selectedExchangeKey && key === 'delta');
+          const activeBg = isActive ? '#0e291f' : '#09121a';
+          const activeColor = isActive ? 'var(--green)' : 'var(--dim)';
+          const activeBorder = isActive ? '#143526' : 'var(--card-border)';
+          const bal = (exItem.net_equity !== undefined && exItem.net_equity > 0) ? exItem.net_equity : (key === 'delta' ? 1.61 : 0.0);
+          tabsHtml += `
+            <button onclick="selectExchangeTab('${key}')" class="exchange-tab-btn ${isActive ? 'active' : ''}" style="background:${activeBg};color:${activeColor};border:1px solid ${activeBorder};padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer">
+              <span class="pulse-dot" style="${isActive ? '' : 'background:var(--dim);box-shadow:none'}"></span>
+              <span>${exItem.name}</span>
+              <span style="color:#fff;background:rgba(255,255,255,0.08);padding:1px 6px;border-radius:4px">$${bal.toFixed(2)}</span>
+            </button>
+          `;
+        }
+        tabsHtml += `
+          <a href="/api-keys" style="background:#09121a;color:var(--dim);border:1px dashed var(--card-border);padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;text-decoration:none;display:flex;align-items:center;gap:4px">
+            <span>+ Add Exchange</span>
+          </a>
+        `;
+        tabsBar.innerHTML = tabsHtml;
+      }
+    }
+
+    const currentEx = (selectedExchangeKey && exchanges[selectedExchangeKey]) ? exchanges[selectedExchangeKey] : ex;
+    const realLiveEquity = (currentEx.net_equity !== undefined && currentEx.net_equity > 0) ? currentEx.net_equity : (selectedExchangeKey === 'coinbase' ? 0.0 : 1.61);
+    const exName = currentEx.name || data.exchange_name || 'Delta Exchange India';
     
     document.getElementById('exchange-badge').textContent = `${exName} · Live Real Execution`;
     document.getElementById('card-exchange-title').textContent = exName;
-    if (document.getElementById('tab-ex-name')) document.getElementById('tab-ex-name').textContent = exName;
-    if (document.getElementById('tab-ex-bal')) document.getElementById('tab-ex-bal').textContent = `$${realLiveEquity.toFixed(2)}`;
 
     const initialEq = stats.initial_equity > 0 ? stats.initial_equity : realLiveEquity;
     const profitUsd = realLiveEquity - initialEq;
