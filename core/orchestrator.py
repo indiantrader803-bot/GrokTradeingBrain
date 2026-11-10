@@ -282,14 +282,36 @@ class MasterOrchestrator:
             return
 
         # Sizing: strictly <= 8% of total equity stack
-        total_equity = self.risk.equity
+        total_equity = max(self.risk.equity, 0.50)
         allocated_capital = total_equity * (self.strategy.max_stack_alloc_pct / 100.0)
         entry_price = best_candidate["entry_price"]
-        raw_size = allocated_capital / entry_price if entry_price > 0 else 0
-        order_size = int(round(raw_size)) if int(round(raw_size)) > 0 else 1
+        
+        # Calculate real Delta contracts using contract_value & leverage
+        try:
+            r = await adapter._request("GET", "/v2/products", params={"contract_types": "perpetual_futures"})
+            clean_sym = best_candidate["symbol"].upper().replace("/", "").replace("USDT", "USD")
+            prod = next((p for p in r.get("result", []) if p.get("symbol") == clean_sym), None)
+            contract_val = float(prod.get("contract_value", 1.0) if prod else 1.0)
+        except Exception:
+            contract_val = 1.0
+
+        notional_per_contract = entry_price * contract_val
+        if notional_per_contract > 0:
+            # Leverage allows small balance ($1.60) to afford micro contract units
+            leverage = 5.0
+            order_size = int((allocated_capital * leverage) / notional_per_contract)
+            if order_size <= 0:
+                order_size = 1
+        else:
+            order_size = 1
+
+        # Check total contract margin requirement against equity
+        margin_required = (order_size * notional_per_contract) / 5.0
+        if margin_required > (total_equity * 0.40):  # Cap single trade margin to 40% of small balance
+            order_size = max(1, int((total_equity * 0.40 * 5.0) / notional_per_contract))
 
         # ── 5. RISK AGENT CHECK ───────────────────────────────────
-        risk_amount = abs(entry_price - best_candidate["stop_loss"]) * order_size
+        risk_amount = abs(entry_price - best_candidate["stop_loss"]) * contract_val * order_size
         allowed, risk_reason = self.risk.can_open_new_position(risk_amount)
         if not allowed:
             log.info("Risk rejected %s: %s", best_candidate["symbol"], risk_reason)
@@ -399,10 +421,10 @@ class MasterOrchestrator:
 
     def get_status(self) -> dict:
         equity = self.risk.equity
-        init_eq = self.agent_stats["initial_equity"] if self.agent_stats["initial_equity"] > 0 else 280.0
+        init_eq = self.agent_stats["initial_equity"] if self.agent_stats["initial_equity"] > 0 else equity
         profit_usd = equity - init_eq
         profit_pct = (profit_usd / init_eq * 100.0) if init_eq > 0 else 0.0
-        multiple = round(equity / init_eq, 2) if init_eq > 0 else 1.0
+        multiple = round(equity / init_eq, 2) if init_eq > 0 else 1.00
 
         return {
             "running": self.running,
