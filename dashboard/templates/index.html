@@ -481,12 +481,12 @@ body {
   <!-- 4. Hero Equity & Growth Card -->
   <div class="equity-card">
     <div class="equity-meta-row">
-      <div>Equity · $<span id="init-equity-label">280</span> start · 8% max size</div>
+      <div><span id="card-exchange-title" style="color:var(--green);font-weight:600">Delta Exchange India</span> · Live Balance</div>
       <div class="multiplier-badge" id="multiplier-tag">1.00×</div>
     </div>
 
     <div class="equity-main-row">
-      <div class="equity-value" id="equity-main">$280<span class="equity-cents" id="equity-cents">.00</span></div>
+      <div class="equity-value" id="equity-main">$0<span class="equity-cents" id="equity-cents">.00</span></div>
       <div class="floating-gain-pill" id="floating-gain-badge">+$0</div>
     </div>
 
@@ -684,16 +684,23 @@ async function fetchStatus() {
     if (!data || data.error) return;
 
     const stats = data.agent_stats || {};
-    const equity = data.equity || 280.0;
-    const initialEq = stats.initial_equity || 280.0;
-    const profitUsd = equity - initialEq;
-    const profitPct = initialEq > 0 ? (profitUsd / initialEq * 100) : 0;
-    const multiple = (equity / initialEq).toFixed(2);
+    const ex = data.exchange || {};
+    
+    // Always prioritize the 100% REAL live exchange balance directly from Delta
+    const realLiveEquity = (ex.net_equity !== undefined && ex.net_equity > 0) ? ex.net_equity : (data.equity || 0.0);
+    const exName = ex.name || data.exchange_name || 'Delta Exchange India';
+    
+    document.getElementById('exchange-badge').textContent = `${exName} · Live Real Execution`;
+    document.getElementById('card-exchange-title').textContent = exName;
 
-    // Update Equity
-    const eqSplit = equity.toFixed(2).split('.');
+    const initialEq = stats.initial_equity > 0 ? stats.initial_equity : realLiveEquity;
+    const profitUsd = realLiveEquity - initialEq;
+    const profitPct = initialEq > 0 ? (profitUsd / initialEq * 100) : 0;
+    const multiple = initialEq > 0 ? (realLiveEquity / initialEq).toFixed(2) : "1.00";
+
+    // Update Real Exchange Equity
+    const eqSplit = realLiveEquity.toFixed(2).split('.');
     document.getElementById('equity-main').innerHTML = `$${eqSplit[0]}<span class="equity-cents">.${eqSplit[1]}</span>`;
-    document.getElementById('init-equity-label').textContent = Math.round(initialEq);
     document.getElementById('multiplier-tag').textContent = `${multiple}×`;
     
     const sign = profitUsd >= 0 ? '+' : '-';

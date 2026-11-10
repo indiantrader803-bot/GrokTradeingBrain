@@ -421,7 +421,7 @@ class MasterOrchestrator:
 
     def get_status(self) -> dict:
         equity = self.risk.equity
-        init_eq = self.agent_stats["initial_equity"] if self.agent_stats["initial_equity"] > 0 else equity
+        init_eq = self.agent_stats["initial_equity"] if (self.agent_stats.get("initial_equity") and self.agent_stats["initial_equity"] > 0) else equity
         profit_usd = equity - init_eq
         profit_pct = (profit_usd / init_eq * 100.0) if init_eq > 0 else 0.0
         multiple = round(equity / init_eq, 2) if init_eq > 0 else 1.00
@@ -437,6 +437,7 @@ class MasterOrchestrator:
             "profit_usd": round(profit_usd, 2),
             "profit_pct": round(profit_pct, 2),
             "multiple": multiple,
+            "exchange_name": "Delta Exchange India",
             "agent_stats": self.agent_stats
         }
 
