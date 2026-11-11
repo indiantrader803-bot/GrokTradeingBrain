@@ -100,7 +100,6 @@ class DeltaAdapter(ExchangeAdapter):
         except Exception as e:
             log.debug("Delta get_price not available for %s: %s", symbol, e)
             return 0.0
-            return 0.0
 
     async def get_product_id(self, symbol: str) -> Optional[int]:
         clean = symbol.upper().replace("/", "").replace("-", "").replace("_", "")

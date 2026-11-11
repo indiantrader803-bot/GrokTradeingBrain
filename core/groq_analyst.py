@@ -51,7 +51,7 @@ class GroqAnalystAI:
 
         prompt = (
             f"You are the Grok Bot Institutional Risk & Consensus AI. "
-            f"Evaluate this proposed trade for small account compounding:\n"
+            f"Evaluate this proposed trade for execution:\n"
             f"- Symbol: {symbol}\n"
             f"- Proposed Direction: {direction}\n"
             f"- Entry Price: {price}\n"
@@ -60,12 +60,11 @@ class GroqAnalystAI:
             f"- 24h Change: {change_24h:+.2f}%\n"
             f"- 24h Volume USD: ${volume_usd:,.0f}\n"
             f"- Current VWAP: {vwap}\n"
-            f"- Market Structure: {structure}\n"
-            f"- Live Capital: ${account_equity:.2f}\n\n"
+            f"- Market Structure: {structure}\n\n"
             f"Criteria:\n"
-            f"1. Is the trade entering in the direction of institutional momentum?\n"
-            f"2. Does the volume support the move or is it a low-volume liquidity trap?\n"
-            f"3. Strict rule: If it looks like a late pump/dump exhaustion, reject it.\n\n"
+            f"1. Is the trade entering in the direction of market momentum?\n"
+            f"2. Does the volume support the move without extreme anomaly?\n"
+            f"3. Note: Capital sizing and margin are handled separately by the risk engine, so evaluate purely based on technical setup quality.\n\n"
             f"Respond STRICTLY in JSON format with exact keys:\n"
             f'{{"approved": true/false, "ai_confidence": 0.0 to 1.0, "decision": "BUY"|"SELL"|"WAIT", "reasoning": "1 short sentence"}}'
         )

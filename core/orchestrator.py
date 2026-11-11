@@ -51,7 +51,7 @@ class MasterOrchestrator:
         self.agent_stats = {
             "scout_pairs_count": 0,
             "filter_killed_count": 0,
-            "filter_killed_pct": 98.0,
+            "filter_killed_pct": 0.0,
             "analyst_scored_count": 0,
             "executor_last_action": "waiting for survivor",
             "risk_open_status": "no open risk",
@@ -59,17 +59,17 @@ class MasterOrchestrator:
             "recent_kills": [],
             "live_ticker_tape": [],
             "why_they_died": {
-                "Mint not revoked": 2640,
-                "LP not locked": 2415,
-                "Top 10 holders >20%": 2198,
-                "Volume <$50k last hour": 1911,
-                "Dev wallet -> past rugs": 846,
-                "Analyst score < 0.6": 166
+                "Mint not revoked": 0,
+                "LP not locked": 0,
+                "Top 10 holders >20%": 0,
+                "Volume <$50k last hour": 0,
+                "Dev wallet -> past rugs": 0,
+                "Analyst score < 0.6": 0
             },
-            "win_count": 26,
-            "loss_count": 12,
-            "initial_equity": config.starting_equity if config.starting_equity > 0 else 280.0,
-            "peak_equity": config.starting_equity if config.starting_equity > 0 else 280.0,
+            "win_count": 0,
+            "loss_count": 0,
+            "initial_equity": config.starting_equity if config.starting_equity > 0 else 0.0,
+            "peak_equity": config.starting_equity if config.starting_equity > 0 else 0.0,
         }
 
         # External signals
@@ -119,7 +119,10 @@ class MasterOrchestrator:
             has_high_volume=self.has_high_volume,
             has_high_impact_news=self.has_high_impact_news
         )
-        log.info("Schedule: %s", reason)
+        log.info("Schedule: %s (Allowed: %s)", reason, can_trade)
+        if not can_trade:
+            self.agent_stats["executor_last_action"] = f"Schedule paused: {reason}"
+            return
 
         # 3. Manage open positions (Trailing stop & Hard SL check)
         await self._manage_open_positions()
@@ -219,9 +222,10 @@ class MasterOrchestrator:
             perp_tickers = [t for t in raw_tickers if t.get("contract_type") == "perpetual_futures" or "USD" in t.get("symbol", "")]
         elif platform_name == "coinbase":
             try:
+                import asyncio
                 from coinbase.rest import RESTClient
                 c_client = getattr(adapter, "client", None) or RESTClient()
-                prods = c_client.get_public_products(limit=40)
+                prods = await asyncio.to_thread(c_client.get_public_products, limit=40)
                 prod_list = getattr(prods, "products", [])
                 for p in prod_list:
                     pid = getattr(p, "product_id", "")
@@ -303,118 +307,116 @@ class MasterOrchestrator:
             return
 
         scored_candidates.sort(key=lambda x: x["analyst_score"], reverse=True)
-        best_candidate = scored_candidates[0]
 
-        # ── 3.5. GROQ ULTRA-FAST LLM DEEP REASONING VERIFICATION ────────
-        try:
-            ai_verdict = await self.groq_ai.evaluate_trade_candidate(
-                symbol=best_candidate["symbol"],
-                price=best_candidate["entry_price"],
-                direction=best_candidate["direction"],
-                stop_loss=best_candidate["stop_loss"],
-                take_profit=best_candidate["take_profit"],
-                vwap=best_candidate.get("vwap", best_candidate["entry_price"]),
-                structure=best_candidate.get("structure", "bullish"),
-                change_24h=best_candidate.get("change_24h", 0.0),
-                volume_usd=best_candidate.get("volume_usd", 0.0),
-                account_equity=self.risk.equity
-            )
-            ai_approved = ai_verdict.get("approved", True)
-            ai_reason = ai_verdict.get("reasoning", "")
-            if not ai_approved:
-                self._add_logger_event("ANALYST", f"Groq AI rejected ${best_candidate['symbol']}: {ai_reason}")
-                self.agent_stats["executor_last_action"] = f"AI vetoed {best_candidate['symbol']}"
-                return
-            else:
-                self._add_logger_event("ANALYST", f"Groq AI approved ${best_candidate['symbol']}: {ai_reason}")
-        except Exception as ai_err:
-            log.warning("Groq AI check skipped on error: %s", ai_err)
-
-        # Check existing positions limit (max 3)
+        total_equity = max(self.risk.equity, 0.50)
         open_positions = list(self.risk.get_open_positions())
         if len(open_positions) >= self.config.risk.max_open_positions:
             self.agent_stats["executor_last_action"] = f"max positions reached ({len(open_positions)})"
             return
 
-        # Check if symbol is already open
-        if any(p.symbol == best_candidate["symbol"] for p in open_positions):
-            return
+        # Evaluate top candidate matches to find best trade conforming with AI approval and free margin
+        for best_candidate in scored_candidates[:5]:
+            if any(p.symbol == best_candidate["symbol"] for p in open_positions):
+                continue
 
-        # Sizing: strictly <= 8% of total equity stack
-        total_equity = max(self.risk.equity, 0.50)
-        allocated_capital = total_equity * (self.strategy.max_stack_alloc_pct / 100.0)
-        entry_price = best_candidate["entry_price"]
-        
-        contract_val = 1.0
-        if platform_name == "delta":
+            # ── 3.5. GROQ ULTRA-FAST LLM DEEP REASONING VERIFICATION ────────
             try:
-                r = await adapter._request("GET", "/v2/products", params={"contract_types": "perpetual_futures"})
-                clean_sym = best_candidate["symbol"].upper().replace("/", "").replace("USDT", "USD")
-                prod = next((p for p in r.get("result", []) if p.get("symbol") == clean_sym), None)
-                contract_val = float(prod.get("contract_value", 1.0) if prod else 1.0)
-            except Exception:
-                contract_val = 1.0
+                ai_verdict = await self.groq_ai.evaluate_trade_candidate(
+                    symbol=best_candidate["symbol"],
+                    price=best_candidate["entry_price"],
+                    direction=best_candidate["direction"],
+                    stop_loss=best_candidate["stop_loss"],
+                    take_profit=best_candidate["take_profit"],
+                    vwap=best_candidate.get("vwap", best_candidate["entry_price"]),
+                    structure=best_candidate.get("structure", "bullish"),
+                    change_24h=best_candidate.get("change_24h", 0.0),
+                    volume_usd=best_candidate.get("volume_usd", 0.0),
+                    account_equity=self.risk.equity
+                )
+                ai_approved = ai_verdict.get("approved", True)
+                ai_reason = ai_verdict.get("reasoning", "")
+                if not ai_approved:
+                    self._add_logger_event("ANALYST", f"Groq AI rejected ${best_candidate['symbol']}: {ai_reason}")
+                    continue
+                else:
+                    self._add_logger_event("ANALYST", f"Groq AI approved ${best_candidate['symbol']}: {ai_reason}")
+            except Exception as ai_err:
+                log.warning("Groq AI check skipped on error: %s", ai_err)
 
-        notional_per_contract = entry_price * contract_val
-        if notional_per_contract > 0:
+            allocated_capital = total_equity * (self.strategy.max_stack_alloc_pct / 100.0)
+            entry_price = best_candidate["entry_price"]
+            
+            contract_val = 1.0
+            if platform_name == "delta":
+                try:
+                    r = await adapter._request("GET", "/v2/products", params={"contract_types": "perpetual_futures"})
+                    clean_sym = best_candidate["symbol"].upper().replace("/", "").replace("USDT", "USD")
+                    prod = next((p for p in r.get("result", []) if p.get("symbol") == clean_sym), None)
+                    contract_val = float(prod.get("contract_value", 1.0) if prod else 1.0)
+                except Exception:
+                    contract_val = 1.0
+
+            notional_per_contract = entry_price * contract_val
             leverage = 5.0 if platform_name == "delta" else 1.0
-            order_size = max(0.0001, round((allocated_capital * leverage) / notional_per_contract, 4))
-            if platform_name == "delta":
-                order_size = max(1, int(order_size))
-        else:
-            order_size = 1
+            if notional_per_contract > 0:
+                raw_size = (allocated_capital * leverage) / notional_per_contract
+                if platform_name == "delta":
+                    order_size = max(1, int(raw_size))
+                else:
+                    order_size = max(0.0001, round(raw_size, 4))
+            else:
+                order_size = 1
 
-        # Check total contract margin requirement against equity
-        margin_required = (order_size * notional_per_contract) / (5.0 if platform_name == "delta" else 1.0)
-        if margin_required > (total_equity * 0.40):
-            order_size = max(1 if platform_name == "delta" else 0.0001, (total_equity * 0.40) / notional_per_contract)
-            if platform_name == "delta":
-                order_size = int(order_size)
+            margin_required = (order_size * notional_per_contract) / leverage
+            if margin_required > total_equity:
+                log.info("Skipping %s: Required margin $%.4f exceeds equity $%.4f", best_candidate["symbol"], margin_required, total_equity)
+                continue
 
-        # ── 5. RISK AGENT CHECK ───────────────────────────────────
-        risk_amount = abs(entry_price - best_candidate["stop_loss"]) * contract_val * order_size
-        allowed, risk_reason = self.risk.can_open_new_position(risk_amount)
-        if not allowed:
-            log.info("Risk rejected %s: %s", best_candidate["symbol"], risk_reason)
-            self._add_logger_event("RISK", f"rejected {best_candidate['symbol']} ({platform_name}): {risk_reason}")
-            return
+            # ── 5. RISK AGENT CHECK ───────────────────────────────────
+            risk_amount = abs(entry_price - best_candidate["stop_loss"]) * contract_val * order_size
+            allowed, risk_reason = self.risk.can_open_new_position(risk_amount)
+            if not allowed:
+                log.info("Risk rejected %s: %s", best_candidate["symbol"], risk_reason)
+                self._add_logger_event("RISK", f"rejected {best_candidate['symbol']} ({platform_name}): {risk_reason}")
+                continue
 
-        # Execute live trade
-        try:
-            result = await adapter.place_order(
-                symbol=best_candidate["symbol"],
-                side=best_candidate["direction"],
-                size=order_size,
-                stop_loss=best_candidate["stop_loss"],
-                take_profit=best_candidate["take_profit"]
-            )
-            order_id = result.get("order_id", str(uuid.uuid4()))
-            position = Position(
-                id=order_id,
-                symbol=best_candidate["symbol"],
-                platform=platform_name,
-                side=best_candidate["direction"],
-                size=order_size,
-                entry_price=entry_price,
-                stop_loss=best_candidate["stop_loss"],
-                take_profit=best_candidate["take_profit"],
-                risk_amount=risk_amount,
-                asset_class=best_candidate["asset_class"]
-            )
-            self.risk.register_position(position)
-            self.trades_opened += 1
-            self.signals_generated += 1
+            # Execute live trade
+            try:
+                result = await adapter.place_order(
+                    symbol=best_candidate["symbol"],
+                    side=best_candidate["direction"],
+                    size=order_size,
+                    stop_loss=best_candidate["stop_loss"],
+                    take_profit=best_candidate["take_profit"]
+                )
+                order_id = result.get("order_id", str(uuid.uuid4()))
+                position = Position(
+                    id=order_id,
+                    symbol=best_candidate["symbol"],
+                    platform=platform_name,
+                    side=best_candidate["direction"],
+                    size=order_size,
+                    entry_price=entry_price,
+                    stop_loss=best_candidate["stop_loss"],
+                    take_profit=best_candidate["take_profit"],
+                    risk_amount=risk_amount,
+                    asset_class=best_candidate["asset_class"]
+                )
+                self.risk.register_position(position)
+                self.trades_opened += 1
+                self.signals_generated += 1
 
-            action_desc = f"bought ${best_candidate['symbol']} ({platform_name}) · ${allocated_capital:.2f}" if best_candidate["direction"] == "BUY" else f"shorted ${best_candidate['symbol']} ({platform_name}) · ${allocated_capital:.2f}"
-            self.agent_stats["executor_last_action"] = action_desc
-            self._add_logger_event("EXECUTOR", action_desc)
-            self._add_logger_event("RISK", f"stop set ${best_candidate['symbol']} ({platform_name}) -6% hard | trail +12%")
+                action_desc = f"bought ${best_candidate['symbol']} ({platform_name}) · ${allocated_capital:.2f}" if best_candidate["direction"] == "BUY" else f"shorted ${best_candidate['symbol']} ({platform_name}) · ${allocated_capital:.2f}"
+                self.agent_stats["executor_last_action"] = action_desc
+                self._add_logger_event("EXECUTOR", action_desc)
+                self._add_logger_event("RISK", f"stop set ${best_candidate['symbol']} ({platform_name}) -6% hard | trail +12%")
 
-            log.info("GROK BOT TRADE OPENED | %s on %s | Order: %s", best_candidate["symbol"], platform_name, order_id)
+                log.info("GROK BOT TRADE OPENED | %s on %s | Order: %s", best_candidate["symbol"], platform_name, order_id)
+                return
 
-        except Exception as e:
-            log.error("Grok order execution failed (%s on %s): %s", best_candidate["symbol"], platform_name, e)
-            self._add_logger_event("EXECUTOR", f"execution error on {best_candidate['symbol']} ({platform_name}): {e}")
+            except Exception as e:
+                log.error("Grok order execution failed (%s on %s): %s", best_candidate["symbol"], platform_name, e)
+                self._add_logger_event("EXECUTOR", f"execution error on {best_candidate['symbol']} ({platform_name}): {e}")
 
     def _add_logger_event(self, role: str, text: str):
         now_str = datetime.now().strftime("%H:%M")
@@ -431,14 +433,22 @@ class MasterOrchestrator:
 
     async def _analyze_market_vwap(self, symbol: str, platform: str = "delta") -> Dict[str, Any]:
         adapter = self.adapters.get(platform) or self.adapters.get("delta")
+        curr_price = 0.0
+        if adapter:
+            try:
+                curr_price = await adapter.get_price(symbol)
+            except Exception:
+                curr_price = 0.0
+
         if not adapter or not hasattr(adapter, "get_candles"):
-            return {"price": 100.0, "vwap": 100.0, "structure": "range", "zone": None, "consensus_score": 0.50}
+            return {"price": curr_price, "vwap": curr_price, "structure": "range", "zone": None, "consensus_score": 0.50}
 
         try:
             candles = await adapter.get_candles(symbol, resolution="5m", limit_hours=4)
             if not candles or len(candles) < 15:
-                curr_price = await adapter.get_price(symbol)
-                return {"price": curr_price or 100.0, "vwap": curr_price or 100.0, "structure": "range", "zone": None, "consensus_score": 0.50}
+                if curr_price <= 0 and adapter:
+                    curr_price = await adapter.get_price(symbol)
+                return {"price": curr_price, "vwap": curr_price, "structure": "range", "zone": None, "consensus_score": 0.50}
 
             cum_vol = 0.0
             cum_pv = 0.0
@@ -449,8 +459,8 @@ class MasterOrchestrator:
                 cum_pv += typical_price * vol
 
             vwap = (cum_pv / cum_vol) if cum_vol > 0 else float(candles[-1]["close"])
-            current_price = float(candles[-1]["close"])
-            prev_price = float(candles[-2]["close"])
+            current_price = float(candles[-1]["close"]) if float(candles[-1].get("close", 0)) > 0 else curr_price
+            prev_price = float(candles[-2]["close"]) if len(candles) >= 2 else current_price
 
             recent_candles = candles[-15:]
             variance = sum(((float(c["close"]) - vwap) ** 2) for c in recent_candles) / len(recent_candles)
@@ -478,7 +488,7 @@ class MasterOrchestrator:
             }
         except Exception as e:
             log.debug("VWAP error (%s): %s", symbol, e)
-            return {"price": 100.0, "vwap": 100.0, "structure": "range", "zone": None, "consensus_score": 0.50}
+            return {"price": curr_price, "vwap": curr_price, "structure": "range", "zone": None, "consensus_score": 0.50}
 
     def get_status(self) -> dict:
         equity = self.risk.equity
@@ -563,12 +573,47 @@ class MasterOrchestrator:
             except Exception as e:
                 log.error("Error fetching live exchange data: %s", e)
                 self._last_ex_error = str(e)
-                exchange_positions = []
+                # Fallback to configured active server adapter if custom credentials failed
+                if custom_key and "delta" in self.adapters:
+                    try:
+                        fallback_delta = self.adapters["delta"]
+                        raw_positions = await fallback_delta.get_open_positions()
+                        for p in raw_positions:
+                            p_size = float(p.get("size", 0) or 0)
+                            if p_size != 0:
+                                exchange_positions.append({
+                                    "symbol": p.get("product_symbol", "UNKNOWN"),
+                                    "side": "BUY" if p_size > 0 else "SELL",
+                                    "size": abs(p_size),
+                                    "entry_price": float(p.get("entry_price", 0) or 0),
+                                    "mark_price": float(p.get("mark_price", 0) or 0),
+                                    "margin": float(p.get("margin", 0) or 0),
+                                    "unrealized_pnl": float(p.get("unrealized_pnl", 0) or 0)
+                                })
+                        raw_wallets = await fallback_delta._request("GET", "/v2/wallet/balances")
+                        meta = raw_wallets.get("meta", {})
+                        net_equity = float(meta.get("net_equity", 0) or 0)
+                        for item in raw_wallets.get("result", []):
+                            sym = item.get("asset_symbol")
+                            bal = float(item.get("balance", 0) or 0)
+                            avail = float(item.get("available_balance", 0) or 0)
+                            if bal > 0 or avail > 0:
+                                wallet_balances[sym] = {
+                                    "balance": bal,
+                                    "available": avail,
+                                    "inr": float(item.get("balance_inr", 0) or 0)
+                                }
+                                if sym in ["USD", "USDT"]:
+                                    available_balance += avail
+                    except Exception as fb_err:
+                        log.error("Fallback to default adapter also failed: %s", fb_err)
 
         base_status = self.get_status()
         if net_equity > 0:
             base_status["equity"] = round(net_equity, 2)
         base_status["adapters_present"] = list(self.adapters.keys())
+        if exchange_positions:
+            base_status["open_positions"] = exchange_positions
         
         # Multi-exchange dictionary
         exchanges_data = {

@@ -29,12 +29,12 @@ class GrokCapitalGrowthStrategy:
         self.hard_stop_loss_pct = 6.0   # -6% stop
         self.take_profit_target_pct = 12.0  # trail +12%
         self.kill_counts = {
-            "Mint not revoked": 2640,
-            "LP not locked": 2415,
-            "Top 10 holders >20%": 2198,
-            "Volume <$50k last hour": 1911,
-            "Dev wallet -> past rugs": 846,
-            "Analyst score < 0.6": 166
+            "Mint not revoked": 0,
+            "LP not locked": 0,
+            "Top 10 holders >20%": 0,
+            "Volume <$50k last hour": 0,
+            "Dev wallet -> past rugs": 0,
+            "Analyst score < 0.6": 0
         }
 
     def detect_asset_class(self, symbol: str) -> str:
@@ -57,8 +57,19 @@ class GrokCapitalGrowthStrategy:
         Discards low volume, illiquid or abnormal contracts.
         """
         symbol = ticker.get("symbol", "")
-        price = float(ticker.get("close", 0) or ticker.get("mark_price", 0) or 0)
-        vol_usd = float(ticker.get("turnover_usd", 0) or ticker.get("volume", 0) or 0)
+        price = float(ticker.get("close", 0) or ticker.get("mark_price", 0) or ticker.get("ltp", 0) or 0)
+        # Check all possible volume fields across exchanges: turnover_usd, turnover, turnover24h, volume, volume_24h
+        vol_usd = float(
+            ticker.get("turnover_usd", 0)
+            or ticker.get("turnover_24h", 0)
+            or ticker.get("turnover", 0)
+            or ticker.get("volume_usd", 0)
+            or 0
+        )
+        if vol_usd <= 0:
+            raw_vol = float(ticker.get("volume_24h", 0) or ticker.get("volume", 0) or 0)
+            vol_usd = raw_vol * price if price > 0 else raw_vol
+
         chg_24h = float(ticker.get("change_24h", 0) or ticker.get("ltp_change_24h", 0) or 0)
 
         if price <= 0:

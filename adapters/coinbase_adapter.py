@@ -47,7 +47,8 @@ class CoinbaseAdapter(ExchangeAdapter):
         if not self.client:
             return 0.0
         try:
-            accounts = self.client.get_accounts()
+            import asyncio
+            accounts = await asyncio.to_thread(self.client.get_accounts)
             acc_list = getattr(accounts, "accounts", None)
             if acc_list is None and isinstance(accounts, dict):
                 acc_list = accounts.get("accounts", [])
@@ -70,15 +71,16 @@ class CoinbaseAdapter(ExchangeAdapter):
     async def get_price(self, symbol: str) -> float:
         product_id = self._normalize_symbol(symbol)
         try:
+            import asyncio
             if self.client:
-                prod = self.client.get_product(product_id)
+                prod = await asyncio.to_thread(self.client.get_product, product_id)
                 price = getattr(prod, "price", None) or (prod.get("price") if isinstance(prod, dict) else None)
                 if price:
                     return float(price)
             # Fallback to public client
             from coinbase.rest import RESTClient
             pub = RESTClient()
-            prod = pub.get_public_product(product_id)
+            prod = await asyncio.to_thread(pub.get_public_product, product_id)
             price = getattr(prod, "price", None) or (prod.get("price") if isinstance(prod, dict) else None)
             return float(price or 0.0)
         except Exception as e:
@@ -102,9 +104,16 @@ class CoinbaseAdapter(ExchangeAdapter):
         }
         gran = gran_map.get(resolution, "FIVE_MINUTE")
         try:
+            import asyncio
             from coinbase.rest import RESTClient
             c_client = self.client or RESTClient()
-            res = c_client.get_public_candles(product_id, start=str(start), end=str(now), granularity=gran)
+            res = await asyncio.to_thread(
+                c_client.get_public_candles,
+                product_id,
+                start=str(start),
+                end=str(now),
+                granularity=gran
+            )
             candles = getattr(res, "candles", None) or (res.get("candles") if isinstance(res, dict) else [])
             parsed = []
             for c in candles:
@@ -137,6 +146,8 @@ class CoinbaseAdapter(ExchangeAdapter):
 
         product_id = self._normalize_symbol(symbol)
         side = side.lower()
+        import uuid
+        client_order_id = str(uuid.uuid4())
 
         try:
             if order_type == "market":
@@ -144,13 +155,13 @@ class CoinbaseAdapter(ExchangeAdapter):
                     curr_price = await self.get_price(symbol)
                     quote_val = str(round(size * curr_price, 2))
                     order = self.client.market_order_buy(
-                        client_order_id=None,
+                        client_order_id=client_order_id,
                         product_id=product_id,
                         quote_size=quote_val
                     )
                 else:
                     order = self.client.market_order_sell(
-                        client_order_id=None,
+                        client_order_id=client_order_id,
                         product_id=product_id,
                         base_size=str(size)
                     )
