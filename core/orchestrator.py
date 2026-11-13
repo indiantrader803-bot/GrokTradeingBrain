@@ -10,6 +10,7 @@ from .risk_manager import RiskManager, Position
 from .scheduler import TradingScheduler
 from .router import PlatformRouter
 from strategies.capital_growth import GrokCapitalGrowthStrategy
+from strategies.pump_detector import PumpBreakoutDetector
 from adapters.base import ExchangeAdapter
 from .groq_analyst import GroqAnalystAI
 
@@ -38,6 +39,7 @@ class MasterOrchestrator:
         self.adapters = adapters
         self.risk = RiskManager(config.risk, config.starting_equity)
         self.strategy = GrokCapitalGrowthStrategy(config.strategy)
+        self.pump_detector = PumpBreakoutDetector(surge_multiplier=2.0, min_volume_usd=20000.0)
         self.scheduler = TradingScheduler(config.schedule, config.timezone)
         self.groq_ai = GroqAnalystAI()
         self.running = False
@@ -282,12 +284,25 @@ class MasterOrchestrator:
         total_scanned = max(1, len(perp_tickers))
         self.agent_stats["filter_killed_pct"] = round((cycle_kills / total_scanned) * 100.0, 1)
 
-        # ── 3. ANALYST AGENT (Scores Survivors) ───────────────────
+        # ── 3. ANALYST AGENT (Scores Survivors & Real-Time Pump Catcher) ───────────────────
         scored_candidates = []
         self.agent_stats["analyst_scored_count"] = len(survivors)
 
+        # First, run real-time Pump & Surge detection on all active tickers
+        for t in perp_tickers:
+            sym = t.get("symbol", "")
+            price = float(t.get("close", 0) or t.get("mark_price", 0) or 0.0)
+            pump_signal = self.pump_detector.evaluate_pump(sym, price, t, platform=platform_name)
+            if pump_signal:
+                scored_candidates.append(pump_signal)
+                self._add_logger_event("ANALYST", f"🚀 PUMP CATCHER TRIGGERED ${sym} ({platform_name}) · score {pump_signal['confidence']:.2f}")
+
         for s in survivors[:15]:
             sym = s.get("symbol", "")
+            # Don't duplicate if already flagged by pump detector
+            if any(c["symbol"] == sym for c in scored_candidates):
+                continue
+
             market_data = await self._analyze_market_vwap(sym, platform=platform_name)
             analysis = self.strategy.analyze_coin(sym, market_data, ticker_stats=s)
             if not analysis:
