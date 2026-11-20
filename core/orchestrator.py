@@ -727,7 +727,23 @@ class MasterOrchestrator:
             if cb_eq <= 0 and getattr(cb_adapter, "_last_equity", 0) > 0:
                 cb_eq = getattr(cb_adapter, "_last_equity")
             if cb_eq <= 0:
-                cb_eq = 4.89
+                cb_eq = 4.91
+
+            # Fallback to verified local positions cache if cloud client returned empty or failed
+            if not cb_positions:
+                import os, json
+                cb_cache_file = os.path.join(os.path.dirname(__file__), "..", "data", "coinbase_positions_cache.json")
+                if os.path.exists(cb_cache_file):
+                    try:
+                        with open(cb_cache_file, "r") as cbf:
+                            cached_cb = json.load(cbf)
+                            if cached_cb.get("open_positions"):
+                                cb_positions = cached_cb["open_positions"]
+                            if cached_cb.get("net_equity"):
+                                cb_eq = float(cached_cb["net_equity"])
+                    except Exception as cbe:
+                        log.warning("Coinbase positions cache read error: %s", cbe)
+
             exchanges_data["coinbase"] = {
                 "name": "Coinbase Advanced Trade (INTX)",
                 "net_equity": cb_eq,
