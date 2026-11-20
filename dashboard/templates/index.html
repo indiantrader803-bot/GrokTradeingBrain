@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Delta AI Trading Platform · Enterprise Command Desk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -583,6 +585,189 @@
       border-color: var(--cyan);
       box-shadow: 0 0 12px var(--cyan-glow);
     }
+  
+    /* ── COLLAPSIBLE MENUBAR & ALL-DEVICE RESPONSIVE (IPHONE / IPAD / DESKTOP) ── */
+    :root {
+      --sidebar-width: 250px;
+      --sidebar-collapsed-width: 68px;
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+      --sar: env(safe-area-inset-right, 0px);
+    }
+
+    body {
+      padding-top: var(--sat);
+      padding-bottom: var(--sab);
+      padding-left: var(--sal);
+      padding-right: var(--sar);
+      overflow-x: hidden;
+    }
+
+    /* Sidebar Base */
+    aside {
+      width: var(--sidebar-width);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: width, transform;
+    }
+
+    .app-main {
+      margin-left: var(--sidebar-width);
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      width: calc(100% - var(--sidebar-width));
+      box-sizing: border-box;
+    }
+
+    /* Desktop Collapsed State */
+    body.sidebar-collapsed aside {
+      width: var(--sidebar-collapsed-width);
+    }
+    body.sidebar-collapsed .brand .brand-text,
+    body.sidebar-collapsed .nav-item .nav-label,
+    body.sidebar-collapsed .aside-footer-text {
+      display: none;
+    }
+    body.sidebar-collapsed .brand {
+      justify-content: center;
+      padding: 18px 0;
+    }
+    body.sidebar-collapsed .nav-item {
+      justify-content: center;
+      padding: 12px 0;
+    }
+    body.sidebar-collapsed .nav-item .icon {
+      font-size: 19px;
+      margin: 0;
+    }
+    body.sidebar-collapsed .app-main {
+      margin-left: var(--sidebar-collapsed-width);
+      width: calc(100% - var(--sidebar-collapsed-width));
+    }
+
+    /* Sidebar Collapse Toggle Buttons */
+    .sidebar-toggle-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .sidebar-toggle-btn:hover {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan-glow);
+    }
+
+    /* Mobile Backdrop Overlay */
+    .mobile-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 95;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .mobile-overlay.active {
+      display: block;
+      opacity: 1;
+    }
+
+    /* Mobile Header Bar */
+    .mobile-header-bar {
+      display: none;
+      position: sticky;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(8, 14, 28, 0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 90;
+    }
+
+    /* Mobile & Tablet Media Queries */
+    @media (max-width: 992px) {
+      aside {
+        transform: translateX(-100%);
+        width: 270px !important;
+        box-shadow: 10px 0 35px rgba(0,0,0,0.8);
+      }
+      body.mobile-sidebar-open aside {
+        transform: translateX(0);
+      }
+      .app-main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 16px;
+      }
+      .mobile-header-bar {
+        display: flex;
+      }
+      .desktop-toggle {
+        display: none !important;
+      }
+      .grid-4 {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .app-main {
+        padding: 12px 10px 80px 10px;
+      }
+      .grid-4 {
+        grid-template-columns: 1fr !important;
+        gap: 10px;
+      }
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .top-bar-right {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .card {
+        padding: 14px;
+        border-radius: 12px;
+      }
+      .card-value {
+        font-size: 22px;
+      }
+      .chart-container-box {
+        height: 190px !important;
+      }
+      .table-wrap {
+        border-radius: 8px;
+      }
+      table {
+        font-size: 11px;
+      }
+      th, td {
+        padding: 8px 10px;
+      }
+    }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -595,44 +780,69 @@
   <!-- Falling Coin Drop Particle Canvas -->
   <canvas id="coinCanvas"></canvas>
 
-  <!-- Sidebar Navigation -->
-  <aside>
+  <!-- Mobile Backdrop Overlay -->
+  <div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileSidebar()"></div>
+
+  <!-- Sidebar Navigation (Collapsible on Desktop & Drawer on Mobile) -->
+  <aside id="appSidebar">
     <div class="brand">
       <div class="brand-icon-bot">🤖</div>
-      <div>
+      <div class="brand-text">
         DELTA <span>AI DESK</span>
         <div style="font-size: 9.5px; color: var(--muted); font-family: var(--mono); font-weight: 400;">v2.0 24/7 Suite</div>
       </div>
+      <button class="sidebar-toggle-btn desktop-toggle" style="margin-left: auto; width: 30px; height: 30px; font-size: 14px;" onclick="toggleDesktopSidebar()" title="Collapse Sidebar">
+        ◀
+      </button>
     </div>
     <ul class="nav-list">
-      <li class="nav-item active" onclick="switchPage('overview')"><span class="icon">📊</span> 1. Overview</li>
-      <li class="nav-item" onclick="switchPage('markets')"><span class="icon">📈</span> 2. Live Markets</li>
-      <li class="nav-item" onclick="switchPage('signals')"><span class="icon">⚡</span> 3. AI Signals</li>
-      <li class="nav-item" onclick="switchPage('committee')"><span class="icon">🧠</span> 4. 7-Agent Committee</li>
-      <li class="nav-item" onclick="switchPage('positions')"><span class="icon">🎯</span> 5. Positions</li>
-      <li class="nav-item" onclick="switchPage('orders')"><span class="icon">📝</span> 6. Orders</li>
-      <li class="nav-item" onclick="switchPage('journal')"><span class="icon">📖</span> 7. Trade Journal</li>
-      <li class="nav-item" onclick="switchPage('analytics')"><span class="icon">📉</span> 8. Analytics</li>
-      <li class="nav-item" onclick="switchPage('risk')"><span class="icon">🛡️</span> 9. Risk Settings</li>
-      <li class="nav-item" onclick="switchPage('exchange')"><span class="icon">🔌</span> 10. Exchange Status</li>
-      <li class="nav-item" onclick="switchPage('logs')"><span class="icon">📜</span> 11. System Logs</li>
-      <li class="nav-item" onclick="switchPage('settings')"><span class="icon">⚙️</span> 12. Settings</li>
+      <li class="nav-item active" onclick="handleNavClick('overview', this)"><span class="icon">📊</span> <span class="nav-label">1. Overview</span></li>
+      <li class="nav-item" onclick="handleNavClick('markets', this)"><span class="icon">📈</span> <span class="nav-label">2. Live Markets</span></li>
+      <li class="nav-item" onclick="handleNavClick('signals', this)"><span class="icon">⚡</span> <span class="nav-label">3. AI Signals</span></li>
+      <li class="nav-item" onclick="handleNavClick('committee', this)"><span class="icon">🧠</span> <span class="nav-label">4. 7-Agent Committee</span></li>
+      <li class="nav-item" onclick="handleNavClick('positions', this)"><span class="icon">🎯</span> <span class="nav-label">5. Positions</span></li>
+      <li class="nav-item" onclick="handleNavClick('orders', this)"><span class="icon">📝</span> <span class="nav-label">6. Orders</span></li>
+      <li class="nav-item" onclick="handleNavClick('journal', this)"><span class="icon">📖</span> <span class="nav-label">7. Trade Journal</span></li>
+      <li class="nav-item" onclick="handleNavClick('analytics', this)"><span class="icon">📉</span> <span class="nav-label">8. Analytics</span></li>
+      <li class="nav-item" onclick="handleNavClick('risk', this)"><span class="icon">🛡️</span> <span class="nav-label">9. Risk Settings</span></li>
+      <li class="nav-item" onclick="handleNavClick('exchange', this)"><span class="icon">🔌</span> <span class="nav-label">10. Exchange Status</span></li>
+      <li class="nav-item" onclick="handleNavClick('logs', this)"><span class="icon">📜</span> <span class="nav-label">11. System Logs</span></li>
+      <li class="nav-item" onclick="handleNavClick('settings', this)"><span class="icon">⚙️</span> <span class="nav-label">12. Settings</span></li>
     </ul>
-    <div style="padding: 16px 20px; border-top: 1px solid var(--card-border); font-family: var(--mono); font-size: 11px;">
-      <button class="btn-coin-drop" onclick="triggerCoinRain(20)">💰 Rain Coins!</button>
+    <div style="padding: 14px 12px; border-top: 1px solid var(--card-border); font-family: var(--mono); font-size: 11px; text-align:center;">
+      <button class="btn-coin-drop" onclick="triggerCoinRain(20)" style="width: 100%; justify-content: center;">
+        💰 <span class="aside-footer-text">Rain Coins</span>
+      </button>
     </div>
   </aside>
+
+  <!-- Mobile Top Navigation Header -->
+  <header class="mobile-header-bar">
+    <button class="sidebar-toggle-btn" onclick="toggleMobileSidebar()" aria-label="Open Menu">
+      ☰
+    </button>
+    <div style="display:flex; align-items:center; gap: 8px;">
+      <div class="brand-icon-bot" style="width: 28px; height: 28px; font-size: 16px;">🤖</div>
+      <span style="font-weight: 800; font-size: 14px; letter-spacing: -0.5px;">DELTA <span style="color:var(--cyan);">AI</span></span>
+    </div>
+    <button class="btn-coin-drop" onclick="triggerCoinRain(10)" style="padding: 4px 8px; font-size: 9px;">
+      ✨ Coins
+    </button>
+  </header>
 
   <!-- Main Content Container -->
   <div class="app-main">
     
-    <!-- Top Action Bar -->
+    <!-- Top Action Bar with Desktop Collapse Trigger -->
     <div class="top-bar">
       <div class="mode-indicator">
+        <button class="sidebar-toggle-btn desktop-toggle" onclick="toggleDesktopSidebar()" title="Toggle Sidebar" style="margin-right: 4px;">
+          ☰
+        </button>
         <h2 id="page-title" style="font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">Platform Overview</h2>
         <span class="pill pill-paper" id="mode-badge"><span class="pulse-dot"></span> PAPER TRADING</span>
       </div>
-      <div style="display:flex; align-items:center; gap: 12px;">
+      <div class="top-bar-right" style="display:flex; align-items:center; gap: 12px;">
         <button class="btn-coin-drop" onclick="triggerCoinRain(12)">✨ Play Coins</button>
         <div style="font-size: 11.5px; font-family: var(--mono); color: var(--cyan); background: rgba(6, 182, 212, 0.08); border: 1px solid var(--cyan-glow); padding: 5px 12px; border-radius: 8px;" id="clock-display">
           UTC: --:--:--
@@ -1071,15 +1281,65 @@
       settings: '12. System Settings'
     };
 
-    function switchPage(pageId) {
+    
+    /* ── COLLAPSIBLE MENUBAR & MOBILE DRAWER CONTROLLER ── */
+    function toggleDesktopSidebar() {
+      document.body.classList.toggle('sidebar-collapsed');
+      const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+      localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
+      
+      // Update toggle icon
+      const toggleBtn = document.querySelector('.desktop-toggle');
+      if (toggleBtn) {
+        toggleBtn.textContent = isCollapsed ? '▶' : '◀';
+      }
+
+      // Resize chart instances gracefully after sidebar transition
+      setTimeout(() => {
+        if (overviewEquityChartInstance) overviewEquityChartInstance.resize();
+        if (winLossDoughnutInstance) winLossDoughnutInstance.resize();
+        if (cumulativePnlChartInstance) cumulativePnlChartInstance.resize();
+      }, 350);
+    }
+
+    function toggleMobileSidebar() {
+      document.body.classList.toggle('mobile-sidebar-open');
+      const overlay = document.getElementById('mobileOverlay');
+      if (overlay) {
+        overlay.classList.toggle('active', document.body.classList.contains('mobile-sidebar-open'));
+      }
+    }
+
+    function handleNavClick(pageId, element) {
+      switchPage(pageId, element);
+      // Auto-close drawer on mobile when an item is selected
+      if (window.innerWidth <= 992) {
+        document.body.classList.remove('mobile-sidebar-open');
+        const overlay = document.getElementById('mobileOverlay');
+        if (overlay) overlay.classList.remove('active');
+      }
+    }
+
+    // Restore desktop collapsed preference
+    if (localStorage.getItem('sidebar_collapsed') === 'true' && window.innerWidth > 992) {
+      document.body.classList.add('sidebar-collapsed');
+      const toggleBtn = document.querySelector('.desktop-toggle');
+      if (toggleBtn) toggleBtn.textContent = '▶';
+    }
+
+    function switchPage(pageId, element) {
       activePage = pageId;
       document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
       const target = document.getElementById(`page-${pageId}`);
       if (target) target.classList.add('active');
       document.getElementById('page-title').textContent = pageTitles[pageId] || 'Platform';
-      event.currentTarget.classList.add('active');
-      triggerCoinRain(6); // Playful burst on page change
+      if (element) {
+        element.classList.add('active');
+      } else if (window.event && window.event.currentTarget) {
+        window.event.currentTarget.classList.add('active');
+      }
+      triggerCoinRain(6);
     }
 
     function updateClock() {
