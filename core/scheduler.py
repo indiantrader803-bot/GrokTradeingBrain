@@ -39,26 +39,18 @@ class TradingScheduler:
     ) -> tuple[bool, str]:
         """
         Returns (allowed: bool, reason: str)
+        Rule: Stop trading on Saturday and Sunday.
+        Trading active strictly from Monday morning to Friday night.
         """
+        # Saturday (5) & Sunday (6) strictly stopped
+        if self.is_weekend():
+            return False, "Weekend Paused – Saturday & Sunday trading strictly disabled. Next session: Monday morning"
 
+        # Monday (0) to Friday (4) normal trading hours
         if self.is_weekday():
-            return True, "Weekday – normal trading session"
+            return True, "Trading Active – Monday morning to Friday night session"
 
-        # Weekend 24/7 Crypto rule
-        if getattr(self.config, "trade_weekends_247_crypto", True):
-            return True, "Weekend – 24/7 crypto perpetuals active"
-
-        # Weekend logic
-        if not self.config.trade_weekends_only_on_strong_flow:
-            return False, "Weekend trading is disabled"
-
-        if has_high_impact_news:
-            return True, "Weekend – High impact news detected"
-
-        if has_strong_order_flow and has_high_volume:
-            return True, "Weekend – Strong order flow + high volume detected"
-
-        return False, "Weekend – No strong flow or high-impact news. Trading paused."
+        return False, "Trading Paused – Outside permitted trading window"
 
     def get_status(self) -> dict:
         now = self.now()
