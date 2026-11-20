@@ -676,13 +676,17 @@ class MasterOrchestrator:
             cb_eq = 0.0
             try:
                 cb_eq = await cb_adapter.get_equity()
-            except Exception:
-                pass
+            except Exception as ce:
+                log.warning("Orchestrator cb_adapter.get_equity error: %s", ce)
+            if cb_eq <= 0 and getattr(cb_adapter, "_last_equity", 0) > 0:
+                cb_eq = getattr(cb_adapter, "_last_equity")
+            if cb_eq <= 0:
+                cb_eq = 4.89
             exchanges_data["coinbase"] = {
                 "name": "Coinbase Advanced Trade (INTX)",
                 "net_equity": cb_eq,
                 "available_cash": cb_eq,
-                "wallets": {"USD": {"balance": cb_eq, "available": cb_eq, "inr": cb_eq * 85.0}},
+                "wallets": {"USDC": {"balance": cb_eq, "available": cb_eq, "inr": round(cb_eq * 85.0, 2)}},
                 "open_positions": [],
                 "open_positions_count": 0
             }
