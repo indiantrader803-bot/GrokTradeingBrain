@@ -110,14 +110,29 @@ class CoinbaseAdapter(ExchangeAdapter):
             if self.client:
                 prod = await asyncio.to_thread(self.client.get_product, product_id)
                 price = getattr(prod, "price", None) or (prod.get("price") if isinstance(prod, dict) else None)
-                if price:
+                if price and float(price) > 0:
                     return float(price)
+            # If perpetual contract price field is blank in API response, get spot price
+            if "-PERPETUAL" in product_id:
+                spot_id = product_id.replace("_USDC-PERPETUAL", "-USDC")
+                try:
+                    spot_prod = await asyncio.to_thread(self.client.get_product, spot_id) if self.client else None
+                    spot_p = getattr(spot_prod, "price", None) or (spot_prod.get("price") if isinstance(spot_prod, dict) else None)
+                    if spot_p and float(spot_p) > 0:
+                        return float(spot_p)
+                except Exception:
+                    pass
             # Fallback to public client
             from coinbase.rest import RESTClient
             pub = RESTClient()
             prod = await asyncio.to_thread(pub.get_public_product, product_id)
             price = getattr(prod, "price", None) or (prod.get("price") if isinstance(prod, dict) else None)
-            return float(price or 0.0)
+            if price and float(price) > 0:
+                return float(price)
+            clean_spot = product_id.replace("_USDC-PERPETUAL", "-USDC")
+            prod_spot = await asyncio.to_thread(pub.get_public_product, clean_spot)
+            price_spot = getattr(prod_spot, "price", None) or (prod_spot.get("price") if isinstance(prod_spot, dict) else None)
+            return float(price_spot or 0.0)
         except Exception as e:
             log.warning("Coinbase get_price error (%s): %s", symbol, e)
             return 0.0
@@ -125,6 +140,8 @@ class CoinbaseAdapter(ExchangeAdapter):
     async def get_candles(self, symbol: str, resolution: str = "5m", limit_hours: int = 4) -> List[Dict[str, Any]]:
         """Fetches historical candles from Coinbase for strategy scoring."""
         product_id = self._normalize_symbol(symbol)
+        # Use spot product_id for candles if perpetual has 0 public candles
+        candle_prod = product_id.replace("_USDC-PERPETUAL", "-USDC") if "-PERPETUAL" in product_id else product_id
         now = int(time.time())
         start = now - (3600 * limit_hours)
         gran_map = {
@@ -144,7 +161,7 @@ class CoinbaseAdapter(ExchangeAdapter):
             c_client = self.client or RESTClient()
             res = await asyncio.to_thread(
                 c_client.get_public_candles,
-                product_id,
+                candle_prod,
                 start=str(start),
                 end=str(now),
                 granularity=gran

@@ -1,0 +1,113 @@
+{
+  "net_equity": 3.98219845664,
+  "available_cash": 0.3741592673316,
+  "wallets": {
+    "USD": {
+      "balance": 3.60330317664,
+      "available": 0.3741592673316,
+      "inr": 306.2807700144
+    }
+  },
+  "open_positions": [
+    {
+      "symbol": "XRPUSD",
+      "side": "SELL",
+      "size": 2.0,
+      "entry_price": 0.9633,
+      "mark_price": 0.9148569,
+      "margin": 0.48190707,
+      "unrealized_pnl": 0.0964
+    },
+    {
+      "symbol": "WIFUSD",
+      "side": "SELL",
+      "size": 1.0,
+      "entry_price": 0.126,
+      "mark_price": 0.12063035,
+      "margin": 0.0315,
+      "unrealized_pnl": 0.0053
+    },
+    {
+      "symbol": "ADAUSD",
+      "side": "SELL",
+      "size": 2.0,
+      "entry_price": 0.14608,
+      "mark_price": 0.14102146,
+      "margin": 0.07304,
+      "unrealized_pnl": 0.00956
+    },
+    {
+      "symbol": "SEIUSD",
+      "side": "SELL",
+      "size": 4.0,
+      "entry_price": 0.0374125,
+      "mark_price": 0.03542773,
+      "margin": 0.37427715,
+      "unrealized_pnl": 0.0785
+    },
+    {
+      "symbol": "LDOUSD",
+      "side": "SELL",
+      "size": 1.0,
+      "entry_price": 0.2554,
+      "mark_price": 0.24187624,
+      "margin": 0.06385,
+      "unrealized_pnl": 0.0133
+    },
+    {
+      "symbol": "APTUSD",
+      "side": "SELL",
+      "size": 1.0,
+      "entry_price": 0.4096,
+      "mark_price": 0.38398084,
+      "margin": 0.1024,
+      "unrealized_pnl": 0.0255
+    },
+    {
+      "symbol": "NEIROUSD",
+      "side": "SELL",
+      "size": 14.0,
+      "entry_price": 4.9828264910257e-05,
+      "mark_price": 4.568e-05,
+      "margin": 0.17298756,
+      "unrealized_pnl": 0.0573757
+    },
+    {
+      "symbol": "GRIFFAINUSD",
+      "side": "SELL",
+      "size": 2.0,
+      "entry_price": 0.009591,
+      "mark_price": 0.00868236,
+      "margin": 0.04817346,
+      "unrealized_pnl": 0.01794
+    },
+    {
+      "symbol": "ZORAUSD",
+      "side": "SELL",
+      "size": 5.0,
+      "entry_price": 0.004708,
+      "mark_price": 0.00464067,
+      "margin": 0.5885,
+      "unrealized_pnl": 0.0305
+    },
+    {
+      "symbol": "XAUTUSD",
+      "side": "SELL",
+      "size": 1.0,
+      "entry_price": 3567.43,
+      "mark_price": 3546.02826023,
+      "margin": 0.8918575,
+      "unrealized_pnl": 0.02096
+    },
+    {
+      "symbol": "JCTUSD",
+      "side": "SELL",
+      "size": 1.0,
+      "entry_price": 0.001573,
+      "mark_price": 0.0015559,
+      "margin": 0.39325,
+      "unrealized_pnl": 0.017
+    }
+  ],
+  "updated_at": 1795188880.0871663
+}

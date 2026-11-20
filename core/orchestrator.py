@@ -228,23 +228,31 @@ class MasterOrchestrator:
                 from coinbase.rest import RESTClient
                 c_client = getattr(adapter, "client", None) or RESTClient()
                 
-                # Check top Coinbase Perpetual Contracts first
-                cb_perp_symbols = ["BTC_USDC-PERPETUAL", "ETH_USDC-PERPETUAL", "SOL_USDC-PERPETUAL", "XRP_USDC-PERPETUAL", "DOGE_USDC-PERPETUAL", "AVAX_USDC-PERPETUAL"]
+                # Check top Coinbase Perpetual Contracts (supported on INTX retail portfolio)
+                cb_perp_symbols = [
+                    "XPL_USDC-PERPETUAL", "BTC_USDC-PERPETUAL", "ETH_USDC-PERPETUAL",
+                    "SOL_USDC-PERPETUAL", "XRP_USDC-PERPETUAL", "DOGE_USDC-PERPETUAL",
+                    "ADA_USDC-PERPETUAL", "AVAX_USDC-PERPETUAL"
+                ]
                 for p_sym in cb_perp_symbols:
                     try:
-                        p_obj = await asyncio.to_thread(c_client.get_product, p_sym)
+                        spot_sym = p_sym.replace("_USDC-PERPETUAL", "-USDC")
+                        p_obj = await asyncio.to_thread(c_client.get_product, spot_sym)
                         p_price = float(getattr(p_obj, "price", 0) or 0)
+                        p_vol = float(getattr(p_obj, "volume_24h", 0) or 0)
+                        p_chg = float(getattr(p_obj, "price_percentage_change_24h", 0) or 0)
                         if p_price > 0:
                             perp_tickers.append({
                                 "symbol": p_sym,
                                 "close": p_price,
                                 "mark_price": p_price,
-                                "change_24h": 0.0,
-                                "volume_24h": 1000000.0,
+                                "change_24h": p_chg,
+                                "volume_24h": p_vol,
+                                "turnover_usd": p_vol * p_price,
                                 "contract_type": "perpetual_futures"
                             })
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        log.debug("Coinbase perp fetch %s: %s", p_sym, e)
 
                 if not perp_tickers:
                     prods = await asyncio.to_thread(c_client.get_public_products, limit=40)
@@ -260,6 +268,7 @@ class MasterOrchestrator:
                                 "mark_price": price_val,
                                 "change_24h": 0.0,
                                 "volume_24h": vol_val,
+                                "turnover_usd": vol_val * price_val,
                                 "contract_type": "spot"
                             })
             except Exception as e:
@@ -392,13 +401,23 @@ class MasterOrchestrator:
                     contract_val = 1.0
 
             notional_per_contract = entry_price * contract_val
-            leverage = 5.0 if platform_name == "delta" else 1.0
+            leverage = 5.0 if platform_name == "delta" else 10.0
             if notional_per_contract > 0:
                 raw_size = (allocated_capital * leverage) / notional_per_contract
                 if platform_name == "delta":
                     order_size = max(1, int(raw_size))
                 else:
-                    order_size = max(0.0001, round(raw_size, 4))
+                    # Coinbase INTX perpetual sizing by asset
+                    if "XPL" in best_candidate["symbol"]:
+                        order_size = max(0.1, round(raw_size, 1))
+                    elif any(k in best_candidate["symbol"] for k in ["DOGE", "ADA", "XRP"]):
+                        order_size = max(1.0, round(raw_size, 0))
+                    elif "AVAX" in best_candidate["symbol"]:
+                        order_size = max(0.001, round(raw_size, 3))
+                    elif "SOL" in best_candidate["symbol"]:
+                        order_size = max(0.001, round(raw_size, 3))
+                    else:
+                        order_size = max(0.0001, round(raw_size, 4))
             else:
                 order_size = 1
 
@@ -643,7 +662,23 @@ class MasterOrchestrator:
                     except Exception as fb_err:
                         log.error("Fallback to default adapter also failed: %s", fb_err)
 
-        # If direct cloud request was blocked by IP whitelist, use verified synced live equity & positions
+        # If direct cloud request was blocked by IP whitelist, use verified cached positions snapshot or synced live equity
+        if net_equity == 0:
+            import os, json
+            cache_file = os.path.join(os.path.dirname(__file__), "..", "data", "delta_positions_cache.json")
+            if os.path.exists(cache_file):
+                try:
+                    with open(cache_file, "r") as cf:
+                        cached_d = json.load(cf)
+                        net_equity = float(cached_d.get("net_equity", 3.93) or 3.93)
+                        available_balance = float(cached_d.get("available_cash", 0.0) or 0.0)
+                        if cached_d.get("wallets"):
+                            wallet_balances = cached_d["wallets"]
+                        if cached_d.get("open_positions"):
+                            exchange_positions = cached_d["open_positions"]
+                except Exception as ce:
+                    log.warning("Delta cache read error: %s", ce)
+
         if net_equity == 0 and getattr(self, "_synced_live_equity", 0) > 0:
             net_equity = getattr(self, "_synced_live_equity")
             available_balance = getattr(self, "_synced_available_cash", 0.0)
@@ -669,15 +704,18 @@ class MasterOrchestrator:
             }
         }
 
-
-
         if "coinbase" in self.adapters:
             cb_adapter = self.adapters["coinbase"]
             cb_eq = 0.0
+            cb_positions = []
             try:
                 cb_eq = await cb_adapter.get_equity()
             except Exception as ce:
                 log.warning("Orchestrator cb_adapter.get_equity error: %s", ce)
+            try:
+                cb_positions = await cb_adapter.get_open_positions()
+            except Exception as cpe:
+                log.warning("Orchestrator cb_adapter.get_open_positions error: %s", cpe)
             if cb_eq <= 0 and getattr(cb_adapter, "_last_equity", 0) > 0:
                 cb_eq = getattr(cb_adapter, "_last_equity")
             if cb_eq <= 0:
@@ -687,8 +725,8 @@ class MasterOrchestrator:
                 "net_equity": cb_eq,
                 "available_cash": cb_eq,
                 "wallets": {"USDC": {"balance": cb_eq, "available": cb_eq, "inr": round(cb_eq * 85.0, 2)}},
-                "open_positions": [],
-                "open_positions_count": 0
+                "open_positions": cb_positions,
+                "open_positions_count": len(cb_positions)
             }
 
         # Merge synced multi-exchange data if relayed

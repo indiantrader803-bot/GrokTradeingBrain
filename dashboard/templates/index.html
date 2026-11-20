@@ -588,86 +588,97 @@ body {
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
 }
 
-/* Agents Row Container - 7 Specialized Agents */
-.swarm-agents-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
+/* Innovative Swarm Stepper - Modern Glassmorphic Track */
+.swarm-stepper-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   position: relative;
+  padding: 12px 6px;
+  margin-top: 4px;
 }
-.agent-node-card {
-  background: #181a1f;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 8px 3px;
+.swarm-stepper-line {
+  position: absolute;
+  top: 32px;
+  left: 20px;
+  right: 20px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  z-index: 1;
+}
+.swarm-stepper-line-active {
+  position: absolute;
+  top: 32px;
+  left: 20px;
+  height: 3px;
+  background: linear-gradient(90deg, #22c55e 0%, #3b82f6 80%, #60a5fa 100%);
+  border-radius: 2px;
+  z-index: 2;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+}
+.swarm-step-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 4px;
   position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 2;
+  z-index: 3;
+  cursor: pointer;
+  flex: 1;
   min-width: 0;
 }
-.agent-node-card.active {
-  border-color: #3b82f6;
-  background: #141b2a;
-  box-shadow: 0 0 14px rgba(59, 130, 246, 0.35);
-  transform: translateY(-2px);
-}
-.agent-node-card.success {
-  border-color: #22c55e;
-  background: #11231b;
-  box-shadow: 0 0 12px rgba(34, 197, 94, 0.25);
-}
-.agent-icon-halo {
-  width: 34px;
-  height: 34px;
+.swarm-step-bubble {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: #232731;
+  background: #181a20;
+  border: 2px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
-  position: relative;
-  transition: transform 0.3s ease;
+  font-size: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
-.agent-node-card.active .agent-icon-halo {
-  background: #1e3a8a;
-  transform: scale(1.1);
+.swarm-step-item.active .swarm-step-bubble {
+  border-color: #3b82f6;
+  background: radial-gradient(circle, #1d4ed8 0%, #1e1b4b 100%);
+  transform: scale(1.18);
+  box-shadow: 0 0 18px rgba(59, 130, 246, 0.7), inset 0 0 10px rgba(96, 165, 250, 0.5);
 }
-.agent-node-card.success .agent-icon-halo {
-  background: #14532d;
+.swarm-step-item.success .swarm-step-bubble {
+  border-color: #22c55e;
+  background: radial-gradient(circle, #15803d 0%, #064e3b 100%);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.45);
 }
-.agent-role-name {
-  font-size: 9.5px;
+.swarm-step-label {
+  font-size: 10px;
   font-weight: 800;
   color: #fff;
+  margin-top: 6px;
   letter-spacing: -0.01em;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
 }
-.agent-status-label {
+.swarm-step-status {
   font-size: 8px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
+  margin-top: 2px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
 }
-.agent-node-card.active .agent-status-label {
+.swarm-step-item.active .swarm-step-label {
   color: #60a5fa;
-  font-weight: 700;
 }
-.agent-node-card.success .agent-status-label {
+.swarm-step-item.active .swarm-step-status {
+  color: #93c5fd;
+  font-weight: 800;
+}
+.swarm-step-item.success .swarm-step-status {
   color: #4ade80;
-  font-weight: 700;
 }
 
 /* Flying Token Animation Track */
@@ -988,48 +999,51 @@ body {
       </div>
     </div>
 
-    <!-- 7 Specialized Autonomous Agents Grid -->
-    <div class="swarm-agents-grid">
-      <div class="agent-node-card active" id="agent-card-1">
-        <div class="agent-icon-halo">🔍</div>
-        <div class="agent-role-name">1. Scanner</div>
-        <div class="agent-status-label" id="agent-status-1">Scanning</div>
+    <!-- Innovative 7 Specialized Autonomous Agents Pipeline -->
+    <div class="swarm-stepper-wrap">
+      <div class="swarm-stepper-line"></div>
+      <div class="swarm-stepper-line-active" id="stepper-line-progress" style="width: 14%;"></div>
+
+      <div class="swarm-step-item active" id="agent-card-1">
+        <div class="swarm-step-bubble">🔍</div>
+        <div class="swarm-step-label">Scanner</div>
+        <div class="swarm-step-status" id="agent-status-1">Scanning</div>
       </div>
 
-      <div class="agent-node-card" id="agent-card-2">
-        <div class="agent-icon-halo">📈</div>
-        <div class="agent-role-name">2. Trend</div>
-        <div class="agent-status-label" id="agent-status-2">Standby</div>
+      <div class="swarm-step-item" id="agent-card-2">
+        <div class="swarm-step-bubble">📈</div>
+        <div class="swarm-step-label">Trend</div>
+        <div class="swarm-step-status" id="agent-status-2">Standby</div>
       </div>
 
-      <div class="agent-node-card" id="agent-card-3">
-        <div class="agent-icon-halo">⚡</div>
-        <div class="agent-role-name">3. Momentum</div>
-        <div class="agent-status-label" id="agent-status-3">Standby</div>
+      <div class="swarm-step-item" id="agent-card-3">
+        <div class="swarm-step-bubble">⚡</div>
+        <div class="swarm-step-label">Momentum</div>
+        <div class="swarm-step-status" id="agent-status-3">Standby</div>
       </div>
 
-      <div class="agent-node-card" id="agent-card-4">
-        <div class="agent-icon-halo">🛡️</div>
-        <div class="agent-role-name">4. Skeptic</div>
-        <div class="agent-status-label" id="agent-status-4">Standby</div>
+      <div class="swarm-step-item" id="agent-card-4">
+        <div class="swarm-step-bubble">🛡️</div>
+        <div class="swarm-step-label">Skeptic</div>
+        <div class="swarm-step-status" id="agent-status-4">Standby</div>
       </div>
 
-      <div class="agent-node-card" id="agent-card-5">
-        <div class="agent-icon-halo">⚖️</div>
-        <div class="agent-role-name">5. Sizer</div>
-        <div class="agent-status-label" id="agent-status-5">Standby</div>
+      <div class="swarm-step-item" id="agent-card-5">
+        <div class="swarm-step-bubble">⚖️</div>
+        <div class="swarm-step-label">Sizer</div>
+        <div class="swarm-step-status" id="agent-status-5">Standby</div>
       </div>
 
-      <div class="agent-node-card" id="agent-card-6">
-        <div class="agent-icon-halo">🚀</div>
-        <div class="agent-role-name">6. Trader</div>
-        <div class="agent-status-label" id="agent-status-6">Armed</div>
+      <div class="swarm-step-item" id="agent-card-6">
+        <div class="swarm-step-bubble">🚀</div>
+        <div class="swarm-step-label">Trader</div>
+        <div class="swarm-step-status" id="agent-status-6">Armed</div>
       </div>
 
-      <div class="agent-node-card" id="agent-card-7">
-        <div class="agent-icon-halo">📓</div>
-        <div class="agent-role-name">7. Journal</div>
-        <div class="agent-status-label" id="agent-status-7">Logging</div>
+      <div class="swarm-step-item" id="agent-card-7">
+        <div class="swarm-step-bubble">📓</div>
+        <div class="swarm-step-label">Journal</div>
+        <div class="swarm-step-status" id="agent-status-7">Logging</div>
       </div>
     </div>
 
@@ -1137,19 +1151,25 @@ function updateSwarmFlow(targetSymbol) {
     };
   }
 
-  // Update All 7 Agent Cards
+  // Update All 7 Agent Steps & Progress Line
+  const progressLine = document.getElementById('stepper-line-progress');
+  if (progressLine) {
+    const pct = Math.round((stage.card / 7) * 100);
+    progressLine.style.width = `${pct}%`;
+  }
+
   for (let i = 1; i <= 7; i++) {
     const card = document.getElementById(`agent-card-${i}`);
     const status = document.getElementById(`agent-status-${i}`);
     if (card && status) {
       if (i < stage.card) {
-        card.className = 'agent-node-card success';
+        card.className = 'swarm-step-item success';
         status.textContent = 'Passed ✓';
       } else if (i === stage.card) {
-        card.className = 'agent-node-card active';
+        card.className = 'swarm-step-item active';
         status.textContent = stage[`stat${i}`] || 'Active';
       } else {
-        card.className = 'agent-node-card';
+        card.className = 'swarm-step-item';
         status.textContent = 'Standby';
       }
     }
@@ -1339,7 +1359,11 @@ async function fetchLiveStatus() {
     const offset = 188 - (188 * pct);
     gauge.style.strokeDashoffset = offset;
 
-    const positions = ex.open_positions || (currentSelectedExchange === 'delta' ? (data.open_positions || []) : []);
+    const positions = (ex && ex.open_positions && ex.open_positions.length > 0) 
+      ? ex.open_positions 
+      : ((currentSelectedExchange === 'delta' && data.open_positions && data.open_positions.length > 0) 
+          ? data.open_positions 
+          : []);
     const skippedCount = (data.agent_stats && data.agent_stats.filter_killed_count) || 108;
     document.getElementById('trade-stats-counter').textContent = `${positions.length} traded · ${skippedCount} skipped`;
 
@@ -1378,11 +1402,24 @@ async function fetchLiveStatus() {
             <div class="trade-item-left">
               <div class="trade-coin-avatar">⚡</div>
               <div>
-                <div class="trade-symbol-text">Coinbase Ready</div>
-                <div class="trade-summary-text">Portfolio $3.07 · waiting for signal trigger</div>
+                <div class="trade-symbol-text">Coinbase INTX Ready</div>
+                <div class="trade-summary-text">Portfolio $4.89 USDC · autonomous 24/7 scanning active</div>
               </div>
             </div>
             <div class="trade-badge-right gain">ACTIVE</div>
+          </div>
+        `;
+      } else {
+        logList.innerHTML = `
+          <div class="trade-item-pill">
+            <div class="trade-item-left">
+              <div class="trade-coin-avatar">⚡</div>
+              <div>
+                <div class="trade-symbol-text">Delta Exchange Ready</div>
+                <div class="trade-summary-text">Connecting live positions stream · 24/7 autonomous</div>
+              </div>
+            </div>
+            <div class="trade-badge-right gain">ARMED</div>
           </div>
         `;
       }
