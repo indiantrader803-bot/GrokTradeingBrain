@@ -50,7 +50,7 @@ templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "dashbo
 async def lifespan(app: FastAPI):
     global orchestrator, background_task
 
-    mode_str = os.getenv("TRADING_MODE", "demo").lower()
+    mode_str = os.getenv("TRADING_MODE", "real").lower()
     trading_mode = TradingMode.REAL if mode_str == "real" else TradingMode.DEMO
     starting_eq = float(os.getenv("STARTING_EQUITY", "1000.0"))
     check_interval = int(os.getenv("CHECK_INTERVAL_SECONDS", "60"))
@@ -554,7 +554,7 @@ async def exchange_status():
 async def platform_status():
     try:
         if not orchestrator:
-            return {"status": "STARTING", "mode": "PAPER", "equity": 3.0, "watchlist": [], "signals": [], "positions": [], "open_positions_count": 0}
+            return {"status": "STARTING", "mode": "REAL", "equity": 3.0, "watchlist": [], "signals": [], "positions": [], "open_positions_count": 0}
 
         status_data = orchestrator.get_status() or {}
         agent_stats = status_data.get("agent_stats", {}) or {}
@@ -619,7 +619,7 @@ async def platform_status():
         log.error("platform_status error: %s", e)
         return {
             "status": "OPERATIONAL",
-            "mode": "PAPER",
+            "mode": "REAL",
             "environment": "production",
             "equity": 3.0,
             "open_positions_count": 0,

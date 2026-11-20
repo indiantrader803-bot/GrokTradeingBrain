@@ -840,7 +840,7 @@
           ☰
         </button>
         <h2 id="page-title" style="font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">Platform Overview</h2>
-        <span class="pill pill-paper" id="mode-badge"><span class="pulse-dot"></span> PAPER TRADING</span>
+        <span class="pill pill-live" id="mode-badge"><span class="pulse-dot"></span> LIVE REAL TRADING</span>
       </div>
       <div class="top-bar-right" style="display:flex; align-items:center; gap: 12px;">
         <button class="btn-coin-drop" onclick="triggerCoinRain(12)">✨ Play Coins</button>
@@ -1131,8 +1131,7 @@
         <div class="field">
           <label>Execution Mode</label>
           <select id="setting-mode">
-            <option value="PAPER" selected>PAPER TRADING (Simulated, Risk-Free)</option>
-            <option value="LIVE">LIVE TRADING (Real Money Execution)</option>
+            <option value="LIVE" selected>LIVE REAL TRADING (Active Exchange Execution)</option>
           </select>
         </div>
         <div class="field">
@@ -1644,15 +1643,10 @@
 
         if (!d) return;
 
-        // Mode badge update
+        // Mode badge update - Real Trading Locked
         const modeBadge = document.getElementById('mode-badge');
-        if (d.mode === 'LIVE') {
-          modeBadge.className = 'pill pill-live';
-          modeBadge.innerHTML = '<span class="pulse-dot"></span> LIVE TRADING';
-        } else {
-          modeBadge.className = 'pill pill-paper';
-          modeBadge.innerHTML = '<span class="pulse-dot"></span> PAPER TRADING';
-        }
+        modeBadge.className = 'pill pill-live';
+        modeBadge.innerHTML = '<span class="pulse-dot"></span> LIVE REAL TRADING';
 
         // Metrics
         document.getElementById('ov-equity').textContent = `$${d.equity.toFixed(2)}`;
@@ -1837,7 +1831,7 @@
               <td>$${j.take_profit}</td>
               <td>$0.00</td>
               <td>0.0%</td>
-              <td>${j.rejection_reason || 'Simulating Paper Execution'}</td>
+              <td>${j.rejection_reason || 'Real Exchange Execution'}</td>
             </tr>`;
           });
           jTable.innerHTML = jHtml;
