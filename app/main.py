@@ -56,7 +56,7 @@ async def lifespan(app: FastAPI):
 
     mode_str = os.getenv("TRADING_MODE", "real").lower()
     trading_mode = TradingMode.REAL if mode_str == "real" else TradingMode.DEMO
-    starting_eq = float(os.getenv("STARTING_EQUITY", "1000.0"))
+    starting_eq = float(os.getenv("STARTING_EQUITY", "3.0"))
     check_interval = int(os.getenv("CHECK_INTERVAL_SECONDS", "60"))
     server_ip = os.getenv("SERVER_IP", "127.0.0.1")
 
@@ -524,7 +524,7 @@ async def restart_system():
     # Reinitialize configuration & adapters
     mode_str = os.getenv("TRADING_MODE", "real").lower()
     trading_mode = TradingMode.REAL if mode_str == "real" else TradingMode.DEMO
-    starting_eq = float(os.getenv("STARTING_EQUITY", "1000.0"))
+    starting_eq = float(os.getenv("STARTING_EQUITY", "3.0"))
     check_interval = int(os.getenv("CHECK_INTERVAL_SECONDS", "60"))
     server_ip = os.getenv("SERVER_IP", "152.55.181.14")
 

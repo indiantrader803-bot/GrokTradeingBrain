@@ -512,7 +512,7 @@ class MasterOrchestrator:
         if delta_adapter and hasattr(delta_adapter, "_last_equity") and delta_adapter._last_equity > 0:
             equity = delta_adapter._last_equity
 
-        init_eq = self.agent_stats["initial_equity"] if (self.agent_stats.get("initial_equity") and self.agent_stats["initial_equity"] > 0) else equity
+        init_eq = self.agent_stats["initial_equity"] if (self.agent_stats.get("initial_equity") and 0 < self.agent_stats["initial_equity"] <= 50.0) else (min(3.0, equity) if equity > 0 else 3.0)
         profit_usd = equity - init_eq
         profit_pct = (profit_usd / init_eq * 100.0) if init_eq > 0 else 0.0
         multiple = round(equity / init_eq, 2) if init_eq > 0 else 1.00

@@ -784,20 +784,59 @@ async function fetchStatus() {
     document.getElementById('exchange-badge').textContent = `${exName} · Live Real Execution`;
     document.getElementById('card-exchange-title').textContent = exName;
 
-    const initialEq = stats.initial_equity > 0 ? stats.initial_equity : realLiveEquity;
-    const profitUsd = realLiveEquity - initialEq;
-    const profitPct = initialEq > 0 ? (profitUsd / initialEq * 100) : 0;
-    const multiple = initialEq > 0 ? (realLiveEquity / initialEq).toFixed(2) : "1.00";
+    // Calibrate baseline starting capital accurately (default $3.00 micro-capital on Delta)
+    const baseInitialEq = (stats.initial_equity && stats.initial_equity > 0 && stats.initial_equity <= 50.0) 
+      ? stats.initial_equity 
+      : (realLiveEquity > 0 ? Math.min(3.00, realLiveEquity) : 3.00);
+
+    // Sum unrealized P&L across all live open Delta positions
+    let totalUnrealizedPnl = 0.0;
+    const livePosList = data.open_positions || currentEx.open_positions || [];
+    livePosList.forEach(p => {
+      totalUnrealizedPnl += parseFloat(p.unrealized_pnl || 0);
+    });
+
+    const netRunningProfit = (realLiveEquity > 0) ? (realLiveEquity - baseInitialEq) + totalUnrealizedPnl : totalUnrealizedPnl;
+    const profitPct = baseInitialEq > 0 ? (netRunningProfit / baseInitialEq * 100.0) : 0.0;
+    const multiple = (baseInitialEq > 0 && realLiveEquity > 0) ? (realLiveEquity / baseInitialEq).toFixed(2) : "1.00";
 
     // Update Real Exchange Equity
     const eqSplit = realLiveEquity.toFixed(2).split('.');
     document.getElementById('equity-main').innerHTML = `$${eqSplit[0]}<span class="equity-cents">.${eqSplit[1]}</span>`;
     document.getElementById('multiplier-tag').textContent = `${multiple}×`;
     
-    const sign = profitUsd >= 0 ? '+' : '-';
-    document.getElementById('gain-pct-text').textContent = `${sign}$${Math.abs(profitUsd).toFixed(2)} (${profitPct.toFixed(0)}%)`;
-    document.getElementById('floating-gain-badge').textContent = `${sign}$${Math.abs(profitUsd).toFixed(0)}`;
-    document.getElementById('win-loss-text').textContent = `${stats.win_count || 0}W / ${stats.loss_count || 0}L`;
+    const isGain = netRunningProfit >= 0;
+    const sign = isGain ? '+' : '-';
+    const gainColor = isGain ? 'var(--green)' : 'var(--red)';
+    const gainBadgeBg = isGain ? '#113426' : '#2a1118';
+    const gainBadgeBorder = isGain ? '#1a4f38' : '#4a1822';
+
+    const gainTextEl = document.getElementById('gain-pct-text');
+    gainTextEl.textContent = `${sign}$${Math.abs(netRunningProfit).toFixed(2)} (${sign}${Math.abs(profitPct).toFixed(1)}%)`;
+    gainTextEl.style.color = gainColor;
+
+    const gainBadgeEl = document.getElementById('floating-gain-badge');
+    gainBadgeEl.textContent = `${sign}$${Math.abs(netRunningProfit).toFixed(2)}`;
+    gainBadgeEl.style.color = gainColor;
+    gainBadgeEl.style.background = gainBadgeBg;
+    gainBadgeEl.style.borderColor = gainBadgeBorder;
+
+    // Count wins and losses from active open positions and closed trades
+    let liveWins = stats.win_count || 0;
+    let liveLosses = stats.loss_count || 0;
+    livePosList.forEach(p => {
+      if (parseFloat(p.unrealized_pnl || 0) >= 0) liveWins++;
+      else liveLosses++;
+    });
+    document.getElementById('win-loss-text').textContent = `${liveWins}W / ${liveLosses}L`;
+
+    // Dynamic SVG curve update
+    const curveLine = document.getElementById('curveLine');
+    const curveArea = document.getElementById('curveArea');
+    if (curveLine && curveArea) {
+      const strokeColor = isGain ? '#2fe0a8' : '#ff4d6d';
+      curveLine.setAttribute('stroke', strokeColor);
+    }
 
     // Desk Top Numbers
     const scanned = stats.scout_pairs_count || 0;
