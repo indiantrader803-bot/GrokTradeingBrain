@@ -6,167 +6,513 @@
   <title>Delta AI Trading Platform · Enterprise Command Desk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #060911;
-      --sidebar: #0b1120;
-      --card-bg: #0f172a;
-      --card-border: #1e293b;
-      --card-hover: #17233d;
-      --text: #f1f5f9;
+      --bg: #040711;
+      --sidebar: rgba(8, 14, 28, 0.85);
+      --card-bg: rgba(13, 22, 42, 0.75);
+      --card-border: rgba(45, 68, 114, 0.4);
+      --card-hover: rgba(22, 38, 74, 0.85);
+      --text: #f8fafc;
       --muted: #94a3b8;
       --dim: #64748b;
       --green: #10b981;
-      --green-glow: rgba(16, 185, 129, 0.15);
+      --green-glow: rgba(16, 185, 129, 0.25);
       --red: #f43f5e;
-      --red-glow: rgba(244, 63, 94, 0.15);
+      --red-glow: rgba(244, 63, 94, 0.25);
       --amber: #f59e0b;
-      --amber-glow: rgba(245, 158, 11, 0.15);
+      --amber-glow: rgba(245, 158, 11, 0.25);
       --blue: #3b82f6;
+      --blue-glow: rgba(59, 130, 246, 0.3);
       --purple: #a855f7;
+      --purple-glow: rgba(168, 85, 247, 0.3);
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6, 182, 212, 0.3);
+      --gold: #fbbf24;
       --mono: 'JetBrains Mono', monospace;
       --sans: 'Space Grotesk', sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
-      background: radial-gradient(circle at 50% 0%, #0d1933 0%, var(--bg) 75%) fixed;
+      background: radial-gradient(ellipse at 50% 0%, #0d1e3d 0%, var(--bg) 75%) fixed;
       color: var(--text);
       font-family: var(--sans);
       min-height: 100vh;
       display: flex;
+      overflow-x: hidden;
+      position: relative;
     }
-    /* Sidebar Navigation */
+
+    /* Ambient Animated Starfield & Grid */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glowing Floating Orbs in Background */
+    .orb-glow {
+      position: fixed;
+      width: 450px;
+      height: 450px;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      opacity: 0.25;
+      z-index: 0;
+      animation: floatOrb 20s infinite alternate ease-in-out;
+    }
+    .orb-1 { top: -100px; left: 10%; background: var(--blue); }
+    .orb-2 { bottom: -100px; right: 15%; background: var(--purple); animation-delay: -7s; }
+    .orb-3 { top: 40%; right: -100px; background: var(--green); animation-delay: -14s; }
+
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(60px, 40px) scale(1.15); }
+      100% { transform: translate(-40px, 80px) scale(0.95); }
+    }
+
+    /* Falling Coin Drops Particle Canvas */
+    #coinCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Glassmorphism Sidebar */
     aside {
-      width: 240px;
+      width: 250px;
       background: var(--sidebar);
+      backdrop-filter: blur(16px);
       border-right: 1px solid var(--card-border);
       display: flex;
       flex-direction: column;
       position: fixed;
       height: 100vh;
       z-index: 100;
+      box-shadow: 4px 0 25px rgba(0, 0, 0, 0.5);
     }
     .brand {
-      padding: 20px;
-      font-size: 17px;
-      font-weight: 700;
+      padding: 22px 20px;
+      font-size: 18px;
+      font-weight: 800;
       border-bottom: 1px solid var(--card-border);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      letter-spacing: -0.5px;
     }
-    .brand span { color: var(--blue); }
+    .brand-icon-bot {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 15px var(--cyan-glow);
+      animation: botPulse 3s infinite alternate ease-in-out;
+    }
+    @keyframes botPulse {
+      0% { transform: scale(1) rotate(0deg); box-shadow: 0 0 10px var(--cyan-glow); }
+      50% { transform: scale(1.06) rotate(3deg); box-shadow: 0 0 22px var(--cyan); }
+      100% { transform: scale(1) rotate(0deg); box-shadow: 0 0 10px var(--cyan-glow); }
+    }
+    .brand span { color: var(--cyan); }
+
     .nav-list {
       list-style: none;
-      padding: 12px 8px;
+      padding: 14px 10px;
       overflow-y: auto;
       flex: 1;
     }
     .nav-item {
-      padding: 9px 14px;
-      margin-bottom: 3px;
-      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 4px;
+      border-radius: 10px;
       font-size: 12px;
       font-family: var(--mono);
-      font-weight: 500;
+      font-weight: 600;
       color: var(--muted);
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 10px;
-      transition: all 0.15s;
+      gap: 12px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
     }
-    .nav-item:hover { background: rgba(255, 255, 255, 0.04); color: var(--text); }
-    .nav-item.active { background: var(--blue); color: #fff; font-weight: 600; }
-    .nav-item .icon { font-size: 14px; width: 16px; text-align: center; }
-    /* Mode Banner & Content */
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+      transform: translateX(4px);
+    }
+    .nav-item.active {
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+      color: #fff;
+      box-shadow: 0 4px 15px var(--blue-glow);
+      font-weight: 700;
+    }
+    .nav-item .icon { font-size: 16px; width: 18px; text-align: center; }
+
+    /* Animated Ticker Tape Banner */
+    .ticker-bar-wrap {
+      overflow: hidden;
+      white-space: nowrap;
+      background: rgba(8, 15, 30, 0.85);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px 0;
+      margin-bottom: 20px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      display: flex;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    .ticker-tape {
+      display: inline-block;
+      white-space: nowrap;
+      animation: tickerScroll 30s linear infinite;
+    }
+    .ticker-tape:hover { animation-play-state: paused; }
+    @keyframes tickerScroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .ticker-coin-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-right: 24px;
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: transform 0.2s;
+    }
+    .ticker-coin-item:hover { transform: scale(1.05); }
+    .coin-icon-img { width: 18px; height: 18px; border-radius: 50%; vertical-align: middle; }
+
+    /* App Main Container */
     .app-main {
-      margin-left: 240px;
+      margin-left: 250px;
       flex: 1;
-      padding: 24px;
-      max-width: 1300px;
+      padding: 24px 30px;
+      max-width: 1350px;
+      position: relative;
+      z-index: 10;
     }
+
     .top-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
       border-bottom: 1px solid var(--card-border);
     }
     .mode-indicator {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
     .pill {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 5px 12px;
+      gap: 8px;
+      padding: 6px 14px;
       border-radius: 20px;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
       font-family: var(--mono);
+      letter-spacing: 0.5px;
     }
-    .pill-paper { background: var(--amber-glow); border: 1px solid var(--amber); color: var(--amber); }
-    .pill-live { background: var(--red-glow); border: 1px solid var(--red); color: var(--red); animation: pulse-live 1.5s infinite; }
-    @keyframes pulse-live { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
-    .pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-    
+    .pill-paper {
+      background: var(--amber-glow);
+      border: 1px solid var(--amber);
+      color: var(--amber);
+      box-shadow: 0 0 15px var(--amber-glow);
+    }
+    .pill-live {
+      background: var(--red-glow);
+      border: 1px solid var(--red);
+      color: var(--red);
+      animation: pulse-live 1.5s infinite;
+      box-shadow: 0 0 18px var(--red-glow);
+    }
+    @keyframes pulse-live {
+      0% { opacity: 0.6; transform: scale(0.98); }
+      50% { opacity: 1; transform: scale(1.03); }
+      100% { opacity: 0.6; transform: scale(0.98); }
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+    }
+
     /* Pages Container */
     .page-section { display: none; }
-    .page-section.active { display: block; animation: fadeIn 0.2s ease-in; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .page-section.active { display: block; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-    /* Reusable Cards & Grids */
-    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 20px; }
+    /* High-Tech Glowing Cards */
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-bottom: 22px; }
     .card {
       background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .card:hover {
+      border-color: var(--blue);
+      box-shadow: 0 12px 35px var(--blue-glow);
+      transform: translateY(-2px);
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
+      transition: 0.6s;
+    }
+    .card:hover::before { left: 100%; }
+
+    .card-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: var(--mono);
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .card-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      font-family: var(--mono);
+      letter-spacing: -0.5px;
+    }
+
+    /* 3D Interactive Coin Drop Buttons */
+    .btn-coin-drop {
+      background: linear-gradient(135deg, var(--gold), #d97706);
+      color: #000;
+      font-weight: 800;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-family: var(--mono);
+      font-size: 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-coin-drop:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.7);
+    }
+    .btn-coin-drop:active { transform: scale(0.95); }
+
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      background: rgba(6, 11, 24, 0.6);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
+    th {
+      background: rgba(255, 255, 255, 0.03);
+      text-align: left;
+      padding: 12px 16px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--card-border);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 10.5px;
+    }
+    td {
+      padding: 13px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      transition: background 0.15s;
+    }
+    tr:hover td { background: rgba(59, 130, 246, 0.06); }
+    .up { color: var(--green); font-weight: 700; }
+    .down { color: var(--red); font-weight: 700; }
+
+    .coin-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .badge-buy {
+      background: var(--green-glow);
+      color: var(--green);
+      border: 1px solid var(--green);
+      box-shadow: 0 0 10px var(--green-glow);
+    }
+    .badge-sell {
+      background: var(--red-glow);
+      color: var(--red);
+      border: 1px solid var(--red);
+      box-shadow: 0 0 10px var(--red-glow);
+    }
+
+    /* Animated 7-Agent Committee Cards */
+    .agents-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+    .agent-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
       border: 1px solid var(--card-border);
       border-radius: 12px;
       padding: 18px;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
     }
-    .card-title { font-size: 11px; text-transform: uppercase; color: var(--muted); font-family: var(--mono); margin-bottom: 8px; }
-    .card-value { font-size: 26px; font-weight: 700; color: #fff; font-family: var(--mono); }
-    
-    /* Tables */
-    .table-wrap { overflow-x: auto; border: 1px solid var(--card-border); border-radius: 10px; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
-    th { background: rgba(255, 255, 255, 0.02); text-align: left; padding: 10px 14px; color: var(--muted); border-bottom: 1px solid var(--card-border); }
-    td { padding: 12px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); }
-    tr:hover td { background: rgba(255, 255, 255, 0.02); }
-    .up { color: var(--green); font-weight: 600; }
-    .down { color: var(--red); font-weight: 600; }
-    .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; }
-    .badge-buy { background: var(--green-glow); color: var(--green); border: 1px solid var(--green); }
-    .badge-sell { background: var(--red-glow); color: var(--red); border: 1px solid var(--red); }
-    
-    /* Agent Cards */
-    .agents-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
-    .agent-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 16px; }
-    .agent-hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .agent-name { font-weight: 700; font-size: 14px; color: #fff; }
-    .agent-vote { font-size: 11px; font-family: var(--mono); font-weight: 700; padding: 2px 8px; border-radius: 4px; }
-    .vote-pass { background: var(--green-glow); color: var(--green); border: 1px solid var(--green); }
-    .vote-veto { background: var(--red-glow); color: var(--red); border: 1px solid var(--red); }
-    .agent-desc { font-size: 11.5px; color: var(--muted); line-height: 1.4; font-family: var(--mono); }
+    .agent-card:hover {
+      border-color: var(--cyan);
+      box-shadow: 0 8px 25px var(--cyan-glow);
+      transform: translateY(-3px);
+    }
+    .agent-hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .agent-left { display: flex; align-items: center; gap: 10px; }
+    .agent-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+    }
+    .agent-avatar.play-anim { animation: botWiggle 2s infinite ease-in-out; }
+    @keyframes botWiggle {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-5deg); }
+      75% { transform: rotate(5deg); }
+    }
+    .agent-name { font-weight: 800; font-size: 14px; color: #fff; }
+    .agent-vote {
+      font-size: 11px;
+      font-family: var(--mono);
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+    .vote-pass {
+      background: var(--green-glow);
+      color: var(--green);
+      border: 1px solid var(--green);
+      box-shadow: 0 0 10px var(--green-glow);
+    }
+    .vote-veto {
+      background: var(--red-glow);
+      color: var(--red);
+      border: 1px solid var(--red);
+      box-shadow: 0 0 10px var(--red-glow);
+    }
+    .agent-desc { font-size: 11.5px; color: var(--muted); line-height: 1.5; font-family: var(--mono); }
 
-    /* Action Buttons */
-    .btn { background: var(--blue); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: var(--mono); font-size: 11px; font-weight: 600; }
-    .btn:hover { opacity: 0.9; }
-    .btn-danger { background: var(--red); }
-    .field { margin-bottom: 14px; }
-    .field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 6px; font-family: var(--mono); text-transform: uppercase; }
-    .field input, .field select { width: 100%; background: #070b14; border: 1px solid var(--card-border); border-radius: 6px; padding: 9px 12px; color: var(--text); font-family: var(--mono); font-size: 12px; }
+    /* Interactive Buttons & Inputs */
+    .btn {
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      transition: all 0.2s;
+      box-shadow: 0 4px 15px var(--blue-glow);
+    }
+    .btn:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px var(--cyan-glow);
+    }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 6px; font-family: var(--mono); text-transform: uppercase; font-weight: 600; }
+    .field input, .field select {
+      width: 100%;
+      background: rgba(4, 9, 20, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus, .field select:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan-glow);
+    }
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
+  <!-- Floating Ambient Glow Orbs -->
+  <div class="orb-glow orb-1"></div>
+  <div class="orb-glow orb-2"></div>
+  <div class="orb-glow orb-3"></div>
+
+  <!-- Falling Coin Drop Particle Canvas -->
+  <canvas id="coinCanvas"></canvas>
+
+  <!-- Sidebar Navigation -->
   <aside>
     <div class="brand">
-      <span>DELTA</span> AI TRADER
+      <div class="brand-icon-bot">🤖</div>
+      <div>
+        DELTA <span>AI DESK</span>
+        <div style="font-size: 9.5px; color: var(--muted); font-family: var(--mono); font-weight: 400;">v2.0 24/7 Suite</div>
+      </div>
     </div>
     <ul class="nav-list">
       <li class="nav-item active" onclick="switchPage('overview')"><span class="icon">📊</span> 1. Overview</li>
@@ -182,17 +528,37 @@
       <li class="nav-item" onclick="switchPage('logs')"><span class="icon">📜</span> 11. System Logs</li>
       <li class="nav-item" onclick="switchPage('settings')"><span class="icon">⚙️</span> 12. Settings</li>
     </ul>
+    <div style="padding: 16px 20px; border-top: 1px solid var(--card-border); font-family: var(--mono); font-size: 11px;">
+      <button class="btn-coin-drop" onclick="triggerCoinRain(20)">💰 Rain Coins!</button>
+    </div>
   </aside>
 
-  <!-- Main Content Area -->
+  <!-- Main Content Container -->
   <div class="app-main">
+    
+    <!-- Top Action Bar -->
     <div class="top-bar">
       <div class="mode-indicator">
-        <h2 id="page-title" style="font-size: 20px; font-weight: 700;">Platform Overview</h2>
+        <h2 id="page-title" style="font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">Platform Overview</h2>
         <span class="pill pill-paper" id="mode-badge"><span class="pulse-dot"></span> PAPER TRADING</span>
       </div>
-      <div style="font-size: 11px; font-family: var(--mono); color: var(--muted);" id="clock-display">
-        UTC: --:--:--
+      <div style="display:flex; align-items:center; gap: 12px;">
+        <button class="btn-coin-drop" onclick="triggerCoinRain(12)">✨ Play Coins</button>
+        <div style="font-size: 11.5px; font-family: var(--mono); color: var(--cyan); background: rgba(6, 182, 212, 0.08); border: 1px solid var(--cyan-glow); padding: 5px 12px; border-radius: 8px;" id="clock-display">
+          UTC: --:--:--
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Animated Ticker Tape with Real Coin Icons -->
+    <div class="ticker-bar-wrap">
+      <div class="ticker-tape" id="ticker-content">
+        <!-- Injected via JavaScript -->
+        <span class="ticker-coin-item"><img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" class="coin-icon-img"> <b>BTCUSD</b> $96,420 <span class="up">+4.2%</span></span>
+        <span class="ticker-coin-item"><img src="https://assets.coingecko.com/coins/images/279/small/ethereum.png" class="coin-icon-img"> <b>ETHUSD</b> $3,140 <span class="up">+6.1%</span></span>
+        <span class="ticker-coin-item"><img src="https://assets.coingecko.com/coins/images/4128/small/solana.png" class="coin-icon-img"> <b>SOLUSD</b> $188.5 <span class="up">+8.4%</span></span>
+        <span class="ticker-coin-item"><img src="https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png" class="coin-icon-img"> <b>XRPUSD</b> $1.15 <span class="up">+15.2%</span></span>
+        <span class="ticker-coin-item"><img src="https://assets.coingecko.com/coins/images/5/small/dogecoin.png" class="coin-icon-img"> <b>DOGEUSD</b> $0.38 <span class="up">+11.0%</span></span>
       </div>
     </div>
 
@@ -200,28 +566,35 @@
     <div id="page-overview" class="page-section active">
       <div class="grid-4">
         <div class="card">
-          <div class="card-title">Live Net Equity</div>
+          <div class="card-title">💰 Live Net Equity</div>
           <div class="card-value" id="ov-equity">$3.00</div>
-          <div style="font-size: 11px; color: var(--muted); margin-top: 4px;" id="ov-inr">₹255.00 INR</div>
+          <div style="font-size: 11px; color: var(--cyan); margin-top: 4px; font-weight: 600;" id="ov-inr">₹255.00 INR</div>
         </div>
         <div class="card">
-          <div class="card-title">Today's Realized P&L</div>
+          <div class="card-title">📈 Today's Realized P&L</div>
           <div class="card-value up" id="ov-pnl">+$0.00</div>
-          <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">Max Daily Loss: -3.0%</div>
+          <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">Max Daily Loss Limit: -3.0%</div>
         </div>
         <div class="card">
-          <div class="card-title">Open Positions</div>
+          <div class="card-title">🎯 Open Positions</div>
           <div class="card-value" id="ov-pos">0</div>
-          <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">Max Concurrent: 1</div>
+          <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">Max Concurrent Positions: 1</div>
         </div>
         <div class="card">
-          <div class="card-title">System Status</div>
-          <div class="card-value" style="font-size: 18px; color: var(--green);">OPERATIONAL</div>
-          <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">Scanner & Committee Active</div>
+          <div class="card-title">⚡ Engine Status</div>
+          <div class="card-value" style="font-size: 18px; color: var(--green); display: flex; align-items: center; gap: 8px;">
+            <span class="pulse-dot"></span> 24/7 ACTIVE
+          </div>
+          <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">Scanner & Committee Operational</div>
         </div>
       </div>
       <div class="card">
-        <h3 style="font-size: 14px; margin-bottom: 12px;">Top Ranked Market Movers (0–100 Scanner)</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
+          <h3 style="font-size: 15px; font-weight: 700; display:flex; align-items:center; gap: 8px;">
+            🔥 Top Ranked Movers · 0–100 Point AI Scanner
+          </h3>
+          <button class="btn-coin-drop" onclick="triggerCoinRain(15)">Drop Coins 🪙</button>
+        </div>
         <div class="table-wrap">
           <table id="ov-watchlist-table">
             <thead>
@@ -237,8 +610,8 @@
     <div id="page-markets" class="page-section">
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
-          <h3 style="font-size: 15px;">All Scanned Delta Exchange Markets</h3>
-          <span style="font-size: 11px; color: var(--muted);" id="markets-count">Loading...</span>
+          <h3 style="font-size: 15px; font-weight: 700;">All Scanned Delta Exchange Markets</h3>
+          <span style="font-size: 11px; color: var(--cyan); font-family: var(--mono);" id="markets-count">Loading...</span>
         </div>
         <div class="table-wrap">
           <table id="markets-full-table">
@@ -254,7 +627,7 @@
     <!-- PAGE 3: AI SIGNALS -->
     <div id="page-signals" class="page-section">
       <div class="card">
-        <h3 style="font-size: 15px; margin-bottom: 14px;">Recent AI Strategy Proposals & Consensus</h3>
+        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 14px;">Recent AI Strategy Proposals & Consensus</h3>
         <div class="table-wrap">
           <table id="signals-table">
             <thead>
@@ -268,18 +641,18 @@
 
     <!-- PAGE 4: 7-AGENT COMMITTEE -->
     <div id="page-committee" class="page-section">
-      <div style="margin-bottom: 16px; font-size: 12px; color: var(--muted); font-family: var(--mono);">
-        Seven Independent Agents must achieve unanimous consensus with Skeptic verification before trade execution.
+      <div style="margin-bottom: 16px; font-size: 12px; color: var(--cyan); font-family: var(--mono); background: rgba(6, 182, 212, 0.08); border: 1px solid var(--cyan-glow); padding: 10px 16px; border-radius: 8px;">
+        🤖 <b>Autonomous Multi-Agent Committee:</b> All 7 agents must achieve unanimous consensus with Skeptic verification before trade execution.
       </div>
       <div class="agents-grid" id="agents-grid-container">
-        <!-- Injected dynamically via JS -->
+        <!-- Injected dynamically via JS with playful animated bot icons -->
       </div>
     </div>
 
     <!-- PAGE 5: POSITIONS -->
     <div id="page-positions" class="page-section">
       <div class="card">
-        <h3 style="font-size: 15px; margin-bottom: 14px;">Active Open Positions</h3>
+        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 14px;">Active Open Positions</h3>
         <div class="table-wrap">
           <table id="positions-table">
             <thead>
@@ -294,7 +667,7 @@
     <!-- PAGE 6: ORDERS -->
     <div id="page-orders" class="page-section">
       <div class="card">
-        <h3 style="font-size: 15px; margin-bottom: 14px;">Recent Order Activity</h3>
+        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 14px;">Recent Order Activity</h3>
         <div class="table-wrap">
           <table id="orders-table">
             <thead>
@@ -309,7 +682,7 @@
     <!-- PAGE 7: TRADE JOURNAL -->
     <div id="page-journal" class="page-section">
       <div class="card">
-        <h3 style="font-size: 15px; margin-bottom: 14px;">Complete Trade Journal & History</h3>
+        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 14px;">Complete Trade Journal & History</h3>
         <div class="table-wrap">
           <table id="journal-table">
             <thead>
@@ -324,17 +697,17 @@
     <!-- PAGE 8: ANALYTICS -->
     <div id="page-analytics" class="page-section">
       <div class="grid-4">
-        <div class="card"><div class="card-title">Total Trades</div><div class="card-value" id="an-total">0</div></div>
-        <div class="card"><div class="card-title">Win Rate</div><div class="card-value" id="an-winrate">0.0%</div></div>
-        <div class="card"><div class="card-title">Avg Reward/Risk</div><div class="card-value" id="an-rr">2.4:1</div></div>
-        <div class="card"><div class="card-title">Max Drawdown</div><div class="card-value down" id="an-dd">0.0%</div></div>
+        <div class="card"><div class="card-title">📊 Total Trades</div><div class="card-value" id="an-total">0</div></div>
+        <div class="card"><div class="card-title">🎯 Win Rate</div><div class="card-value" id="an-winrate">0.0%</div></div>
+        <div class="card"><div class="card-title">⚖️ Avg Reward/Risk</div><div class="card-value" id="an-rr">2.4:1</div></div>
+        <div class="card"><div class="card-title">🛡️ Max Drawdown</div><div class="card-value down" id="an-dd">0.0%</div></div>
       </div>
     </div>
 
     <!-- PAGE 9: RISK SETTINGS -->
     <div id="page-risk" class="page-section">
       <div class="card" style="max-width: 600px;">
-        <h3 style="font-size: 15px; margin-bottom: 16px;">Independent Risk Engine Parameters</h3>
+        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 16px;">Independent Risk Engine Parameters</h3>
         <div class="field">
           <label>Risk Per Trade (%)</label>
           <input type="number" id="risk-per-trade" value="1.0" step="0.1">
@@ -358,14 +731,14 @@
     <!-- PAGE 10: EXCHANGE STATUS -->
     <div id="page-exchange" class="page-section">
       <div class="card" style="max-width: 700px;">
-        <h3 style="font-size: 15px; margin-bottom: 16px;">Delta Exchange Connectivity</h3>
-        <div style="display:flex; flex-direction:column; gap: 10px; font-family: var(--mono); font-size: 12px;">
+        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 16px;">Delta Exchange Connectivity</h3>
+        <div style="display:flex; flex-direction:column; gap: 12px; font-family: var(--mono); font-size: 12.5px;">
           <div>Exchange: <b style="color:#fff;">Delta Exchange India</b></div>
           <div>Environment: <span class="badge" style="background:var(--blue); color:#fff;" id="ex-env">production</span></div>
           <div>Credentials Found: <b style="color:var(--green);" id="ex-creds">Configured</b></div>
           <div>Read Permissions: <b style="color:var(--green);" id="ex-read">Verified (HTTP 200 OK)</b></div>
           <div>Trade Permissions: <b style="color:var(--green);" id="ex-trade">Verified Active</b></div>
-          <div>Live Exchange Positions: <b id="ex-open-count">7 active contracts</b></div>
+          <div>Live Exchange Positions: <b id="ex-open-count" style="color:var(--cyan);">Verified directly on exchange</b></div>
         </div>
       </div>
     </div>
@@ -373,7 +746,7 @@
     <!-- PAGE 11: SYSTEM LOGS -->
     <div id="page-logs" class="page-section">
       <div class="card">
-        <h3 style="font-size: 15px; margin-bottom: 14px;">Audit & Engine Event Logs</h3>
+        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 14px;">Audit & Engine Event Logs</h3>
         <div class="table-wrap">
           <table id="logs-table">
             <thead>
@@ -388,7 +761,7 @@
     <!-- PAGE 12: SETTINGS -->
     <div id="page-settings" class="page-section">
       <div class="card" style="max-width: 650px;">
-        <h3 style="font-size: 15px; margin-bottom: 16px;">Platform Settings & Execution Toggle</h3>
+        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 16px;">Platform Settings & Execution Toggle</h3>
         <div class="field">
           <label>Execution Mode</label>
           <select id="setting-mode">
@@ -418,6 +791,114 @@
   </div>
 
   <script>
+    /* ── 1. CRYPTO ICON MAPPINGS ── */
+    const coinIcons = {
+      'BTC': 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',
+      'ETH': 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+      'SOL': 'https://assets.coingecko.com/coins/images/4128/small/solana.png',
+      'XRP': 'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png',
+      'DOGE': 'https://assets.coingecko.com/coins/images/5/small/dogecoin.png',
+      'ADA': 'https://assets.coingecko.com/coins/images/975/small/cardano.png',
+      'AVAX': 'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png',
+      'LINK': 'https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png',
+      'PEPE': 'https://assets.coingecko.com/coins/images/29850/small/pepe-token.png',
+      'NEAR': 'https://assets.coingecko.com/coins/images/10365/small/near.png',
+      'SUI': 'https://assets.coingecko.com/coins/images/26375/small/sui-ocean-square.png',
+      'AAVE': 'https://assets.coingecko.com/coins/images/12645/small/AAVE.png',
+      'DOT': 'https://assets.coingecko.com/coins/images/12171/small/polkadot.png',
+      'MATIC': 'https://assets.coingecko.com/coins/images/4713/small/polygon.png',
+      'SHIB': 'https://assets.coingecko.com/coins/images/11939/small/shiba.png',
+      'LTC': 'https://assets.coingecko.com/coins/images/2/small/litecoin.png',
+      'BCH': 'https://assets.coingecko.com/coins/images/780/small/bitcoin-cash-circle.png'
+    };
+
+    function getCoinIconUrl(symbol) {
+      const clean = symbol.toUpperCase().replace(/USD|USDT|-USD|\/USD/g, '');
+      return coinIcons[clean] || 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png';
+    }
+
+    /* ── 2. FALLING COINS PARTICLE CANVAS (COIN DROP ANIMATION) ── */
+    const canvas = document.getElementById('coinCanvas');
+    const ctx = canvas.getContext('2d');
+    let coins = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const coinImages = [];
+    Object.values(coinIcons).slice(0, 8).forEach(src => {
+      const img = new Image();
+      img.src = src;
+      coinImages.push(img);
+    });
+
+    class FallingCoin {
+      constructor(x, y) {
+        this.x = x !== undefined ? x : Math.random() * canvas.width;
+        this.y = y !== undefined ? y : -30;
+        this.size = 20 + Math.random() * 20;
+        this.speedY = 2 + Math.random() * 4;
+        this.speedX = (Math.random() - 0.5) * 2;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotSpeed = (Math.random() - 0.5) * 0.1;
+        this.img = coinImages[Math.floor(Math.random() * coinImages.length)];
+        this.opacity = 0.8 + Math.random() * 0.2;
+      }
+      update() {
+        this.y += this.speedY;
+        this.x += this.speedX;
+        this.rotation += this.rotSpeed;
+        if (this.y > canvas.height + 40) {
+          this.y = -30;
+          this.x = Math.random() * canvas.width;
+        }
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = this.opacity;
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        if (this.img && this.img.complete) {
+          ctx.drawImage(this.img, -this.size / 2, -this.size / 2, this.size, this.size);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, this.size / 2, 0, Math.PI * 2);
+          ctx.fillStyle = '#fbbf24';
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+
+    // Initialize initial ambient floating coins
+    for (let i = 0; i < 18; i++) {
+      coins.push(new FallingCoin(Math.random() * canvas.width, Math.random() * canvas.height));
+    }
+
+    function animateCoins() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      coins.forEach(c => {
+        c.update();
+        c.draw();
+      });
+      requestAnimationFrame(animateCoins);
+    }
+    animateCoins();
+
+    function triggerCoinRain(amount = 25) {
+      for (let i = 0; i < amount; i++) {
+        setTimeout(() => {
+          coins.push(new FallingCoin(Math.random() * canvas.width, -20));
+          if (coins.length > 50) coins.shift();
+        }, i * 60);
+      }
+    }
+
+    /* ── 3. PAGE NAVIGATION ── */
     let activePage = 'overview';
     const pageTitles = {
       overview: '1. Platform Overview',
@@ -442,6 +923,7 @@
       if (target) target.classList.add('active');
       document.getElementById('page-title').textContent = pageTitles[pageId] || 'Platform';
       event.currentTarget.classList.add('active');
+      triggerCoinRain(6); // Playful burst on page change
     }
 
     function updateClock() {
@@ -449,7 +931,9 @@
       document.getElementById('clock-display').textContent = `UTC: ${now.toUTCString().slice(17, 25)}`;
     }
     setInterval(updateClock, 1000);
+    updateClock();
 
+    /* ── 4. REAL-TIME DATA POLLING & UI POPULATION ── */
     async function pollPlatformData() {
       try {
         let d = null;
@@ -458,7 +942,6 @@
           if (res.ok) d = await res.json();
         } catch(e) {}
 
-        // Fallback to /api/status if /api/platform/status is not yet available
         if (!d || !d.status) {
           const res2 = await fetch('/api/status');
           const d2 = await res2.json();
@@ -506,7 +989,9 @@
           };
         }
 
-        // Mode badge
+        if (!d) return;
+
+        // Mode badge update
         const modeBadge = document.getElementById('mode-badge');
         if (d.mode === 'LIVE') {
           modeBadge.className = 'pill pill-live';
@@ -516,27 +1001,48 @@
           modeBadge.innerHTML = '<span class="pulse-dot"></span> PAPER TRADING';
         }
 
-        // Overview metrics
+        // Metrics
         document.getElementById('ov-equity').textContent = `$${d.equity.toFixed(2)}`;
         document.getElementById('ov-inr').textContent = `₹${(d.equity * 85.0).toFixed(2)} INR`;
         document.getElementById('ov-pos').textContent = d.open_positions_count;
 
-        // Populate Watchlist
+        // Populate Watchlist with Coin Icons
         const wlTable = document.getElementById('ov-watchlist-table').querySelector('tbody');
         if (d.watchlist && d.watchlist.length > 0) {
           let html = '';
           d.watchlist.slice(0, 10).forEach(m => {
             const chgClass = m.change_24h >= 0 ? 'up' : 'down';
+            const iconUrl = getCoinIconUrl(m.symbol);
             html += `<tr>
-              <td><b>${m.symbol}</b></td>
+              <td>
+                <div class="coin-cell">
+                  <img src="${iconUrl}" class="coin-icon-img" alt="${m.symbol}">
+                  <span>${m.symbol}</span>
+                </div>
+              </td>
               <td>$${m.mark_price}</td>
               <td class="${chgClass}">${m.change_24h > 0 ? '+' : ''}${m.change_24h}%</td>
               <td>$${Number(m.volume_usd).toLocaleString()}</td>
-              <td><b style="color:var(--blue);">${m.total_score}/100</b></td>
+              <td><b style="color:var(--cyan);">${m.total_score}/100</b></td>
               <td><span class="badge ${m.direction === 'BUY' ? 'badge-buy' : 'badge-sell'}">${m.direction}</span></td>
             </tr>`;
           });
           wlTable.innerHTML = html;
+
+          // Update Ticker Tape
+          let tapeHtml = '';
+          d.watchlist.slice(0, 12).forEach(m => {
+            const iconUrl = getCoinIconUrl(m.symbol);
+            const chgClass = m.change_24h >= 0 ? 'up' : 'down';
+            tapeHtml += `
+              <span class="ticker-coin-item">
+                <img src="${iconUrl}" class="coin-icon-img">
+                <b>${m.symbol}</b> $${m.mark_price}
+                <span class="${chgClass}">${m.change_24h > 0 ? '+' : ''}${m.change_24h}%</span>
+              </span>
+            `;
+          });
+          document.getElementById('ticker-content').innerHTML = tapeHtml + tapeHtml;
         }
 
         // Populate Markets Full
@@ -546,29 +1052,35 @@
           let html = '';
           d.watchlist.forEach(m => {
             const chgClass = m.change_24h >= 0 ? 'up' : 'down';
+            const iconUrl = getCoinIconUrl(m.symbol);
             html += `<tr>
-              <td><b>${m.symbol}</b></td>
+              <td>
+                <div class="coin-cell">
+                  <img src="${iconUrl}" class="coin-icon-img" alt="${m.symbol}">
+                  <span>${m.symbol}</span>
+                </div>
+              </td>
               <td>$${m.mark_price}</td>
               <td class="${chgClass}">${m.change_24h > 0 ? '+' : ''}${m.change_24h}%</td>
               <td>$${Number(m.volume_usd).toLocaleString()}</td>
               <td>${(m.funding_rate * 100).toFixed(4)}%</td>
               <td>${m.scores.trend}/20</td>
-              <td><b style="color:var(--blue);">${m.total_score}</b></td>
+              <td><b style="color:var(--cyan);">${m.total_score}</b></td>
             </tr>`;
           });
           mTable.innerHTML = html;
         }
 
-        // Populate Committee Cards
+        // Populate Playful 7-Agent Committee Cards
         const commContainer = document.getElementById('agents-grid-container');
         const defaultAgents = [
-          { name: '1. Scanner Agent', role: 'Ranked candidate discovery', vote: 'PASS', score: '82/100', desc: 'Monitors 250+ perpetual contracts; triggers on volume and momentum expansion.' },
-          { name: '2. Trend Analyst Agent', role: 'EMA 9/21/43/200 & VWAP', vote: 'PASS', score: '78/100', desc: 'Multi-timeframe trend alignment across M1, M5, M15, H1.' },
-          { name: '3. Momentum Hunter Agent', role: 'Price velocity & continuation', vote: 'PASS', score: '85/100', desc: 'Evaluates breakout continuation probability; filters out reversal hazards.' },
-          { name: '4. Skeptic Agent', role: 'VETO AUTHORITY', vote: 'PASS', score: 'Veto Check OK', desc: 'Actively searches for reasons to reject: spread traps, funding drag, fakeouts.' },
-          { name: '5. Position Sizer Agent', role: 'Micro-capital risk bounds', vote: 'PASS', score: '1% Risk Limit', desc: 'Sizes 1 contract; enforces $3 account survival and margin sufficiency.' },
-          { name: '6. Trader Agent', role: 'Deterministic execution gate', vote: 'PASS', score: 'Consensus Gate', desc: 'Isolated order submission; requires unanimous committee approval.' },
-          { name: '7. Journal Agent', role: 'Audit trail & ledger', vote: 'ACTIVE', score: 'Audited', desc: 'Records every signal, rejection reason, agent vote, and trade fill to SQLite.' }
+          { name: '1. Scanner Agent', icon: '🔍', role: 'Ranked candidate discovery', vote: 'PASS', score: '82/100', desc: 'Monitors 250+ perpetual contracts; triggers on volume and momentum expansion.' },
+          { name: '2. Trend Analyst Agent', icon: '📈', role: 'EMA 9/21/43/200 & VWAP', vote: 'PASS', score: '78/100', desc: 'Multi-timeframe trend alignment across M1, M5, M15, H1.' },
+          { name: '3. Momentum Hunter Agent', icon: '🚀', role: 'Price velocity & continuation', vote: 'PASS', score: '85/100', desc: 'Evaluates breakout continuation probability; filters out reversal hazards.' },
+          { name: '4. Skeptic Agent', icon: '🛡️', role: 'VETO AUTHORITY', vote: 'PASS', score: 'Veto Check OK', desc: 'Actively searches for reasons to reject: spread traps, funding drag, fakeouts.' },
+          { name: '5. Position Sizer Agent', icon: '⚖️', role: 'Micro-capital risk bounds', vote: 'PASS', score: '1% Risk Limit', desc: 'Sizes 1 contract; enforces $3 account survival and margin sufficiency.' },
+          { name: '6. Trader Agent', icon: '🤖', role: 'Deterministic execution gate', vote: 'PASS', score: 'Consensus Gate', desc: 'Isolated order submission; requires unanimous committee approval.' },
+          { name: '7. Journal Agent', icon: '📖', role: 'Audit trail & ledger', vote: 'ACTIVE', score: 'Audited', desc: 'Records every signal, rejection reason, agent vote, and trade fill to SQLite.' }
         ];
 
         let agHtml = '';
@@ -576,28 +1088,37 @@
           agHtml += `
             <div class="agent-card">
               <div class="agent-hd">
-                <div>
-                  <div class="agent-name">${a.name}</div>
-                  <div style="font-size:10px; color:var(--muted); font-family:var(--mono);">${a.role}</div>
+                <div class="agent-left">
+                  <div class="agent-avatar play-anim">${a.icon}</div>
+                  <div>
+                    <div class="agent-name">${a.name}</div>
+                    <div style="font-size:10px; color:var(--cyan); font-family:var(--mono); font-weight:600;">${a.role}</div>
+                  </div>
                 </div>
                 <span class="agent-vote ${a.vote === 'PASS' ? 'vote-pass' : 'vote-veto'}">${a.vote}</span>
               </div>
               <div class="agent-desc">${a.desc}</div>
-              <div style="margin-top:10px; font-size:11px; font-weight:700; color:var(--blue); font-family:var(--mono);">Status: ${a.score}</div>
+              <div style="margin-top:12px; font-size:11px; font-weight:800; color:var(--cyan); font-family:var(--mono);">Status: ${a.score}</div>
             </div>
           `;
         });
         commContainer.innerHTML = agHtml;
 
-        // Populate Positions Table
+        // Populate Positions Table with Coin Icons
         const posTable = document.getElementById('positions-table').querySelector('tbody');
         if (d.positions && d.positions.length > 0) {
           let html = '';
           d.positions.forEach(p => {
             const pnlClass = p.unrealized_pnl >= 0 ? 'up' : 'down';
+            const iconUrl = getCoinIconUrl(p.symbol);
             html += `<tr>
               <td>${p.id || p.product_id || 'pos'}</td>
-              <td><b>${p.symbol}</b></td>
+              <td>
+                <div class="coin-cell">
+                  <img src="${iconUrl}" class="coin-icon-img" alt="${p.symbol}">
+                  <span>${p.symbol}</span>
+                </div>
+              </td>
               <td><span class="badge ${p.side === 'BUY' ? 'badge-buy' : 'badge-sell'}">${p.side}</span></td>
               <td>${p.size}</td>
               <td>$${p.entry_price}</td>
@@ -610,10 +1131,10 @@
           });
           posTable.innerHTML = html;
         } else {
-          posTable.innerHTML = '<tr><td colspan="10" style="text-align:center; color: var(--muted); padding: 16px;">No active open positions.</td></tr>';
+          posTable.innerHTML = '<tr><td colspan="10" style="text-align:center; color: var(--muted); padding: 18px;">No active open positions.</td></tr>';
         }
 
-        // Populate Signals Table (Page 3)
+        // Populate Signals Table with Coin Icons
         const sigTable = document.getElementById('signals-table').querySelector('tbody');
         if (d.signals && d.signals.length > 0) {
           let sHtml = '';
@@ -621,9 +1142,15 @@
             const isApproved = s.status === 'APPROVED';
             const badgeCls = isApproved ? 'vote-pass' : 'vote-veto';
             const dStr = new Date(s.created_at * 1000).toTimeString().slice(0, 8);
+            const iconUrl = getCoinIconUrl(s.symbol);
             sHtml += `<tr>
               <td>${dStr}</td>
-              <td><b>${s.symbol}</b></td>
+              <td>
+                <div class="coin-cell">
+                  <img src="${iconUrl}" class="coin-icon-img" alt="${s.symbol}">
+                  <span>${s.symbol}</span>
+                </div>
+              </td>
               <td><span class="badge ${s.direction === 'BUY' ? 'badge-buy' : 'badge-sell'}">${s.direction}</span></td>
               <td><code>${s.strategy}</code></td>
               <td>$${s.entry_price}</td>
@@ -636,15 +1163,21 @@
           sigTable.innerHTML = sHtml;
         }
 
-        // Populate Journal Table (Page 7)
+        // Populate Journal Table
         const jTable = document.getElementById('journal-table').querySelector('tbody');
         if (d.signals && d.signals.length > 0) {
           let jHtml = '';
           d.signals.slice(0, 20).forEach(j => {
             const dStr = new Date(j.created_at * 1000).toTimeString().slice(0, 8);
+            const iconUrl = getCoinIconUrl(j.symbol);
             jHtml += `<tr>
               <td>${dStr}</td>
-              <td><b>${j.symbol}</b></td>
+              <td>
+                <div class="coin-cell">
+                  <img src="${iconUrl}" class="coin-icon-img" alt="${j.symbol}">
+                  <span>${j.symbol}</span>
+                </div>
+              </td>
               <td><span class="badge ${j.direction === 'BUY' ? 'badge-buy' : 'badge-sell'}">${j.direction}</span></td>
               <td>${j.strategy}</td>
               <td>$${j.entry_price}</td>
@@ -657,7 +1190,7 @@
           jTable.innerHTML = jHtml;
         }
 
-        // Populate Audit Logs (Page 11)
+        // Populate Audit Logs
         const logsTable = document.getElementById('logs-table').querySelector('tbody');
         if (d.signals && d.signals.length > 0) {
           let lHtml = '';
@@ -674,7 +1207,7 @@
           logsTable.innerHTML = lHtml;
         }
 
-        // Populate Analytics (Page 8)
+        // Analytics
         document.getElementById('an-total').textContent = d.signals ? d.signals.length : '0';
 
       } catch (err) {
