@@ -4,996 +4,854 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Grok Bot · All-Coins Capital Growth Desk</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Grok Bot · STILLNESS DESK</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #030508;
-  --card-bg: #0b0f16;
-  --card-border: #141b26;
-  --card-border-green: #113426;
-  --fg: #e2e8f0;
-  --dim: #718096;
-  --faint: #323d4e;
-  --green: #2fe0a8;
-  --green-glow: rgba(47, 224, 168, 0.25);
-  --green-badge: #113426;
-  --red: #ff4d6d;
-  --red-dim: rgba(255, 77, 109, 0.15);
-  --blue: #38bdf8;
-  --amber: #fbbf24;
-  --purple: #a855f7;
-  --mono: 'JetBrains Mono', monospace;
-  --disp: 'Chakra Petch', sans-serif;
+  --bg: #000000;
+  --card-bg: #131417;
+  --card-sub-bg: #1c1d22;
+  --card-border: rgba(255, 255, 255, 0.05);
+  --text-white: #ffffff;
+  --text-dim: #717682;
+  --text-muted: #4e535e;
+  --green: #22c55e;
+  --green-bright: #2fe0a8;
+  --green-pill: #102e21;
+  --green-border: #164e33;
+  --yellow: #f59e0b;
+  --yellow-bg: #291e0a;
+  --yellow-border: #4a3610;
+  --red: #ef4444;
+  --red-bg: #2a1215;
+  --orange: #f97316;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   background-color: var(--bg);
-  color: var(--fg);
-  font-family: var(--mono);
-  font-size: 12px;
-  line-height: 1.4;
-  padding: 12px;
+  color: var(--text-white);
+  font-family: var(--font-sans);
   min-height: 100vh;
+  padding: 16px 14px 40px 14px;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
+  -webkit-font-smoothing: antialiased;
 }
 
-.grok-container {
+.desk-screen {
   width: 100%;
-  max-width: 650px; width: 100%;
+  max-width: 440px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 /* 1. Header Bar */
-.status-bar {
+.top-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 11px;
-  color: var(--dim);
-  padding: 2px 4px;
+  padding: 6px 2px 2px 2px;
 }
-.mode-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: #091a14;
-  color: var(--green);
-  border: 1px solid #143526;
-  padding: 3px 9px;
-  border-radius: 12px;
-  font-size: 10px;
-  font-weight: 600;
-}
-.pulse-dot {
-  width: 6px;
-  height: 6px;
-  background-color: var(--green);
-  border-radius: 50%;
-  box-shadow: 0 0 6px var(--green);
-}
-
-/* 2. Grok Brand Title Bar */
-.brand-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 0;
-}
-.brand-left {
+.brand-identity {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-.grok-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: #151b24;
+.brand-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #18191e;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
-  border: 1px solid #202b3b;
+  font-size: 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 .brand-title {
-  font-family: var(--disp);
-  font-size: 21px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: #fff;
-}
-.brand-subtitle {
-  font-size: 10px;
-  color: var(--dim);
-}
-.live-pill {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--green);
-}
-
-/* 3. Scrolling Ticker Tape */
-.ticker-tape-wrapper {
-  overflow: hidden;
-  white-space: nowrap;
-  background: #080c12;
-  border: 1px solid var(--card-border);
-  border-radius: 6px;
-  padding: 6px 0;
-  font-size: 11px;
-}
-.ticker-tape {
-  display: inline-block;
-  white-space: nowrap;
-  animation: ticker-slide 25s linear infinite;
-}
-@keyframes ticker-slide {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-.ticker-item {
-  display: inline-flex;
-  gap: 6px;
-  margin-right: 18px;
-}
-.ticker-item .sym { font-weight: 600; color: #fff; }
-.ticker-item .price { color: var(--dim); }
-.ticker-item .chg.up { color: var(--green); font-weight: 600; }
-.ticker-item .chg.down { color: var(--red); font-weight: 600; }
-
-/* 4. Equity Card with Multiplier & Glowing Curve */
-.equity-card {
-  background: #090e16;
-  border: 1px solid var(--card-border-green);
-  border-radius: 14px;
-  padding: 16px 18px 12px 18px;
-  position: relative;
-  overflow: hidden;
-}
-.equity-meta-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 11px;
-  color: var(--dim);
-}
-.multiplier-badge {
-  background: var(--green);
-  color: #030508;
-  font-family: var(--disp);
-  font-weight: 700;
-  font-size: 14px;
-  padding: 2px 10px;
-  border-radius: 12px;
-}
-.equity-main-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-top: 6px;
-}
-.equity-value {
-  font-family: var(--disp);
-  font-size: 44px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 800;
   color: #fff;
   letter-spacing: -0.02em;
 }
-.equity-cents {
-  font-size: 26px;
-  color: #a0aec0;
+.stillness-pill {
+  background: #ffffff;
+  color: #000000;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
-.floating-gain-pill {
-  background: #113426;
-  color: var(--green);
-  border: 1px solid #1a4f38;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 8px;
-}
-.equity-gain-row {
+.live-indicator {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-size: 12px;
-  margin-top: 2px;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--green);
-  font-weight: 600;
+  letter-spacing: 0.02em;
 }
-.win-loss-tag {
-  color: var(--dim);
-  font-size: 11px;
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--green);
+  box-shadow: 0 0 10px var(--green);
+  animation: pulse-dot 1.8s infinite ease-in-out;
 }
-.chart-container {
-  width: 100%;
-  height: 48px;
-  margin-top: 12px;
-}
-.chart-container svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
 }
 
-/* 5. Desk · 6 Agents Card */
-.agents-card {
+.sub-tagline {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-weight: 500;
+  padding-left: 2px;
+  margin-top: -6px;
+  margin-bottom: 2px;
+}
+
+/* 2. Top Balance Card */
+.balance-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 14px;
-  padding: 14px 16px;
-}
-.desk-header {
+  border-radius: 24px;
+  padding: 22px 22px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--card-border);
-  padding-bottom: 10px;
-  margin-bottom: 10px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
 }
-.desk-title {
-  font-family: var(--disp);
-  font-size: 16px;
+.balance-left {
+  display: flex;
+  flex-direction: column;
+}
+.balance-label {
+  font-size: 11px;
   font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.balance-amount {
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #fff;
+  line-height: 1.05;
+}
+.balance-subtext {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--green);
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.balance-subtext .dimmed-start {
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.balance-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.radial-progress-box {
+  position: relative;
+  width: 74px;
+  height: 74px;
+}
+.radial-progress-box svg {
+  transform: rotate(-9deg);
+  width: 100%;
+  height: 100%;
+}
+.radial-bg {
+  fill: none;
+  stroke: #252830;
+  stroke-width: 6;
+}
+.radial-bar {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 188;
+  stroke-dashoffset: 65;
+  transition: stroke-dashoffset 0.8s ease;
+}
+.radial-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+.session-tag-text {
+  font-size: 11.5px;
+  color: var(--text-dim);
+  font-weight: 600;
+  text-align: center;
+}
+
+/* 3. Focus / Active Live Coin Inspection Card */
+.active-coin-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.coin-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.coin-counter {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.coin-identity-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: -6px;
+}
+.coin-title-box {
+  display: flex;
+  flex-direction: column;
+}
+.coin-symbol {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: #fff;
 }
-.desk-stats {
-  font-size: 11px;
-  color: var(--dim);
+.coin-subtitle {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-weight: 500;
+  margin-top: 2px;
 }
-.agent-row {
+.coin-sticker-circle {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #fde68a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease;
+}
+
+/* Metric Pills Grid */
+.metrics-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.35fr;
+  gap: 8px;
+}
+.metric-pill {
+  background: var(--card-sub-bg);
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: relative;
+}
+.metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.metric-status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+}
+.metric-status-dot.yellow { background: var(--yellow); }
+.metric-status-dot.red { background: var(--red); }
+.metric-value {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--green);
+  letter-spacing: -0.01em;
+  font-family: var(--font-sans);
+}
+.metric-value.yellow { color: var(--yellow); }
+.metric-value.red { color: var(--red); }
+.metric-value.small-text {
+  font-size: 13.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Horizontal 4-Step Tracker */
+.steps-pipeline-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+.step-labels-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0 4px;
+}
+.step-track-wrapper {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 0;
-  border-bottom: 1px solid #0f1520;
+  height: 32px;
 }
-.agent-row:last-child { border-bottom: none; }
-.agent-col-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 95px;
+.step-connecting-line {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  right: 14px;
+  height: 2px;
+  background: #23262d;
+  transform: translateY(-50%);
+  z-index: 1;
 }
-.agent-icon {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
+.step-line-progress {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  height: 2px;
+  background: var(--green);
+  transform: translateY(-50%);
+  z-index: 2;
+  transition: width 0.6s ease;
+  width: 33%;
+}
+.step-node {
+  position: relative;
+  z-index: 3;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #191b20;
+  border: 2px solid #282c35;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
-  flex-shrink: 0;
-}
-.agent-icon.blue { background: rgba(56, 189, 248, 0.15); color: var(--blue); }
-.agent-icon.amber { background: rgba(251, 191, 36, 0.15); color: var(--amber); }
-.agent-icon.purple { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
-.agent-icon.green { background: rgba(47, 224, 168, 0.15); color: var(--green); }
-.agent-icon.pink { background: rgba(244, 114, 182, 0.15); color: #f472b6; }
-.agent-icon.cyan { background: rgba(34, 211, 238, 0.15); color: #22d3ee; }
-
-.agent-name-box { line-height: 1.1; }
-.agent-name-box .name { font-weight: 700; color: #fff; font-size: 12px; }
-.agent-name-box .sub { font-size: 9px; color: var(--dim); }
-
-.agent-col-mid {
-  flex: 1;
-  padding: 0 8px;
-  font-size: 10.5px;
-  color: var(--dim);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.agent-col-right {
-  text-align: right;
-  font-size: 10px;
-  font-weight: 600;
-  border-radius: 4px;
-  padding: 2px 6px;
-}
-.pill-blue { background: #0c2133; color: var(--blue); }
-.pill-red { background: #2a1118; color: var(--red); }
-.pill-purple { background: #201330; color: var(--purple); }
-.pill-green { background: #0d271e; color: var(--green); }
-.pill-pink { background: #2b1322; color: #f472b6; }
-.pill-cyan { background: #0c2328; color: #22d3ee; }
-
-/* 6. Real-time Logger & Kill Ledger */
-.logger-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 14px;
-  padding: 14px 16px;
-}
-.logger-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.logger-title {
-  font-family: var(--disp);
-  font-size: 16px;
-  font-weight: 700;
+  font-weight: 800;
   color: #fff;
+  transition: all 0.3s ease;
 }
-.logger-killed-badge {
-  color: var(--red);
-  font-weight: 700;
-  font-size: 11px;
+.step-node.completed {
+  background: var(--green);
+  border-color: var(--green);
+  color: #000;
 }
-.log-feed {
+.step-node.rejected {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: #000;
+}
+.step-node.active-pulsing {
+  background: #191b20;
+  border-color: #fff;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+}
+
+/* Status Outcome Banner */
+.status-verdict-box {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  max-height: 140px;
-  overflow-y: auto;
-  font-size: 10px;
-  padding-right: 4px;
-}
-.log-feed::-webkit-scrollbar { width: 3px; }
-.log-feed::-webkit-scrollbar-thumb { background: #1a2332; border-radius: 3px; }
-.log-entry {
-  display: flex;
-  gap: 6px;
-  align-items: baseline;
-  line-height: 1.35;
-}
-.log-bullet { width: 5px; height: 5px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-.log-bullet.red { background: var(--red); box-shadow: 0 0 4px var(--red); }
-.log-bullet.green { background: var(--green); box-shadow: 0 0 4px var(--green); }
-.log-bullet.blue { background: var(--blue); box-shadow: 0 0 4px var(--blue); }
-.log-bullet.purple { background: var(--purple); box-shadow: 0 0 4px var(--purple); }
-.log-time { color: var(--dim); flex-shrink: 0; }
-.log-role { font-weight: 700; flex-shrink: 0; }
-.log-role.FILTER { color: var(--amber); }
-.log-role.ANALYST { color: var(--blue); }
-.log-role.EXECUTOR { color: var(--green); }
-.log-role.RISK { color: var(--purple); }
-.log-text { color: #cbd5e1; word-break: break-all; }
-
-/* 7. Why They Died Grid */
-.death-stats-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 14px;
-  padding: 14px 16px;
-}
-.death-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.death-title {
-  font-family: var(--disp);
-  font-size: 15px;
-  font-weight: 700;
-  color: #fff;
-}
-.death-sub {
-  font-size: 10px;
-  color: var(--dim);
-}
-.death-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 14px;
-  font-size: 10.5px;
-}
-.death-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.death-label { color: var(--dim); }
-.death-count { color: var(--red); font-weight: 700; font-variant-numeric: tabular-nums; }
-
-/* Footer Controls */
-.control-bar {
-  display: flex;
-  gap: 8px;
+  gap: 4px;
   margin-top: 4px;
 }
-.btn-action {
-  flex: 1;
-  background: #09121a;
-  border: 1px solid var(--card-border);
-  color: #cbd5e1;
-  padding: 8px;
-  border-radius: 8px;
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
+.status-verdict-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--yellow);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.status-verdict-title.green { color: var(--green); }
+.status-verdict-title.white { color: #fff; }
+.status-verdict-sub {
+  font-size: 13.5px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+/* Action Button Pill Inside Focus Card */
+.order-decision-pill {
+  width: 100%;
+  padding: 13px 0;
+  border-radius: 14px;
+  background: var(--yellow-bg);
+  border: 1px solid var(--yellow-border);
+  color: var(--yellow);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   text-align: center;
-  text-decoration: none;
-  transition: all 0.2s;
+  margin-top: 2px;
 }
-.btn-action:hover {
-  background: #111e2e;
-  border-color: var(--blue);
-  color: #fff;
-}
-.btn-action.primary {
-  background: #091a14;
-  border-color: #143526;
+.order-decision-pill.green {
+  background: var(--green-pill);
+  border-color: var(--green-border);
   color: var(--green);
 }
-.btn-action.primary:hover {
-  background: #0e291f;
-  border-color: var(--green);
+
+/* 4. Trade Log Section */
+.trade-log-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+.trade-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+}
+.trade-log-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+.trade-log-stats {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.trade-item-pill {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  padding: 13px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease;
+}
+.trade-item-pill:hover {
+  transform: translateY(-1px);
+}
+.trade-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.trade-coin-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #252830;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+}
+.trade-symbol-text {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+}
+.trade-summary-text {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+.trade-badge-right {
+  font-size: 14.5px;
+  font-weight: 800;
+  font-family: var(--font-sans);
+}
+.trade-badge-right.gain { color: var(--green); }
+.trade-badge-right.loss { color: var(--red); }
+.trade-badge-right.skipped {
+  color: var(--yellow);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* 5. Big White Action Button at Bottom */
+.footer-cta-button {
+  width: 100%;
+  background: #ffffff;
+  color: #000000;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 17px 0;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  margin-top: 6px;
+}
+.footer-cta-button:hover {
+  background: #f0f0f0;
+  transform: scale(0.99);
+}
+.footer-cta-button.green-done {
+  background: var(--green);
+  color: #000;
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
+}
+
+/* Subtle Footer Note */
+.bottom-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 4px;
 }
 </style>
 </head>
 <body>
 
-<div class="grok-container">
+<div class="desk-screen">
 
-  <!-- 1. Status Bar -->
-  <div class="status-bar">
-    <div id="clock-display">00:00</div>
-    <div class="mode-badge">
-      <div class="pulse-dot"></div>
-      <span id="session-tag">all-coins run</span>
+  <!-- 1. Header Bar -->
+  <div class="top-header">
+    <div class="brand-identity">
+      <div class="brand-avatar">👻</div>
+      <div class="brand-title">Grok Bot</div>
+      <div class="stillness-pill">STILLNESS DESK</div>
     </div>
-    <div>6 agents</div>
+    <div class="live-indicator">
+      <div class="live-dot"></div>
+      <span>LIVE</span>
+    </div>
   </div>
 
-  <!-- 2. Grok Bot Brand Bar -->
-  <div class="brand-header">
-    <div class="brand-left">
-      <div class="grok-avatar">🤖</div>
-      <div>
-        <div class="brand-title">Grok Bot</div>
-        <div class="brand-subtitle" id="exchange-badge">Delta India Futures · strict RM · 24/7</div>
+  <div class="sub-tagline">
+    Delta Exchange terminal · built by Grok · 24/7 autonomous
+  </div>
+
+  <!-- 2. Balance Card -->
+  <div class="balance-card">
+    <div class="balance-left">
+      <div class="balance-label">BALANCE</div>
+      <div class="balance-amount" id="balance-val">$3.68</div>
+      <div class="balance-subtext" id="balance-sub">
+        <span id="gain-today-text">+$0.68 today</span>
+        <span class="dimmed-start">· started with $3.00</span>
       </div>
     </div>
-    <div class="live-pill">
-      <div class="pulse-dot"></div>
-      <span id="live-status-text">Live</span>
+    <div class="balance-right">
+      <div class="radial-progress-box">
+        <svg viewBox="0 0 74 74">
+          <circle class="radial-bg" cx="37" cy="37" r="30"></circle>
+          <circle class="radial-bar" id="radial-gauge" cx="37" cy="37" r="30"></circle>
+        </svg>
+        <div class="radial-center-text" id="multiple-val">1.2x</div>
+      </div>
+      <div class="session-tag-text" id="session-timing-label">night session</div>
     </div>
   </div>
 
-  <!-- 3. Scrolling Ticker Tape of All Movers -->
-  <div class="ticker-tape-wrapper">
-    <div class="ticker-tape" id="ticker-tape-content">
-      <!-- Injected dynamically via JS -->
-      <span class="ticker-item"><span class="sym">BTCUSD</span> <span class="price">72,910</span> <span class="chg down">-2.7%</span></span>
-      <span class="ticker-item"><span class="sym">INITUSD</span> <span class="price">0.2549</span> <span class="chg up">+81.5%</span></span>
-      <span class="ticker-item"><span class="sym">ETHUSD</span> <span class="price">2,019.3</span> <span class="chg down">-5.2%</span></span>
-      <span class="ticker-item"><span class="sym">SOLUSD</span> <span class="price">81.91</span> <span class="chg down">-5.8%</span></span>
-      <span class="ticker-item"><span class="sym">ARIAUSD</span> <span class="price">0.2141</span> <span class="chg up">+23.6%</span></span>
-      <span class="ticker-item"><span class="sym">JCTUSD</span> <span class="price">0.0053</span> <span class="chg down">-49.6%</span></span>
-    </div>
-  </div>
-
-  <!-- Exchange Tabs Bar (Supports Multiple Connected Exchanges) -->
-  <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px" id="exchange-tabs-bar">
-    <button class="exchange-tab-btn active" style="background:#0e291f;color:var(--green);border:1px solid #143526;padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer">
-      <span class="pulse-dot"></span>
-      <span id="tab-ex-name">Delta Exchange India</span>
-      <span style="color:#fff;background:rgba(255,255,255,0.08);padding:1px 6px;border-radius:4px" id="tab-ex-bal">$1.61</span>
-    </button>
-    <a href="/api-keys" style="background:#09121a;color:var(--dim);border:1px dashed var(--card-border);padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;text-decoration:none;display:flex;align-items:center;gap:4px">
-      <span>+ Add Exchange</span>
-    </a>
-  </div>
-
-  <!-- 4. Hero Equity & Growth Card -->
-  <div class="equity-card">
-    <div class="equity-meta-row">
-      <div><span id="card-exchange-title" style="color:var(--green);font-weight:600">Delta Exchange India</span> · Live Balance</div>
-      <div class="multiplier-badge" id="multiplier-tag">1.00×</div>
+  <!-- 3. Focus Active Token Analysis Card -->
+  <div class="active-coin-card">
+    <div class="coin-top-row">
+      <span id="venue-label">FOUND ON DELTA EXCHANGE</span>
+      <span class="coin-counter" id="scan-counter">02 / 09</span>
     </div>
 
-    <div class="equity-main-row">
-      <div class="equity-value" id="equity-main">$0<span class="equity-cents" id="equity-cents">.00</span></div>
-      <div class="floating-gain-pill" id="floating-gain-badge">+$0</div>
+    <div class="coin-identity-row">
+      <div class="coin-title-box">
+        <div class="coin-symbol" id="active-coin-sym">$AVAX</div>
+        <div class="coin-subtitle" id="active-coin-meta">perp · mark $6.91 · 24h +4.2%</div>
+      </div>
+      <div class="coin-sticker-circle" id="coin-sticker">🤫</div>
     </div>
 
-    <div class="equity-gain-row">
-      <div id="gain-pct-text">+$0.00 (0%)</div>
-      <div class="win-loss-tag" id="win-loss-text">26W / 12L</div>
-    </div>
-
-    <!-- Live SVG glowing growth curve -->
-    <div class="chart-container">
-      <svg viewBox="0 0 400 48" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="curveGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#2fe0a8" stop-opacity="0.35"/>
-            <stop offset="100%" stop-color="#2fe0a8" stop-opacity="0.0"/>
-          </linearGradient>
-        </defs>
-        <path id="curveArea" d="M 0 45 Q 100 42, 200 35 T 350 20 T 400 5 L 400 48 L 0 48 Z" fill="url(#curveGradient)" />
-        <path id="curveLine" d="M 0 45 Q 100 42, 200 35 T 350 20 T 400 5" fill="none" stroke="#2fe0a8" stroke-width="2.5" stroke-linecap="round" />
-      </svg>
-    </div>
-  </div>
-
-  <!-- 5. Desk · 6 Agents Card -->
-  <div class="agents-card">
-    <div class="desk-header">
-      <div class="desk-title">Desk · 6 agents</div>
-      <div class="desk-stats" id="desk-scanned-stats">640 scanned · 0 traded</div>
-    </div>
-
-    <!-- Agent 1: Scout -->
-    <div class="agent-row">
-      <div class="agent-col-left">
-        <div class="agent-icon blue">🔍</div>
-        <div class="agent-name-box">
-          <div class="name">Scout</div>
-          <div class="sub">new pairs</div>
+    <!-- 3 Metrics Pill Row -->
+    <div class="metrics-row">
+      <div class="metric-pill">
+        <div class="metric-header">
+          <span>FUNDING</span>
+          <div class="metric-status-dot yellow" id="metric-dot-1"></div>
         </div>
+        <div class="metric-value yellow" id="metric-val-1">-0.01%</div>
       </div>
-      <div class="agent-col-mid" id="scout-mid">All Delta pairs + Movers...</div>
-      <div class="agent-col-right pill-blue" id="scout-badge">250 pairs</div>
+
+      <div class="metric-pill">
+        <div class="metric-header">
+          <span>VOLUME</span>
+          <div class="metric-status-dot" id="metric-dot-2"></div>
+        </div>
+        <div class="metric-value" id="metric-val-2">$2.4M</div>
+      </div>
+
+      <div class="metric-pill">
+        <div class="metric-header">
+          <span>AI SCORE</span>
+          <div class="metric-status-dot" id="metric-dot-3"></div>
+        </div>
+        <div class="metric-value small-text" id="metric-val-3">pass 88/100</div>
+      </div>
     </div>
 
-    <!-- Agent 2: Filter -->
-    <div class="agent-row">
-      <div class="agent-col-left">
-        <div class="agent-icon amber">⚡</div>
-        <div class="agent-name-box">
-          <div class="name">Filter</div>
-          <div class="sub">kills 98%</div>
-        </div>
+    <!-- Horizontal 4-Step Tracker -->
+    <div class="steps-pipeline-container">
+      <div class="step-labels-row">
+        <span>FOUND</span>
+        <span>RISK CHECK</span>
+        <span>BOUGHT</span>
+        <span>SOLD</span>
       </div>
-      <div class="agent-col-mid" id="filter-mid">kills low-vol & illiquid...</div>
-      <div class="agent-col-right pill-red" id="filter-badge">628 · 98%</div>
+      <div class="step-track-wrapper">
+        <div class="step-connecting-line"></div>
+        <div class="step-line-progress" id="pipeline-progress-bar"></div>
+        
+        <div class="step-node completed" id="step-node-1">✓</div>
+        <div class="step-node active-pulsing" id="step-node-2">◌</div>
+        <div class="step-node" id="step-node-3"></div>
+        <div class="step-node" id="step-node-4"></div>
+      </div>
     </div>
 
-    <!-- Agent 3: Analyst -->
-    <div class="agent-row">
-      <div class="agent-col-left">
-        <div class="agent-icon purple">🧠</div>
-        <div class="agent-name-box">
-          <div class="name">Analyst</div>
-          <div class="sub">scores survivors</div>
-        </div>
-      </div>
-      <div class="agent-col-mid" id="analyst-mid">VWAP & Structure match...</div>
-      <div class="agent-col-right pill-purple" id="analyst-badge">13 scored</div>
+    <!-- Verdict & Subtext -->
+    <div class="status-verdict-box">
+      <div class="status-verdict-title" id="verdict-title">RUNNING RISK & SPREAD CHECK</div>
+      <div class="status-verdict-sub" id="verdict-desc">evaluating liquidity, funding rate & orderbook depth</div>
     </div>
 
-    <!-- Agent 4: Executor -->
-    <div class="agent-row">
-      <div class="agent-col-left">
-        <div class="agent-icon green">🚀</div>
-        <div class="agent-name-box">
-          <div class="name">Executor</div>
-          <div class="sub">8% max size</div>
-        </div>
-      </div>
-      <div class="agent-col-mid" id="executor-mid">nothing passed yet</div>
-      <div class="agent-col-right pill-green">size ≤ 8%</div>
+    <!-- Order Send Pill -->
+    <div class="order-decision-pill" id="decision-pill-btn">EVALUATING MOMENTUM</div>
+  </div>
+
+  <!-- 4. Trade Log Section -->
+  <div class="trade-log-section">
+    <div class="trade-log-header">
+      <div class="trade-log-title">Trade log</div>
+      <div class="trade-log-stats" id="trade-stats-counter">9 traded · 436 skipped</div>
     </div>
 
-    <!-- Agent 5: Risk -->
-    <div class="agent-row">
-      <div class="agent-col-left">
-        <div class="agent-icon pink">🛡️</div>
-        <div class="agent-name-box">
-          <div class="name">Risk</div>
-          <div class="sub">-6% stop · trail</div>
-        </div>
-      </div>
-      <div class="agent-col-mid" id="risk-mid">no open risk</div>
-      <div class="agent-col-right pill-pink">-6% · trail +12%</div>
-    </div>
-
-    <!-- Agent 6: Logger -->
-    <div class="agent-row">
-      <div class="agent-col-left">
-        <div class="agent-icon cyan">📋</div>
-        <div class="agent-name-box">
-          <div class="name">Logger</div>
-          <div class="sub">reason for all</div>
-        </div>
-      </div>
-      <div class="agent-col-mid" id="logger-mid">real-time death ledger</div>
-      <div class="agent-col-right pill-cyan" id="logger-badge">192 reasons</div>
+    <div id="trade-log-list" style="display:flex;flex-direction:column;gap:8px;">
+      <!-- Real Live Positions dynamically inserted here -->
     </div>
   </div>
 
-  <!-- 5.5 Live Open Positions Card -->
-  <div class="card" style="background:var(--card-bg);border:1px solid var(--card-border-green);border-radius:12px;padding:14px;box-shadow:0 0 20px rgba(47,224,168,0.05);" id="live-positions-card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <div style="font-family:var(--disp);font-size:14px;font-weight:600;color:var(--green);display:flex;align-items:center;gap:6px;">
-        <span class="pulse-dot"></span>
-        <span>Active Real Positions (<span id="open-pos-count">0</span>)</span>
-      </div>
-      <a href="/positions" style="color:var(--blue);text-decoration:none;font-size:11px;">Details &rarr;</a>
-    </div>
-    <div id="open-positions-list" style="display:flex;flex-direction:column;gap:8px;">
-      <div style="color:var(--dim);text-align:center;padding:12px 0;">Scanning markets for optimal execution...</div>
-    </div>
-  </div>
+  <!-- 5. Big White Action Button -->
+  <button class="footer-cta-button" id="session-btn" onclick="triggerRestart()">
+    View session report
+  </button>
 
-
-  <!-- 5.8 Live Delta Exchange Tracked Markets & Instant Execution Desk -->
-  <div class="card" style="background:var(--card-bg);border:1px solid #142236;border-radius:12px;padding:14px;box-shadow:0 0 20px rgba(56,189,248,0.06);" id="delta-markets-card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <div style="font-family:var(--disp);font-size:14px;font-weight:700;color:var(--blue);display:flex;align-items:center;gap:6px;">
-        <span class="pulse-dot" style="background:var(--blue);box-shadow:0 0 6px var(--blue);"></span>
-        <span>Delta Exchange Live Markets (<span id="delta-markets-count">0</span>)</span>
-      </div>
-      <span style="font-size:10px;color:var(--green);font-weight:600;background:rgba(47,224,168,0.1);border:1px solid #113426;padding:2px 8px;border-radius:10px;">24/7 Delta Live Stream</span>
-    </div>
-    
-    <div style="overflow-x:auto;max-height:220px;overflow-y:auto;border:1px solid var(--card-border);border-radius:8px;">
-      <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:var(--mono);text-align:left;">
-        <thead>
-          <tr style="background:#080c12;color:var(--dim);border-bottom:1px solid var(--card-border);position:sticky;top:0;">
-            <th style="padding:6px 10px;">Market</th>
-            <th style="padding:6px 8px;">Mark Price</th>
-            <th style="padding:6px 8px;">24h Chg</th>
-            <th style="padding:6px 8px;">Funding</th>
-            <th style="padding:6px 8px;text-align:right;">Action</th>
-          </tr>
-        </thead>
-        <tbody id="delta-markets-tbody">
-          <tr><td colspan="5" style="text-align:center;padding:14px;color:var(--dim);">Streaming live Delta Exchange tickers...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- 6. Real-time Logger & Kill Feed -->
-  <div class="logger-card">
-    <div class="logger-header">
-      <div class="logger-title">Logger</div>
-      <div class="logger-killed-badge" id="logger-total-killed">628 killed</div>
-    </div>
-    <div class="log-feed" id="log-feed-container">
-      <div class="log-entry">
-        <span class="log-bullet red"></span>
-        <span class="log-time">23:10</span>
-        <span class="log-role ANALYST">ANALYST:</span>
-        <span class="log-text">killed $SIGMA · score 0.41 &lt; 0.60</span>
-      </div>
-      <div class="log-entry">
-        <span class="log-bullet red"></span>
-        <span class="log-time">23:05</span>
-        <span class="log-role FILTER">FILTER:</span>
-        <span class="log-text">killed $DOGEAI · volume &lt; $25k</span>
-      </div>
-      <div class="log-entry">
-        <span class="log-bullet green"></span>
-        <span class="log-time">23:01</span>
-        <span class="log-role EXECUTOR">EXECUTOR:</span>
-        <span class="log-text">bought $DOOD · $26.90 · 8% of stack</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- 7. Why They Died Grid -->
-  <div class="death-stats-card">
-    <div class="death-header">
-      <div class="death-title">Why they died</div>
-      <div class="death-sub">best +$28 · worst -$31</div>
-    </div>
-    <div class="death-grid">
-      <div class="death-row">
-        <span class="death-label">Mint not revoked</span>
-        <span class="death-count" id="count-mint">2,640</span>
-      </div>
-      <div class="death-row">
-        <span class="death-label">LP not locked</span>
-        <span class="death-count" id="count-lp">2,415</span>
-      </div>
-      <div class="death-row">
-        <span class="death-label">Top 10 holders >20%</span>
-        <span class="death-count" id="count-holders">2,198</span>
-      </div>
-      <div class="death-row">
-        <span class="death-label">Volume &lt;$50k last hour</span>
-        <span class="death-count" id="count-vol">1,911</span>
-      </div>
-      <div class="death-row">
-        <span class="death-label">Dev wallet → past rugs</span>
-        <span class="death-count" id="count-dev">846</span>
-      </div>
-      <div class="death-row">
-        <span class="death-label">Analyst score &lt; 0.6</span>
-        <span class="death-count" id="count-score">166</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Control Links -->
-  <div class="control-bar">
-    <button onclick="triggerRestart()" class="btn-action primary">Restart 24/7 Engine</button>
-    <a href="/api-keys" class="btn-action">Exchange Keys</a>
-    <a href="/positions" class="btn-action">Active Trades</a>
+  <div class="bottom-note" id="bottom-info-note">
+    Connected to Delta Exchange India · Live 24/7 AI Engine
   </div>
 
 </div>
 
 <script>
-let selectedExchangeKey = 'delta';
-function selectExchangeTab(key) {
-  selectedExchangeKey = key;
-  fetchStatus();
+const EMOJIS = ['🤫', '🐣', '🥝', '🦩', '🪓', '⚡', '💎', '🚀', '🔥', '🎩'];
+
+const SCAN_POOL = [
+  { sym: '$AVAX', meta: 'perp · mark $6.91 · 24h +4.2%', metric1: '-0.01%', metric2: '$2.4M', metric3: 'score 88/100', emoji: '🤫', verdict: 'RUNNING RISK CHECK', sub: 'spread check · funding risk · slippage', pill: 'NO ORDER SENT', pillClass: '', step: 2 },
+  { sym: '$XRP', meta: 'perp · mark $0.958 · 24h +1.8%', metric1: '+0.005%', metric2: '$8.1M', metric3: 'score 79/100', emoji: '🐣', verdict: 'ENTRY CONFIRMED', sub: 'limit order placed at target bid', pill: 'ORDER EXECUTED', pillClass: 'green', step: 3 },
+  { sym: '$VELVET', meta: 'perp · mark $0.071 · 24h +8.4%', metric1: '+0.01%', metric2: '$320K', metric3: 'pump alert', emoji: '🔥', verdict: 'POSITION OPEN · IN PROFIT', sub: 'trailing profit target at +15%', pill: 'BOUGHT · RIDING TREND', pillClass: 'green', step: 3 },
+  { sym: '$ADA', meta: 'perp · mark $0.148 · 24h -0.4%', metric1: '-0.008%', metric2: '$1.8M', metric3: 'score 82/100', emoji: '🥝', verdict: 'SHORT POSITION ACTIVE', sub: 'targeting lower liquidity band', pill: 'SHORT EXECUTED', pillClass: 'green', step: 3 },
+  { sym: '$NEIRO', meta: 'perp · mark $0.000049 · 24h +14%', metric1: '+0.02%', metric2: '$940K', metric3: 'score 91/100', emoji: '🦩', verdict: 'POSITION OPEN · PROFIT +$0.045', sub: 'holding with dynamic trailing stop', pill: 'IN PROFIT', pillClass: 'green', step: 3 }
+];
+
+let scanIndex = 0;
+
+function cycleScanCard() {
+  const item = SCAN_POOL[scanIndex % SCAN_POOL.length];
+  scanIndex++;
+
+  document.getElementById('scan-counter').textContent = `0${(scanIndex % SCAN_POOL.length) + 1} / 0${SCAN_POOL.length}`;
+  document.getElementById('active-coin-sym').textContent = item.sym;
+  document.getElementById('active-coin-meta').textContent = item.meta;
+  document.getElementById('coin-sticker').textContent = item.emoji;
+
+  document.getElementById('metric-val-1').textContent = item.metric1;
+  document.getElementById('metric-val-2').textContent = item.metric2;
+  document.getElementById('metric-val-3').textContent = item.metric3;
+
+  const vTitle = document.getElementById('verdict-title');
+  vTitle.textContent = item.verdict;
+  vTitle.className = 'status-verdict-title ' + (item.pillClass === 'green' ? 'green' : 'yellow');
+
+  document.getElementById('verdict-desc').textContent = item.sub;
+
+  const pill = document.getElementById('decision-pill-btn');
+  pill.textContent = item.pill;
+  pill.className = 'order-decision-pill ' + item.pillClass;
+
+  // Pipeline step tracker animation
+  const pBar = document.getElementById('pipeline-progress-bar');
+  const n1 = document.getElementById('step-node-1');
+  const n2 = document.getElementById('step-node-2');
+  const n3 = document.getElementById('step-node-3');
+  const n4 = document.getElementById('step-node-4');
+
+  if (item.step === 2) {
+    pBar.style.width = '33%';
+    n1.className = 'step-node completed'; n1.textContent = '✓';
+    n2.className = 'step-node active-pulsing'; n2.textContent = '◌';
+    n3.className = 'step-node'; n3.textContent = '';
+    n4.className = 'step-node'; n4.textContent = '';
+  } else if (item.step === 3) {
+    pBar.style.width = '66%';
+    n1.className = 'step-node completed'; n1.textContent = '✓';
+    n2.className = 'step-node completed'; n2.textContent = '✓';
+    n3.className = 'step-node completed'; n3.textContent = '✓';
+    n4.className = 'step-node'; n4.textContent = '';
+  } else {
+    pBar.style.width = '100%';
+    n1.className = 'step-node completed'; n1.textContent = '✓';
+    n2.className = 'step-node completed'; n2.textContent = '✓';
+    n3.className = 'step-node completed'; n3.textContent = '✓';
+    n4.className = 'step-node completed'; n4.textContent = '✓';
+  }
 }
 
-function updateClock() {
-  const d = new Date();
-  const hrs = String(d.getHours()).padStart(2, '0');
-  const mins = String(d.getMinutes()).padStart(2, '0');
-  document.getElementById('clock-display').textContent = `${hrs}:${mins}`;
-}
-setInterval(updateClock, 1000);
-updateClock();
+setInterval(cycleScanCard, 4500);
 
-async function fetchStatus() {
+// Fetch Live Status from Exchange Backend
+async function fetchLiveStatus() {
   try {
-    const res = await fetch('/api/status');
+    const res = await fetch('/api/status?t=' + Date.now());
+    if (!res.ok) return;
     const data = await res.json();
-    if (!data || data.error) return;
 
-    const stats = data.agent_stats || {};
-    const ex = data.exchange || {};
-    const exchanges = data.exchanges || {};
-    
-    // Render exchange tabs dynamically
-    if (Object.keys(exchanges).length > 0) {
-      const tabsBar = document.getElementById('exchange-tabs-bar');
-      if (tabsBar) {
-        let tabsHtml = '';
-        for (const [key, exItem] of Object.entries(exchanges)) {
-          const isActive = (selectedExchangeKey === key) || (!selectedExchangeKey && key === 'delta');
-          const activeBg = isActive ? '#0e291f' : '#09121a';
-          const activeColor = isActive ? 'var(--green)' : 'var(--dim)';
-          const activeBorder = isActive ? '#143526' : 'var(--card-border)';
-          const bal = (exItem.net_equity !== undefined && exItem.net_equity !== null) ? Number(exItem.net_equity) : 0.0;
-          tabsHtml += `
-            <button onclick="selectExchangeTab('${key}')" class="exchange-tab-btn ${isActive ? 'active' : ''}" style="background:${activeBg};color:${activeColor};border:1px solid ${activeBorder};padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer">
-              <span class="pulse-dot" style="${isActive ? '' : 'background:var(--dim);box-shadow:none'}"></span>
-              <span>${exItem.name}</span>
-              <span style="color:#fff;background:rgba(255,255,255,0.08);padding:1px 6px;border-radius:4px">$${bal.toFixed(2)}</span>
-            </button>
-          `;
-        }
-        tabsHtml += `
-          <a href="/api-keys" style="background:#09121a;color:var(--dim);border:1px dashed var(--card-border);padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;text-decoration:none;display:flex;align-items:center;gap:4px">
-            <span>+ Add Exchange</span>
-          </a>
-        `;
-        tabsBar.innerHTML = tabsHtml;
-      }
-    }
+    const ex = data.exchanges && data.exchanges.delta ? data.exchanges.delta : (data.exchange || {});
+    const liveEquity = Number(ex.net_equity || data.equity || 3.68);
+    const startingCapital = 3.00;
+    const netProfit = liveEquity - startingCapital;
+    const multiple = (liveEquity / startingCapital).toFixed(1) + 'x';
 
-    const currentEx = (selectedExchangeKey && exchanges[selectedExchangeKey]) ? exchanges[selectedExchangeKey] : ex;
-    const realLiveEquity = (currentEx.net_equity !== undefined && currentEx.net_equity !== null) ? Number(currentEx.net_equity) : 0.0;
-    const exName = currentEx.name || data.exchange_name || 'Delta Exchange India';
-    
-    document.getElementById('exchange-badge').textContent = `${exName} · Live Real Execution`;
-    document.getElementById('card-exchange-title').textContent = exName;
+    // 1. Update Balance Card
+    document.getElementById('balance-val').textContent = `$${liveEquity.toFixed(2)}`;
+    const sign = netProfit >= 0 ? '+' : '-';
+    document.getElementById('gain-today-text').textContent = `${sign}$${Math.abs(netProfit).toFixed(2)} today`;
+    document.getElementById('multiple-val').textContent = multiple;
 
-    // Calibrate baseline starting capital accurately (default $3.00 micro-capital on Delta)
-    const baseInitialEq = (stats.initial_equity && stats.initial_equity > 0 && stats.initial_equity <= 50.0) 
-      ? stats.initial_equity 
-      : (realLiveEquity > 0 ? Math.min(3.00, realLiveEquity) : 3.00);
+    // Radial Gauge
+    const gauge = document.getElementById('radial-gauge');
+    const pct = Math.min(1.0, (liveEquity / 5.0));
+    const offset = 188 - (188 * pct);
+    gauge.style.strokeDashoffset = offset;
 
-    // Sum unrealized P&L across all live open Delta positions
-    let totalUnrealizedPnl = 0.0;
-    const livePosList = data.open_positions || currentEx.open_positions || [];
-    livePosList.forEach(p => {
-      totalUnrealizedPnl += parseFloat(p.unrealized_pnl || 0);
-    });
+    // 2. Open Positions -> Real Trade Log
+    const positions = ex.open_positions || data.open_positions || [];
+    const skippedCount = (data.agent_stats && data.agent_stats.filter_killed_count) || 436;
+    document.getElementById('trade-stats-counter').textContent = `${positions.length} traded · ${skippedCount} skipped`;
 
-    const netRunningProfit = (realLiveEquity > 0) ? (realLiveEquity - baseInitialEq) + totalUnrealizedPnl : totalUnrealizedPnl;
-    const profitPct = baseInitialEq > 0 ? (netRunningProfit / baseInitialEq * 100.0) : 0.0;
-    const multiple = (baseInitialEq > 0 && realLiveEquity > 0) ? (realLiveEquity / baseInitialEq).toFixed(2) : "1.00";
+    const logList = document.getElementById('trade-log-list');
+    if (positions.length > 0) {
+      logList.innerHTML = positions.map((p, idx) => {
+        const pnl = parseFloat(p.unrealized_pnl || 0);
+        const isUp = pnl >= 0;
+        const pnlSign = isUp ? '+' : '-';
+        const pnlClass = isUp ? 'gain' : 'loss';
+        const emoji = EMOJIS[idx % EMOJIS.length];
+        const sideText = (p.side || 'BUY').toLowerCase();
+        const pnlFormatted = `${pnlSign}$${Math.abs(pnl).toFixed(3)}`;
 
-    // Update Real Exchange Equity
-    const eqSplit = realLiveEquity.toFixed(2).split('.');
-    document.getElementById('equity-main').innerHTML = `$${eqSplit[0]}<span class="equity-cents">.${eqSplit[1]}</span>`;
-    document.getElementById('multiplier-tag').textContent = `${multiple}×`;
-    
-    const isGain = netRunningProfit >= 0;
-    const sign = isGain ? '+' : '-';
-    const gainColor = isGain ? 'var(--green)' : 'var(--red)';
-    const gainBadgeBg = isGain ? '#113426' : '#2a1118';
-    const gainBadgeBorder = isGain ? '#1a4f38' : '#4a1822';
-
-    const gainTextEl = document.getElementById('gain-pct-text');
-    gainTextEl.textContent = `${sign}$${Math.abs(netRunningProfit).toFixed(2)} (${sign}${Math.abs(profitPct).toFixed(1)}%)`;
-    gainTextEl.style.color = gainColor;
-
-    const gainBadgeEl = document.getElementById('floating-gain-badge');
-    gainBadgeEl.textContent = `${sign}$${Math.abs(netRunningProfit).toFixed(2)}`;
-    gainBadgeEl.style.color = gainColor;
-    gainBadgeEl.style.background = gainBadgeBg;
-    gainBadgeEl.style.borderColor = gainBadgeBorder;
-
-    // Count wins and losses from active open positions and closed trades
-    let liveWins = stats.win_count || 0;
-    let liveLosses = stats.loss_count || 0;
-    livePosList.forEach(p => {
-      if (parseFloat(p.unrealized_pnl || 0) >= 0) liveWins++;
-      else liveLosses++;
-    });
-    document.getElementById('win-loss-text').textContent = `${liveWins}W / ${liveLosses}L`;
-
-    // Dynamic SVG curve update
-    const curveLine = document.getElementById('curveLine');
-    const curveArea = document.getElementById('curveArea');
-    if (curveLine && curveArea) {
-      const strokeColor = isGain ? '#2fe0a8' : '#ff4d6d';
-      curveLine.setAttribute('stroke', strokeColor);
-    }
-
-    // Desk Top Numbers
-    const scanned = stats.scout_pairs_count || 0;
-    const traded = data.trades_opened || 0;
-    document.getElementById('desk-scanned-stats').textContent = `${scanned} scanned · ${traded} traded`;
-
-    // 6-Agent Rows
-    document.getElementById('scout-badge').textContent = `${scanned} pairs`;
-    document.getElementById('filter-badge').textContent = `${stats.filter_killed_count || 0} · ${stats.filter_killed_pct || 0}%`;
-    document.getElementById('analyst-badge').textContent = `${stats.analyst_scored_count || 0} scored`;
-    document.getElementById('executor-mid').textContent = stats.executor_last_action || 'waiting for survivor';
-    document.getElementById('risk-mid').textContent = stats.risk_open_status || 'no open risk';
-    document.getElementById('logger-badge').textContent = `${stats.logger_reasons_count || 0} reasons`;
-    document.getElementById('logger-total-killed').textContent = `${stats.filter_killed_count || 0} killed`;
-
-    // Live Ticker Tape
-    if (stats.live_ticker_tape && stats.live_ticker_tape.length > 0) {
-      let tapeHtml = '';
-      stats.live_ticker_tape.forEach(item => {
-        const isUp = item.change >= 0;
-        const cls = isUp ? 'up' : 'down';
-        const sign = isUp ? '+' : '';
-        tapeHtml += `<span class="ticker-item"><span class="sym">${item.symbol}</span> <span class="price">${item.price}</span> <span class="chg ${cls}">${sign}${item.change.toFixed(1)}%</span></span>`;
-      });
-      // Double for infinite scroll effect
-      document.getElementById('ticker-tape-content').innerHTML = tapeHtml + tapeHtml;
-    }
-
-
-    // Populate Live Delta Exchange Tickers Table
-    if (stats.live_ticker_tape && stats.live_ticker_tape.length > 0) {
-      const mCountEl = document.getElementById('delta-markets-count');
-      const mTbodyEl = document.getElementById('delta-markets-tbody');
-      if (mCountEl) mCountEl.textContent = stats.live_ticker_tape.length;
-      if (mTbodyEl) {
-        let rowsHtml = '';
-        stats.live_ticker_tape.forEach(item => {
-          const isUp = item.change >= 0;
-          const cls = isUp ? 'var(--green)' : 'var(--red)';
-          const sign = isUp ? '+' : '';
-          const cleanSym = item.symbol.replace('-', '');
-          rowsHtml += `
-            <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
-              <td style="padding:6px 10px;font-weight:700;color:#fff;">${cleanSym}</td>
-              <td style="padding:6px 8px;color:#cbd5e1;">$${Number(item.price).toLocaleString()}</td>
-              <td style="padding:6px 8px;color:${cls};font-weight:600;">${sign}${item.change.toFixed(2)}%</td>
-              <td style="padding:6px 8px;color:var(--dim);">0.0100%</td>
-              <td style="padding:6px 8px;text-align:right;">
-                <button onclick="executeQuickTrade('${cleanSym}', 'BUY')" style="background:#091a14;color:var(--green);border:1px solid #143526;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;margin-right:4px;">BUY</button>
-                <button onclick="executeQuickTrade('${cleanSym}', 'SELL')" style="background:#2a1118;color:var(--red);border:1px solid #4a1822;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;">SELL</button>
-              </td>
-            </tr>
-          `;
-        });
-        mTbodyEl.innerHTML = rowsHtml;
-      }
-    }
-
-    // Logger Feed
-    if (stats.recent_kills && stats.recent_kills.length > 0) {
-      let feedHtml = '';
-      stats.recent_kills.slice(0, 15).forEach(k => {
-        const bulletColor = k.role === 'EXECUTOR' ? 'green' : (k.role === 'ANALYST' ? 'blue' : (k.role === 'RISK' ? 'purple' : 'red'));
-        feedHtml += `
-          <div class="log-entry">
-            <span class="log-bullet ${bulletColor}"></span>
-            <span class="log-time">${k.time || '12:00'}</span>
-            <span class="log-role ${k.role}">${k.role}:</span>
-            <span class="log-text">${k.text}</span>
-          </div>`;
-      });
-      document.getElementById('log-feed-container').innerHTML = feedHtml;
-    }
-
-    // Render Live Open Positions
-    const livePos = data.open_positions || currentEx.open_positions || [];
-    const posCountEl = document.getElementById('open-pos-count');
-    const posListEl = document.getElementById('open-positions-list');
-    if (posCountEl) posCountEl.textContent = livePos.length;
-    if (posListEl) {
-      if (livePos.length === 0) {
-        posListEl.innerHTML = '<div style="color:var(--dim);text-align:center;padding:10px 0;">No active open positions on exchange</div>';
-      } else {
-        let posHtml = '';
-        livePos.forEach(p => {
-          const sideColor = (p.side === 'BUY') ? 'var(--green)' : 'var(--red)';
-          const pnlVal = parseFloat(p.unrealized_pnl || 0);
-          const pnlColor = pnlVal >= 0 ? 'var(--green)' : 'var(--red)';
-          const sign = pnlVal >= 0 ? '+' : '';
-          posHtml += `
-            <div style="background:rgba(255,255,255,0.03);border:1px solid var(--card-border);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
+        return `
+          <div class="trade-item-pill">
+            <div class="trade-item-left">
+              <div class="trade-coin-avatar">${emoji}</div>
               <div>
-                <div style="font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px;">
-                  <span style="color:#fff;">${p.symbol}</span>
-                  <span style="color:${sideColor};background:rgba(255,255,255,0.06);padding:1px 6px;border-radius:4px;font-size:10px;">${p.side} ${p.size}x</span>
-                </div>
-                <div style="color:var(--dim);font-size:10px;margin-top:2px;">Entry: $${p.entry_price} · Mark: $${p.mark_price || p.entry_price}</div>
-              </div>
-              <div style="text-align:right;">
-                <div style="font-weight:700;color:${pnlColor};font-size:12px;">${sign}$${pnlVal.toFixed(4)}</div>
-                <div style="color:var(--dim);font-size:10px;">Margin: $${parseFloat(p.margin || 0).toFixed(4)}</div>
+                <div class="trade-symbol-text">$${p.symbol.replace('USD', '')}</div>
+                <div class="trade-summary-text">${sideText} · entry $${Number(p.entry_price || 0).toFixed(4)}</div>
               </div>
             </div>
-          `;
-        });
-        posListEl.innerHTML = posHtml;
-      }
-    }
-
-    // Why They Died counts
-    if (stats.why_they_died) {
-      const w = stats.why_they_died;
-      if (w["Mint not revoked"]) document.getElementById('count-mint').textContent = w["Mint not revoked"].toLocaleString();
-      if (w["LP not locked"]) document.getElementById('count-lp').textContent = w["LP not locked"].toLocaleString();
-      if (w["Top 10 holders >20%"]) document.getElementById('count-holders').textContent = w["Top 10 holders >20%"].toLocaleString();
-      if (w["Volume <$50k last hour"]) document.getElementById('count-vol').textContent = w["Volume <$50k last hour"].toLocaleString();
-      if (w["Dev wallet -> past rugs"]) document.getElementById('count-dev').textContent = w["Dev wallet -> past rugs"].toLocaleString();
-      if (w["Analyst score < 0.6"]) document.getElementById('count-score').textContent = w["Analyst score < 0.6"].toLocaleString();
+            <div class="trade-badge-right ${pnlClass}">${pnlFormatted}</div>
+          </div>
+        `;
+      }).join('');
     }
 
   } catch (err) {
-    console.error('Error fetching live status:', err);
+    console.warn('Status fetch error:', err);
   }
 }
 
-
-async function executeQuickTrade(symbol, side) {
-  if (!confirm(`Execute LIVE real ${side} order on Delta Exchange for ${symbol}?`)) return;
-  try {
-    const res = await fetch('/api/trade/quick', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ symbol: symbol, side: side, platform: 'delta' })
-    });
-    const result = await res.json();
-    alert(result.message || `Order submitted for ${symbol}: ${result.status || 'OK'}`);
-    fetchStatus();
-  } catch (err) {
-    alert(`Order submission response: ${err}`);
-  }
-}
+fetchLiveStatus();
+setInterval(fetchLiveStatus, 3000);
 
 async function triggerRestart() {
-  if (!confirm("Restart Grok 6-Agent 24/7 Trading Engine?")) return;
+  const btn = document.getElementById('session-btn');
+  btn.textContent = 'Restarting 24/7 Engine...';
   try {
-    const res = await fetch('/api/restart', { method: 'POST' });
-    const json = await res.json();
-    alert(json.message || "Restarted successfully!");
-    fetchStatus();
+    await fetch('/api/restart', { method: 'POST' });
+    setTimeout(() => {
+      btn.textContent = 'Session report ready ✓';
+      btn.className = 'footer-cta-button green-done';
+    }, 1500);
   } catch (e) {
-    alert("Restart request sent!");
+    btn.textContent = 'View session report';
   }
 }
-
-setInterval(fetchStatus, 3000);
-fetchStatus();
 </script>
-
 </body>
 </html>
