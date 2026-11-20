@@ -196,11 +196,18 @@ body {
   margin-bottom: 4px;
 }
 .balance-amount {
-  font-size: 42px;
+  font-size: 38px;
   font-weight: 800;
   letter-spacing: -0.03em;
   color: #fff;
   line-height: 1.05;
+}
+.balance-inr-text {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: -0.01em;
+  margin-top: 3px;
 }
 .balance-subtext {
   font-size: 13px;
@@ -655,9 +662,10 @@ body {
     <div class="balance-left">
       <div class="balance-label" id="balance-platform-label">DELTA BALANCE</div>
       <div class="balance-amount" id="balance-val">$3.68</div>
+      <div class="balance-inr-text" id="balance-inr-val">₹312.80</div>
       <div class="balance-subtext" id="balance-sub">
         <span id="gain-today-text">+$0.68 today</span>
-        <span class="dimmed-start" id="started-with-text">· cash: $0.01</span>
+        <span class="dimmed-start" id="started-with-text">· cash: $0.01 (₹0.85)</span>
       </div>
     </div>
     <div class="balance-right">
@@ -924,11 +932,16 @@ async function fetchLiveStatus() {
     const netProfit = liveEquity - startingCapital;
     const multiple = (startingCapital > 0 && liveEquity > 0) ? (liveEquity / startingCapital).toFixed(1) + 'x' : '1.0x';
 
+    const USD_INR_RATE = 85.0;
     const availCash = Number(ex.available_cash !== undefined ? ex.available_cash : (data.available_cash || 0.0));
+    const liveInr = (liveEquity * USD_INR_RATE).toFixed(2);
+    const availCashInr = (availCash * USD_INR_RATE).toFixed(2);
+
     document.getElementById('balance-val').textContent = `$${liveEquity.toFixed(2)}`;
+    document.getElementById('balance-inr-val').textContent = `₹${liveInr} INR`;
     const sign = netProfit >= 0 ? '+' : '-';
-    document.getElementById('gain-today-text').textContent = `${sign}$${Math.abs(netProfit).toFixed(2)} today`;
-    document.getElementById('started-with-text').textContent = `· avail cash: $${availCash.toFixed(2)}`;
+    document.getElementById('gain-today-text').textContent = `${sign}$${Math.abs(netProfit).toFixed(2)} (${sign}₹${(Math.abs(netProfit) * USD_INR_RATE).toFixed(0)})`;
+    document.getElementById('started-with-text').textContent = `· cash: $${availCash.toFixed(2)} (₹${availCashInr})`;
     document.getElementById('multiple-val').textContent = multiple;
 
     const gauge = document.getElementById('radial-gauge');
