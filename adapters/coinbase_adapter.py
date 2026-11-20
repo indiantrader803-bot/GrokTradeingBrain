@@ -20,6 +20,7 @@ class CoinbaseAdapter(ExchangeAdapter):
         self.api_secret = api_secret
         self.client = None
         self._last_equity = 0.0
+        self.intx_portfolio_uuid = "019c18f5-83f3-79e2-ad60-5fde828f9964"
 
         if api_key and api_secret:
             try:
@@ -48,6 +49,26 @@ class CoinbaseAdapter(ExchangeAdapter):
             return 0.0
         try:
             import asyncio
+            # First, check Global Derivatives INTX Perpetual Portfolio
+            try:
+                perps_sum = await asyncio.to_thread(self.client.get_perps_portfolio_summary, self.intx_portfolio_uuid)
+                p_list = getattr(perps_sum, "portfolios", []) or []
+                if p_list:
+                    p0 = p_list[0]
+                    collat_val = getattr(p0, "collateral", None) or (p0.get("collateral") if isinstance(p0, dict) else None)
+                    if collat_val is not None and float(collat_val) > 0:
+                        self._last_equity = round(float(collat_val), 2)
+                        return self._last_equity
+                s = getattr(perps_sum, "summary", None) or (perps_sum.get("summary") if isinstance(perps_sum, dict) else {})
+                tot = getattr(s, "total_balance", None) or (s.get("total_balance") if isinstance(s, dict) else {})
+                v = float(getattr(tot, "value", None) or (tot.get("value") if isinstance(tot, dict) else 0) or 0.0)
+                if v > 0:
+                    self._last_equity = round(v, 2)
+                    return self._last_equity
+            except Exception as pe:
+                log.debug("Perps portfolio summary check: %s", pe)
+
+            # Fallback to Spot / Standard Accounts
             accounts = await asyncio.to_thread(self.client.get_accounts)
             acc_list = getattr(accounts, "accounts", None)
             if acc_list is None and isinstance(accounts, dict):
@@ -204,7 +225,31 @@ class CoinbaseAdapter(ExchangeAdapter):
             return 0.0
 
     async def get_open_positions(self) -> List[Dict]:
-        return []
+        if not self.client:
+            return []
+        try:
+            import asyncio
+            res = await asyncio.to_thread(self.client.list_perps_positions, self.intx_portfolio_uuid)
+            plist = getattr(res, "positions", None) or (res.get("positions") if isinstance(res, dict) else [])
+            parsed = []
+            for p in plist:
+                p_dict = p.to_dict() if hasattr(p, "to_dict") else (p if isinstance(p, dict) else {})
+                size = float(p_dict.get("net_size", 0.0) or 0.0)
+                if size != 0.0:
+                    vwap = p_dict.get("vwap", {})
+                    pnl = p_dict.get("unrealized_pnl", {})
+                    parsed.append({
+                        "symbol": p_dict.get("symbol") or p_dict.get("product_id"),
+                        "side": "BUY" if size > 0 else "SELL",
+                        "size": abs(size),
+                        "entry_price": float(vwap.get("value", 0.0) if isinstance(vwap, dict) else 0.0),
+                        "unrealized_pnl": float(pnl.get("value", 0.0) if isinstance(pnl, dict) else 0.0),
+                        "leverage": float(p_dict.get("leverage") or 1.0)
+                    })
+            return parsed
+        except Exception as e:
+            log.debug("Coinbase list_perps_positions error: %s", e)
+            return []
 
     async def health_check(self) -> bool:
         try:
