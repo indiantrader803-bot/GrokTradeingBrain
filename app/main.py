@@ -485,6 +485,30 @@ async def quick_trade(req: Request):
         return {"status": "error", "message": f"Exchange order rejected: {str(e)}"}
 
 
+
+@app.post("/api/sync-live-exchange")
+async def sync_live_exchange(req: Request):
+    try:
+        data = await req.json()
+        equity = float(data.get("equity", 0.0) or 0.0)
+        positions = data.get("positions", [])
+
+        if orchestrator and equity > 0:
+            orchestrator.risk.update_equity(equity)
+            delta_adapter = orchestrator.adapters.get("delta")
+            if delta_adapter:
+                delta_adapter._last_equity = equity
+
+            # Update cached live exchange data directly
+            orchestrator._synced_live_equity = equity
+            orchestrator._synced_live_positions = positions
+            orchestrator._synced_time = time.time()
+
+        return {"status": "ok", "synced_equity": equity, "positions_count": len(positions)}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+
 @app.post("/api/restart")
 async def restart_system():
     global orchestrator, background_task

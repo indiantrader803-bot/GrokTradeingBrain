@@ -623,6 +623,12 @@ class MasterOrchestrator:
                     except Exception as fb_err:
                         log.error("Fallback to default adapter also failed: %s", fb_err)
 
+        # If direct cloud request was blocked by IP whitelist, use verified synced live equity & positions
+        if net_equity == 0 and getattr(self, "_synced_live_equity", 0) > 0:
+            net_equity = getattr(self, "_synced_live_equity")
+            if getattr(self, "_synced_live_positions", None):
+                exchange_positions = getattr(self, "_synced_live_positions")
+
         base_status = self.get_status()
         if net_equity > 0:
             base_status["equity"] = round(net_equity, 2)
