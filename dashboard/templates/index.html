@@ -1,1915 +1,884 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Delta AI Trading Platform · Enterprise Command Desk</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #040711;
-      --sidebar: rgba(8, 14, 28, 0.85);
-      --card-bg: rgba(13, 22, 42, 0.75);
-      --card-border: rgba(45, 68, 114, 0.4);
-      --card-hover: rgba(22, 38, 74, 0.85);
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --dim: #64748b;
-      --green: #10b981;
-      --green-glow: rgba(16, 185, 129, 0.25);
-      --red: #f43f5e;
-      --red-glow: rgba(244, 63, 94, 0.25);
-      --amber: #f59e0b;
-      --amber-glow: rgba(245, 158, 11, 0.25);
-      --blue: #3b82f6;
-      --blue-glow: rgba(59, 130, 246, 0.3);
-      --purple: #a855f7;
-      --purple-glow: rgba(168, 85, 247, 0.3);
-      --cyan: #06b6d4;
-      --cyan-glow: rgba(6, 182, 212, 0.3);
-      --gold: #fbbf24;
-      --mono: 'JetBrains Mono', monospace;
-      --sans: 'Space Grotesk', sans-serif;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body {
-      background: radial-gradient(ellipse at 50% 0%, #0d1e3d 0%, var(--bg) 75%) fixed;
-      color: var(--text);
-      font-family: var(--sans);
-      min-height: 100vh;
-      display: flex;
-      overflow-x: hidden;
-      position: relative;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Grok Bot · All-Coins Capital Growth Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #030508;
+  --card-bg: #0b0f16;
+  --card-border: #141b26;
+  --card-border-green: #113426;
+  --fg: #e2e8f0;
+  --dim: #718096;
+  --faint: #323d4e;
+  --green: #2fe0a8;
+  --green-glow: rgba(47, 224, 168, 0.25);
+  --green-badge: #113426;
+  --red: #ff4d6d;
+  --red-dim: rgba(255, 77, 109, 0.15);
+  --blue: #38bdf8;
+  --amber: #fbbf24;
+  --purple: #a855f7;
+  --mono: 'JetBrains Mono', monospace;
+  --disp: 'Chakra Petch', sans-serif;
+}
 
-    /* Ambient Animated Starfield & Grid */
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
-    }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 12px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
 
-    /* Glowing Floating Orbs in Background */
-    .orb-glow {
-      position: fixed;
-      width: 450px;
-      height: 450px;
-      border-radius: 50%;
-      filter: blur(120px);
-      pointer-events: none;
-      opacity: 0.25;
-      z-index: 0;
-      animation: floatOrb 20s infinite alternate ease-in-out;
-    }
-    .orb-1 { top: -100px; left: 10%; background: var(--blue); }
-    .orb-2 { bottom: -100px; right: 15%; background: var(--purple); animation-delay: -7s; }
-    .orb-3 { top: 40%; right: -100px; background: var(--green); animation-delay: -14s; }
+.grok-container {
+  width: 100%;
+  max-width: 650px; width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
-    @keyframes floatOrb {
-      0% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(60px, 40px) scale(1.15); }
-      100% { transform: translate(-40px, 80px) scale(0.95); }
-    }
+/* 1. Header Bar */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--dim);
+  padding: 2px 4px;
+}
+.mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #091a14;
+  color: var(--green);
+  border: 1px solid #143526;
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+}
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--green);
+}
 
-    /* Falling Coin Drops Particle Canvas */
-    #coinCanvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 1;
-    }
+/* 2. Grok Brand Title Bar */
+.brand-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+.brand-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.grok-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #151b24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  border: 1px solid #202b3b;
+}
+.brand-title {
+  font-family: var(--disp);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+}
+.brand-subtitle {
+  font-size: 10px;
+  color: var(--dim);
+}
+.live-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green);
+}
 
-    /* Glassmorphism Sidebar */
-    aside {
-      width: 250px;
-      background: var(--sidebar);
-      backdrop-filter: blur(16px);
-      border-right: 1px solid var(--card-border);
-      display: flex;
-      flex-direction: column;
-      position: fixed;
-      height: 100vh;
-      z-index: 100;
-      box-shadow: 4px 0 25px rgba(0, 0, 0, 0.5);
-    }
-    .brand {
-      padding: 22px 20px;
-      font-size: 18px;
-      font-weight: 800;
-      border-bottom: 1px solid var(--card-border);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      letter-spacing: -0.5px;
-    }
-    .brand-icon-bot {
-      width: 38px;
-      height: 38px;
-      background: linear-gradient(135deg, var(--blue), var(--cyan));
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      box-shadow: 0 0 15px var(--cyan-glow);
-      animation: botPulse 3s infinite alternate ease-in-out;
-    }
-    @keyframes botPulse {
-      0% { transform: scale(1) rotate(0deg); box-shadow: 0 0 10px var(--cyan-glow); }
-      50% { transform: scale(1.06) rotate(3deg); box-shadow: 0 0 22px var(--cyan); }
-      100% { transform: scale(1) rotate(0deg); box-shadow: 0 0 10px var(--cyan-glow); }
-    }
-    .brand span { color: var(--cyan); }
+/* 3. Scrolling Ticker Tape */
+.ticker-tape-wrapper {
+  overflow: hidden;
+  white-space: nowrap;
+  background: #080c12;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 6px 0;
+  font-size: 11px;
+}
+.ticker-tape {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker-slide 25s linear infinite;
+}
+@keyframes ticker-slide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-item {
+  display: inline-flex;
+  gap: 6px;
+  margin-right: 18px;
+}
+.ticker-item .sym { font-weight: 600; color: #fff; }
+.ticker-item .price { color: var(--dim); }
+.ticker-item .chg.up { color: var(--green); font-weight: 600; }
+.ticker-item .chg.down { color: var(--red); font-weight: 600; }
 
-    .nav-list {
-      list-style: none;
-      padding: 14px 10px;
-      overflow-y: auto;
-      flex: 1;
-    }
-    .nav-item {
-      padding: 10px 14px;
-      margin-bottom: 4px;
-      border-radius: 10px;
-      font-size: 12px;
-      font-family: var(--mono);
-      font-weight: 600;
-      color: var(--muted);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-    }
-    .nav-item:hover {
-      background: rgba(255, 255, 255, 0.06);
-      color: #fff;
-      transform: translateX(4px);
-    }
-    .nav-item.active {
-      background: linear-gradient(90deg, var(--blue), var(--cyan));
-      color: #fff;
-      box-shadow: 0 4px 15px var(--blue-glow);
-      font-weight: 700;
-    }
-    .nav-item .icon { font-size: 16px; width: 18px; text-align: center; }
+/* 4. Equity Card with Multiplier & Glowing Curve */
+.equity-card {
+  background: #090e16;
+  border: 1px solid var(--card-border-green);
+  border-radius: 14px;
+  padding: 16px 18px 12px 18px;
+  position: relative;
+  overflow: hidden;
+}
+.equity-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--dim);
+}
+.multiplier-badge {
+  background: var(--green);
+  color: #030508;
+  font-family: var(--disp);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 2px 10px;
+  border-radius: 12px;
+}
+.equity-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 6px;
+}
+.equity-value {
+  font-family: var(--disp);
+  font-size: 44px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+.equity-cents {
+  font-size: 26px;
+  color: #a0aec0;
+}
+.floating-gain-pill {
+  background: #113426;
+  color: var(--green);
+  border: 1px solid #1a4f38;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+.equity-gain-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  margin-top: 2px;
+  color: var(--green);
+  font-weight: 600;
+}
+.win-loss-tag {
+  color: var(--dim);
+  font-size: 11px;
+}
+.chart-container {
+  width: 100%;
+  height: 48px;
+  margin-top: 12px;
+}
+.chart-container svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
 
-    /* Animated Ticker Tape Banner */
-    .ticker-bar-wrap {
-      overflow: hidden;
-      white-space: nowrap;
-      background: rgba(8, 15, 30, 0.85);
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
-      padding: 8px 0;
-      margin-bottom: 20px;
-      font-family: var(--mono);
-      font-size: 11.5px;
-      display: flex;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    }
-    .ticker-tape {
-      display: inline-block;
-      white-space: nowrap;
-      animation: tickerScroll 30s linear infinite;
-    }
-    .ticker-tape:hover { animation-play-state: paused; }
-    @keyframes tickerScroll {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-    .ticker-coin-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-right: 24px;
-      padding: 3px 8px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      transition: transform 0.2s;
-    }
-    .ticker-coin-item:hover { transform: scale(1.05); }
-    .coin-icon-img { width: 18px; height: 18px; border-radius: 50%; vertical-align: middle; }
+/* 5. Desk · 6 Agents Card */
+.agents-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.desk-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--card-border);
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+.desk-title {
+  font-family: var(--disp);
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+.desk-stats {
+  font-size: 11px;
+  color: var(--dim);
+}
+.agent-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid #0f1520;
+}
+.agent-row:last-child { border-bottom: none; }
+.agent-col-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 95px;
+}
+.agent-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.agent-icon.blue { background: rgba(56, 189, 248, 0.15); color: var(--blue); }
+.agent-icon.amber { background: rgba(251, 191, 36, 0.15); color: var(--amber); }
+.agent-icon.purple { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
+.agent-icon.green { background: rgba(47, 224, 168, 0.15); color: var(--green); }
+.agent-icon.pink { background: rgba(244, 114, 182, 0.15); color: #f472b6; }
+.agent-icon.cyan { background: rgba(34, 211, 238, 0.15); color: #22d3ee; }
 
-    /* App Main Container */
-    .app-main {
-      margin-left: 250px;
-      flex: 1;
-      padding: 24px 30px;
-      max-width: 1350px;
-      position: relative;
-      z-index: 10;
-    }
+.agent-name-box { line-height: 1.1; }
+.agent-name-box .name { font-weight: 700; color: #fff; font-size: 12px; }
+.agent-name-box .sub { font-size: 9px; color: var(--dim); }
 
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 18px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--card-border);
-    }
-    .mode-indicator {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 800;
-      font-family: var(--mono);
-      letter-spacing: 0.5px;
-    }
-    .pill-paper {
-      background: var(--amber-glow);
-      border: 1px solid var(--amber);
-      color: var(--amber);
-      box-shadow: 0 0 15px var(--amber-glow);
-    }
-    .pill-live {
-      background: var(--red-glow);
-      border: 1px solid var(--red);
-      color: var(--red);
-      animation: pulse-live 1.5s infinite;
-      box-shadow: 0 0 18px var(--red-glow);
-    }
-    @keyframes pulse-live {
-      0% { opacity: 0.6; transform: scale(0.98); }
-      50% { opacity: 1; transform: scale(1.03); }
-      100% { opacity: 0.6; transform: scale(0.98); }
-    }
-    .pulse-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: currentColor;
-      box-shadow: 0 0 8px currentColor;
-    }
+.agent-col-mid {
+  flex: 1;
+  padding: 0 8px;
+  font-size: 10.5px;
+  color: var(--dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agent-col-right {
+  text-align: right;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+.pill-blue { background: #0c2133; color: var(--blue); }
+.pill-red { background: #2a1118; color: var(--red); }
+.pill-purple { background: #201330; color: var(--purple); }
+.pill-green { background: #0d271e; color: var(--green); }
+.pill-pink { background: #2b1322; color: #f472b6; }
+.pill-cyan { background: #0c2328; color: #22d3ee; }
 
-    /* Pages Container */
-    .page-section { display: none; }
-    .page-section.active { display: block; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+/* 6. Real-time Logger & Kill Ledger */
+.logger-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.logger-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.logger-title {
+  font-family: var(--disp);
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+.logger-killed-badge {
+  color: var(--red);
+  font-weight: 700;
+  font-size: 11px;
+}
+.log-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 140px;
+  overflow-y: auto;
+  font-size: 10px;
+  padding-right: 4px;
+}
+.log-feed::-webkit-scrollbar { width: 3px; }
+.log-feed::-webkit-scrollbar-thumb { background: #1a2332; border-radius: 3px; }
+.log-entry {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  line-height: 1.35;
+}
+.log-bullet { width: 5px; height: 5px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.log-bullet.red { background: var(--red); box-shadow: 0 0 4px var(--red); }
+.log-bullet.green { background: var(--green); box-shadow: 0 0 4px var(--green); }
+.log-bullet.blue { background: var(--blue); box-shadow: 0 0 4px var(--blue); }
+.log-bullet.purple { background: var(--purple); box-shadow: 0 0 4px var(--purple); }
+.log-time { color: var(--dim); flex-shrink: 0; }
+.log-role { font-weight: 700; flex-shrink: 0; }
+.log-role.FILTER { color: var(--amber); }
+.log-role.ANALYST { color: var(--blue); }
+.log-role.EXECUTOR { color: var(--green); }
+.log-role.RISK { color: var(--purple); }
+.log-text { color: #cbd5e1; word-break: break-all; }
 
-    /* High-Tech Glowing Cards */
-    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-bottom: 22px; }
-    .card {
-      background: var(--card-bg);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 20px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-      transition: all 0.25s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    .card:hover {
-      border-color: var(--blue);
-      box-shadow: 0 12px 35px var(--blue-glow);
-      transform: translateY(-2px);
-    }
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: -100%; width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
-      transition: 0.6s;
-    }
-    .card:hover::before { left: 100%; }
+/* 7. Why They Died Grid */
+.death-stats-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.death-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.death-title {
+  font-family: var(--disp);
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+}
+.death-sub {
+  font-size: 10px;
+  color: var(--dim);
+}
+.death-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 14px;
+  font-size: 10.5px;
+}
+.death-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.death-label { color: var(--dim); }
+.death-count { color: var(--red); font-weight: 700; font-variant-numeric: tabular-nums; }
 
-    .card-title {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: var(--muted);
-      font-family: var(--mono);
-      margin-bottom: 8px;
-      letter-spacing: 0.5px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .card-value {
-      font-size: 28px;
-      font-weight: 800;
-      color: #fff;
-      font-family: var(--mono);
-      letter-spacing: -0.5px;
-    }
-
-    /* 3D Interactive Coin Drop Buttons */
-    .btn-coin-drop {
-      background: linear-gradient(135deg, var(--gold), #d97706);
-      color: #000;
-      font-weight: 800;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-family: var(--mono);
-      font-size: 10px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
-      transition: transform 0.15s, box-shadow 0.15s;
-    }
-    .btn-coin-drop:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 20px rgba(251, 191, 36, 0.7);
-    }
-    .btn-coin-drop:active { transform: scale(0.95); }
-
-    
-    /* ── ANIMATED PNL, WIN/LOSS & CHARTS ── */
-    @keyframes pnlPulseGreen {
-      0% { text-shadow: 0 0 4px rgba(16, 185, 129, 0.4); transform: scale(1); }
-      50% { text-shadow: 0 0 16px rgba(16, 185, 129, 0.9), 0 0 25px rgba(16, 185, 129, 0.5); transform: scale(1.03); }
-      100% { text-shadow: 0 0 4px rgba(16, 185, 129, 0.4); transform: scale(1); }
-    }
-    @keyframes pnlPulseRed {
-      0% { text-shadow: 0 0 4px rgba(244, 63, 94, 0.4); transform: scale(1); }
-      50% { text-shadow: 0 0 16px rgba(244, 63, 94, 0.9), 0 0 25px rgba(244, 63, 94, 0.5); transform: scale(1.03); }
-      100% { text-shadow: 0 0 4px rgba(244, 63, 94, 0.4); transform: scale(1); }
-    }
-    @keyframes winGlow {
-      0% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
-      50% { box-shadow: 0 0 25px rgba(16, 185, 129, 0.6); }
-      100% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
-    }
-    @keyframes lossGlow {
-      0% { box-shadow: 0 0 10px rgba(244, 63, 94, 0.2); }
-      50% { box-shadow: 0 0 25px rgba(244, 63, 94, 0.6); }
-      100% { box-shadow: 0 0 10px rgba(244, 63, 94, 0.2); }
-    }
-    @keyframes barShimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
-    .pnl-live-up {
-      color: var(--green) !important;
-      animation: pnlPulseGreen 2.5s infinite ease-in-out;
-      display: inline-block;
-    }
-    .pnl-live-down {
-      color: var(--red) !important;
-      animation: pnlPulseRed 2.5s infinite ease-in-out;
-      display: inline-block;
-    }
-    .win-stat-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 800;
-      font-family: var(--mono);
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.5);
-      color: #34d399;
-      animation: winGlow 3s infinite ease-in-out;
-    }
-    .loss-stat-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 800;
-      font-family: var(--mono);
-      background: rgba(244, 63, 94, 0.15);
-      border: 1px solid rgba(244, 63, 94, 0.5);
-      color: #fb7185;
-      animation: lossGlow 3s infinite ease-in-out;
-    }
-    .win-loss-progress-wrap {
-      width: 100%;
-      height: 12px;
-      background: rgba(244, 63, 94, 0.3);
-      border-radius: 6px;
-      overflow: hidden;
-      margin: 10px 0 6px 0;
-      display: flex;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      position: relative;
-    }
-    .win-loss-progress-bar {
-      height: 100%;
-      background: linear-gradient(90deg, #059669, #10b981, #34d399);
-      background-size: 200% 100%;
-      animation: barShimmer 4s infinite linear;
-      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .chart-container-box {
-      position: relative;
-      width: 100%;
-      height: 240px;
-      margin-top: 10px;
-    }
-
-    /* Tables */
-    .table-wrap {
-      overflow-x: auto;
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      background: rgba(6, 11, 24, 0.6);
-    }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
-    th {
-      background: rgba(255, 255, 255, 0.03);
-      text-align: left;
-      padding: 12px 16px;
-      color: var(--muted);
-      border-bottom: 1px solid var(--card-border);
-      font-weight: 700;
-      text-transform: uppercase;
-      font-size: 10.5px;
-    }
-    td {
-      padding: 13px 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      transition: background 0.15s;
-    }
-    tr:hover td { background: rgba(59, 130, 246, 0.06); }
-    .up { color: var(--green); font-weight: 700; }
-    .down { color: var(--red); font-weight: 700; }
-
-    .coin-cell {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 10px;
-      font-weight: 800;
-    }
-    .badge-buy {
-      background: var(--green-glow);
-      color: var(--green);
-      border: 1px solid var(--green);
-      box-shadow: 0 0 10px var(--green-glow);
-    }
-    .badge-sell {
-      background: var(--red-glow);
-      color: var(--red);
-      border: 1px solid var(--red);
-      box-shadow: 0 0 10px var(--red-glow);
-    }
-
-    /* Animated 7-Agent Committee Cards */
-    .agents-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
-    .agent-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 18px;
-      transition: all 0.25s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    .agent-card:hover {
-      border-color: var(--cyan);
-      box-shadow: 0 8px 25px var(--cyan-glow);
-      transform: translateY(-3px);
-    }
-    .agent-hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .agent-left { display: flex; align-items: center; gap: 10px; }
-    .agent-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
-    }
-    .agent-avatar.play-anim { animation: botWiggle 2s infinite ease-in-out; }
-    @keyframes botWiggle {
-      0%, 100% { transform: rotate(0deg); }
-      25% { transform: rotate(-5deg); }
-      75% { transform: rotate(5deg); }
-    }
-    .agent-name { font-weight: 800; font-size: 14px; color: #fff; }
-    .agent-vote {
-      font-size: 11px;
-      font-family: var(--mono);
-      font-weight: 800;
-      padding: 3px 9px;
-      border-radius: 6px;
-      letter-spacing: 0.5px;
-    }
-    .vote-pass {
-      background: var(--green-glow);
-      color: var(--green);
-      border: 1px solid var(--green);
-      box-shadow: 0 0 10px var(--green-glow);
-    }
-    .vote-veto {
-      background: var(--red-glow);
-      color: var(--red);
-      border: 1px solid var(--red);
-      box-shadow: 0 0 10px var(--red-glow);
-    }
-    .agent-desc { font-size: 11.5px; color: var(--muted); line-height: 1.5; font-family: var(--mono); }
-
-    /* Interactive Buttons & Inputs */
-    .btn {
-      background: linear-gradient(135deg, var(--blue), var(--cyan));
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 700;
-      transition: all 0.2s;
-      box-shadow: 0 4px 15px var(--blue-glow);
-    }
-    .btn:hover {
-      opacity: 0.95;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px var(--cyan-glow);
-    }
-    .field { margin-bottom: 16px; }
-    .field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 6px; font-family: var(--mono); text-transform: uppercase; font-weight: 600; }
-    .field input, .field select {
-      width: 100%;
-      background: rgba(4, 9, 20, 0.8);
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 10px 14px;
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 12px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .field input:focus, .field select:focus {
-      border-color: var(--cyan);
-      box-shadow: 0 0 12px var(--cyan-glow);
-    }
-  
-    /* ── COLLAPSIBLE MENUBAR & ALL-DEVICE RESPONSIVE (IPHONE / IPAD / DESKTOP) ── */
-    :root {
-      --sidebar-width: 250px;
-      --sidebar-collapsed-width: 68px;
-      --sat: env(safe-area-inset-top, 0px);
-      --sab: env(safe-area-inset-bottom, 0px);
-      --sal: env(safe-area-inset-left, 0px);
-      --sar: env(safe-area-inset-right, 0px);
-    }
-
-    body {
-      padding-top: var(--sat);
-      padding-bottom: var(--sab);
-      padding-left: var(--sal);
-      padding-right: var(--sar);
-      overflow-x: hidden;
-    }
-
-    /* Sidebar Base */
-    aside {
-      width: var(--sidebar-width);
-      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      will-change: width, transform;
-    }
-
-    .app-main {
-      margin-left: var(--sidebar-width);
-      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      width: calc(100% - var(--sidebar-width));
-      box-sizing: border-box;
-    }
-
-    /* Desktop Collapsed State */
-    body.sidebar-collapsed aside {
-      width: var(--sidebar-collapsed-width);
-    }
-    body.sidebar-collapsed .brand .brand-text,
-    body.sidebar-collapsed .nav-item .nav-label,
-    body.sidebar-collapsed .aside-footer-text {
-      display: none;
-    }
-    body.sidebar-collapsed .brand {
-      justify-content: center;
-      padding: 18px 0;
-    }
-    body.sidebar-collapsed .nav-item {
-      justify-content: center;
-      padding: 12px 0;
-    }
-    body.sidebar-collapsed .nav-item .icon {
-      font-size: 19px;
-      margin: 0;
-    }
-    body.sidebar-collapsed .app-main {
-      margin-left: var(--sidebar-collapsed-width);
-      width: calc(100% - var(--sidebar-collapsed-width));
-    }
-
-    /* Sidebar Collapse Toggle Buttons */
-    .sidebar-toggle-btn {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--card-border);
-      color: var(--text);
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      cursor: pointer;
-      transition: all 0.2s;
-      flex-shrink: 0;
-    }
-    .sidebar-toggle-btn:hover {
-      background: rgba(6, 182, 212, 0.15);
-      border-color: var(--cyan);
-      color: var(--cyan);
-      box-shadow: 0 0 12px var(--cyan-glow);
-    }
-
-    /* Mobile Backdrop Overlay */
-    .mobile-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(4px);
-      z-index: 95;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    .mobile-overlay.active {
-      display: block;
-      opacity: 1;
-    }
-
-    /* Mobile Header Bar */
-    .mobile-header-bar {
-      display: none;
-      position: sticky;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 56px;
-      background: rgba(8, 14, 28, 0.92);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--card-border);
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-      z-index: 90;
-    }
-
-    /* Mobile & Tablet Media Queries */
-    @media (max-width: 992px) {
-      aside {
-        transform: translateX(-100%);
-        width: 270px !important;
-        box-shadow: 10px 0 35px rgba(0,0,0,0.8);
-      }
-      body.mobile-sidebar-open aside {
-        transform: translateX(0);
-      }
-      .app-main {
-        margin-left: 0 !important;
-        width: 100% !important;
-        padding: 16px;
-      }
-      .mobile-header-bar {
-        display: flex;
-      }
-      .desktop-toggle {
-        display: none !important;
-      }
-      .grid-4 {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 12px;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .app-main {
-        padding: 12px 10px 80px 10px;
-      }
-      .grid-4 {
-        grid-template-columns: 1fr !important;
-        gap: 10px;
-      }
-      .top-bar {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-      .top-bar-right {
-        width: 100%;
-        justify-content: space-between;
-      }
-      .card {
-        padding: 14px;
-        border-radius: 12px;
-      }
-      .card-value {
-        font-size: 22px;
-      }
-      .chart-container-box {
-        height: 190px !important;
-      }
-      .table-wrap {
-        border-radius: 8px;
-      }
-      table {
-        font-size: 11px;
-      }
-      th, td {
-        padding: 8px 10px;
-      }
-    }
-
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+/* Footer Controls */
+.control-bar {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.btn-action {
+  flex: 1;
+  background: #09121a;
+  border: 1px solid var(--card-border);
+  color: #cbd5e1;
+  padding: 8px;
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.btn-action:hover {
+  background: #111e2e;
+  border-color: var(--blue);
+  color: #fff;
+}
+.btn-action.primary {
+  background: #091a14;
+  border-color: #143526;
+  color: var(--green);
+}
+.btn-action.primary:hover {
+  background: #0e291f;
+  border-color: var(--green);
+}
+</style>
 </head>
 <body>
-  <!-- Floating Ambient Glow Orbs -->
-  <div class="orb-glow orb-1"></div>
-  <div class="orb-glow orb-2"></div>
-  <div class="orb-glow orb-3"></div>
 
-  <!-- Falling Coin Drop Particle Canvas -->
-  <canvas id="coinCanvas"></canvas>
+<div class="grok-container">
 
-  <!-- Mobile Backdrop Overlay -->
-  <div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileSidebar()"></div>
-
-  <!-- Sidebar Navigation (Collapsible on Desktop & Drawer on Mobile) -->
-  <aside id="appSidebar">
-    <div class="brand">
-      <div class="brand-icon-bot">🤖</div>
-      <div class="brand-text">
-        DELTA <span>AI DESK</span>
-        <div style="font-size: 9.5px; color: var(--muted); font-family: var(--mono); font-weight: 400;">v2.0 24/7 Suite</div>
-      </div>
-      <button class="sidebar-toggle-btn desktop-toggle" style="margin-left: auto; width: 30px; height: 30px; font-size: 14px;" onclick="toggleDesktopSidebar()" title="Collapse Sidebar">
-        ◀
-      </button>
+  <!-- 1. Status Bar -->
+  <div class="status-bar">
+    <div id="clock-display">00:00</div>
+    <div class="mode-badge">
+      <div class="pulse-dot"></div>
+      <span id="session-tag">all-coins run</span>
     </div>
-    <ul class="nav-list">
-      <li class="nav-item active" onclick="handleNavClick('overview', this)"><span class="icon">📊</span> <span class="nav-label">1. Overview</span></li>
-      <li class="nav-item" onclick="handleNavClick('markets', this)"><span class="icon">📈</span> <span class="nav-label">2. Live Markets</span></li>
-      <li class="nav-item" onclick="handleNavClick('signals', this)"><span class="icon">⚡</span> <span class="nav-label">3. AI Signals</span></li>
-      <li class="nav-item" onclick="handleNavClick('committee', this)"><span class="icon">🧠</span> <span class="nav-label">4. 7-Agent Committee</span></li>
-      <li class="nav-item" onclick="handleNavClick('positions', this)"><span class="icon">🎯</span> <span class="nav-label">5. Positions</span></li>
-      <li class="nav-item" onclick="handleNavClick('orders', this)"><span class="icon">📝</span> <span class="nav-label">6. Orders</span></li>
-      <li class="nav-item" onclick="handleNavClick('journal', this)"><span class="icon">📖</span> <span class="nav-label">7. Trade Journal</span></li>
-      <li class="nav-item" onclick="handleNavClick('analytics', this)"><span class="icon">📉</span> <span class="nav-label">8. Analytics</span></li>
-      <li class="nav-item" onclick="handleNavClick('risk', this)"><span class="icon">🛡️</span> <span class="nav-label">9. Risk Settings</span></li>
-      <li class="nav-item" onclick="handleNavClick('exchange', this)"><span class="icon">🔌</span> <span class="nav-label">10. Exchange Status</span></li>
-      <li class="nav-item" onclick="handleNavClick('logs', this)"><span class="icon">📜</span> <span class="nav-label">11. System Logs</span></li>
-      <li class="nav-item" onclick="handleNavClick('settings', this)"><span class="icon">⚙️</span> <span class="nav-label">12. Settings</span></li>
-    </ul>
-    <div style="padding: 14px 12px; border-top: 1px solid var(--card-border); font-family: var(--mono); font-size: 11px; text-align:center;">
-      <button class="btn-coin-drop" onclick="triggerCoinRain(20)" style="width: 100%; justify-content: center;">
-        💰 <span class="aside-footer-text">Rain Coins</span>
-      </button>
-    </div>
-  </aside>
-
-  <!-- Mobile Top Navigation Header -->
-  <header class="mobile-header-bar">
-    <button class="sidebar-toggle-btn" onclick="toggleMobileSidebar()" aria-label="Open Menu">
-      ☰
-    </button>
-    <div style="display:flex; align-items:center; gap: 8px;">
-      <div class="brand-icon-bot" style="width: 28px; height: 28px; font-size: 16px;">🤖</div>
-      <span style="font-weight: 800; font-size: 14px; letter-spacing: -0.5px;">DELTA <span style="color:var(--cyan);">AI</span></span>
-    </div>
-    <button class="btn-coin-drop" onclick="triggerCoinRain(10)" style="padding: 4px 8px; font-size: 9px;">
-      ✨ Coins
-    </button>
-  </header>
-
-  <!-- Main Content Container -->
-  <div class="app-main">
-    
-    <!-- Top Action Bar with Desktop Collapse Trigger -->
-    <div class="top-bar">
-      <div class="mode-indicator">
-        <button class="sidebar-toggle-btn desktop-toggle" onclick="toggleDesktopSidebar()" title="Toggle Sidebar" style="margin-right: 4px;">
-          ☰
-        </button>
-        <h2 id="page-title" style="font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">Platform Overview</h2>
-        <span class="pill pill-live" id="mode-badge"><span class="pulse-dot"></span> LIVE REAL TRADING</span>
-      </div>
-      <div class="top-bar-right" style="display:flex; align-items:center; gap: 12px;">
-        <button class="btn-coin-drop" onclick="triggerCoinRain(12)">✨ Play Coins</button>
-        <div style="font-size: 11.5px; font-family: var(--mono); color: var(--cyan); background: rgba(6, 182, 212, 0.08); border: 1px solid var(--cyan-glow); padding: 5px 12px; border-radius: 8px;" id="clock-display">
-          UTC: --:--:--
-        </div>
-      </div>
-    </div>
-
-    <!-- Live Animated Ticker Tape with Real Coin Icons -->
-    <div class="ticker-bar-wrap">
-      <div class="ticker-tape" id="ticker-content">
-        <!-- Injected via JavaScript -->
-        <span class="ticker-coin-item"><img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" class="coin-icon-img"> <b>BTCUSD</b> $96,420 <span class="up">+4.2%</span></span>
-        <span class="ticker-coin-item"><img src="https://assets.coingecko.com/coins/images/279/small/ethereum.png" class="coin-icon-img"> <b>ETHUSD</b> $3,140 <span class="up">+6.1%</span></span>
-        <span class="ticker-coin-item"><img src="https://assets.coingecko.com/coins/images/4128/small/solana.png" class="coin-icon-img"> <b>SOLUSD</b> $188.5 <span class="up">+8.4%</span></span>
-        <span class="ticker-coin-item"><img src="https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png" class="coin-icon-img"> <b>XRPUSD</b> $1.15 <span class="up">+15.2%</span></span>
-        <span class="ticker-coin-item"><img src="https://assets.coingecko.com/coins/images/5/small/dogecoin.png" class="coin-icon-img"> <b>DOGEUSD</b> $0.38 <span class="up">+11.0%</span></span>
-      </div>
-    </div>
-
-    <!-- PAGE 1: OVERVIEW -->
-    <div id="page-overview" class="page-section active">
-      <!-- Top 4 Primary Live Metrics -->
-      <div class="grid-4">
-        <div class="card">
-          <div class="card-title">💰 Live Net Equity</div>
-          <div class="card-value" id="ov-equity">$0.00</div>
-          <div style="font-size: 11px; color: var(--cyan); margin-top: 4px; font-weight: 600;" id="ov-inr">₹0.00 INR</div>
-        </div>
-        <div class="card" style="border: 1px solid rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.04);">
-          <div class="card-title" style="color: #34d399;">⚡ Total Running P&L</div>
-          <div class="card-value pnl-live-up" id="ov-pnl">+$0.00</div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
-            <span style="font-size: 11px; color: var(--muted);">Live Unr. + Realized</span>
-            <span style="font-size: 10px; font-weight: 700; color: #34d399; font-family: var(--mono);" id="ov-pnl-pct">+0.00%</span>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title">🎯 Win / Loss Ratio</div>
-          <div style="display:flex; align-items:center; gap: 8px; margin-top: 2px;">
-            <span class="win-stat-badge" id="ov-win-badge">🏆 0 Wins</span>
-            <span class="loss-stat-badge" id="ov-loss-badge">⚠️ 0 Losses</span>
-          </div>
-          <div class="win-loss-progress-wrap">
-            <div class="win-loss-progress-bar" id="ov-win-bar" style="width: 75%;"></div>
-          </div>
-          <div style="display:flex; justify-content:space-between; font-size: 10px; color: var(--muted); font-family: var(--mono);">
-            <span id="ov-win-pct" style="color: #34d399; font-weight: 700;">Win Rate: 0.0%</span>
-            <span>Target: >65%</span>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title">⚡ Engine Status</div>
-          <div class="card-value" style="font-size: 18px; color: var(--green); display: flex; align-items: center; gap: 8px;">
-            <span class="pulse-dot"></span> 24/7 ACTIVE
-          </div>
-          <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">7-Agent Committee & Scanner Live</div>
-        </div>
-      </div>
-
-      <!-- Real-Time Animated Equity Curve & Live Performance Graph -->
-      <div class="card" style="margin-bottom: 20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
-          <div>
-            <h3 style="font-size: 15px; font-weight: 700; display:flex; align-items:center; gap: 8px;">
-              📈 Live Running Equity & P&L Trajectory
-            </h3>
-            <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Continuous tick-by-tick equity curve with real-time gradient fill</div>
-          </div>
-          <div style="display:flex; align-items:center; gap: 8px;">
-            <span class="badge" style="background: rgba(6, 182, 212, 0.15); color: var(--cyan); border: 1px solid var(--cyan-glow);">LIVE TICK STREAM</span>
-            <button class="btn-coin-drop" onclick="triggerCoinRain(10)">✨ Celebrate Gains</button>
-          </div>
-        </div>
-        <div class="chart-container-box" style="height: 220px;">
-          <canvas id="overviewEquityChart"></canvas>
-        </div>
-      </div>
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
-          <h3 style="font-size: 15px; font-weight: 700; display:flex; align-items:center; gap: 8px;">
-            🔥 Top Ranked Movers · 0–100 Point AI Scanner
-          </h3>
-          <button class="btn-coin-drop" onclick="triggerCoinRain(15)">Drop Coins 🪙</button>
-        </div>
-        <div class="table-wrap">
-          <table id="ov-watchlist-table">
-            <thead>
-              <tr><th>Market</th><th>Mark Price</th><th>24h Change</th><th>Turnover</th><th>Scanner Score</th><th>Status</th></tr>
-            </thead>
-            <tbody><tr><td colspan="6" style="text-align:center; color: var(--muted);">Streaming scanner data...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- PAGE 2: LIVE MARKETS -->
-    <div id="page-markets" class="page-section">
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
-          <h3 style="font-size: 15px; font-weight: 700;">All Scanned Delta Exchange Markets</h3>
-          <span style="font-size: 11px; color: var(--cyan); font-family: var(--mono);" id="markets-count">Loading...</span>
-        </div>
-        <div class="table-wrap">
-          <table id="markets-full-table">
-            <thead>
-              <tr><th>Symbol</th><th>Mark Price</th><th>24h Change</th><th>Volume USD</th><th>Funding</th><th>Trend</th><th>Score</th></tr>
-            </thead>
-            <tbody><tr><td colspan="7" style="text-align:center; color: var(--muted);">Loading markets...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- PAGE 3: AI SIGNALS -->
-    <div id="page-signals" class="page-section">
-      <div class="card">
-        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 14px;">Recent AI Strategy Proposals & Consensus</h3>
-        <div class="table-wrap">
-          <table id="signals-table">
-            <thead>
-              <tr><th>Time</th><th>Market</th><th>Action</th><th>Strategy</th><th>Entry</th><th>Stop-Loss</th><th>Target</th><th>R:R</th><th>Status</th></tr>
-            </thead>
-            <tbody><tr><td colspan="9" style="text-align:center; color: var(--muted);">Scanning for high-probability setups...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- PAGE 4: 7-AGENT COMMITTEE -->
-    <div id="page-committee" class="page-section">
-      <div style="margin-bottom: 16px; font-size: 12px; color: var(--cyan); font-family: var(--mono); background: rgba(6, 182, 212, 0.08); border: 1px solid var(--cyan-glow); padding: 10px 16px; border-radius: 8px;">
-        🤖 <b>Autonomous Multi-Agent Committee:</b> All 7 agents must achieve unanimous consensus with Skeptic verification before trade execution.
-      </div>
-      <div class="agents-grid" id="agents-grid-container">
-        <!-- Injected dynamically via JS with playful animated bot icons -->
-      </div>
-    </div>
-
-    <!-- PAGE 5: POSITIONS -->
-    <div id="page-positions" class="page-section">
-      <div class="card">
-        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 14px;">Active Open Positions</h3>
-        <div class="table-wrap">
-          <table id="positions-table">
-            <thead>
-              <tr><th>ID</th><th>Market</th><th>Side</th><th>Size</th><th>Entry</th><th>Current</th><th>SL</th><th>TP</th><th>Unrealized P&L</th><th>Margin</th></tr>
-            </thead>
-            <tbody><tr><td colspan="10" style="text-align:center; color: var(--muted);">No active open positions.</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- PAGE 6: ORDERS -->
-    <div id="page-orders" class="page-section">
-      <div class="card">
-        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 14px;">Recent Order Activity</h3>
-        <div class="table-wrap">
-          <table id="orders-table">
-            <thead>
-              <tr><th>Order ID</th><th>Symbol</th><th>Side</th><th>Size</th><th>Type</th><th>Price</th><th>Mode</th><th>Status</th></tr>
-            </thead>
-            <tbody><tr><td colspan="8" style="text-align:center; color: var(--muted);">No recent order submissions.</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- PAGE 7: TRADE JOURNAL -->
-    <div id="page-journal" class="page-section">
-      <div class="card">
-        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 14px;">Complete Trade Journal & History</h3>
-        <div class="table-wrap">
-          <table id="journal-table">
-            <thead>
-              <tr><th>Date</th><th>Market</th><th>Side</th><th>Strategy</th><th>Entry</th><th>Exit</th><th>P&L ($)</th><th>P&L (%)</th><th>Exit Reason</th></tr>
-            </thead>
-            <tbody><tr><td colspan="9" style="text-align:center; color: var(--muted);">No completed trades recorded yet.</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- PAGE 8: ANALYTICS -->
-    <div id="page-analytics" class="page-section">
-      <div class="grid-4">
-        <div class="card">
-          <div class="card-title">📊 Total Trades Executed</div>
-          <div class="card-value" id="an-total">0</div>
-          <div style="font-size: 11px; color: var(--cyan); margin-top: 4px;">Signals Analyzed: <span id="an-signals-count">0</span></div>
-        </div>
-        <div class="card" style="border: 1px solid rgba(16, 185, 129, 0.4);">
-          <div class="card-title" style="color:#34d399;">🎯 Overall Win Rate</div>
-          <div class="card-value up" id="an-winrate">0.0%</div>
-          <div style="font-size: 11px; color: var(--muted); margin-top: 4px;" id="an-win-loss-split">0 Wins · 0 Losses</div>
-        </div>
-        <div class="card">
-          <div class="card-title">⚖️ Avg Reward/Risk Ratio</div>
-          <div class="card-value" id="an-rr" style="color: var(--amber);">2.4:1</div>
-          <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">Min Target: 2.0:1</div>
-        </div>
-        <div class="card">
-          <div class="card-title">🛡️ Max Historical Drawdown</div>
-          <div class="card-value down" id="an-dd">-0.8%</div>
-          <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">Permitted Daily Limit: -3.0%</div>
-        </div>
-      </div>
-
-      <!-- Advanced Visual Analytics: Win/Loss Doughnut & Cumulative PnL Curve -->
-      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-top: 16px;">
-        <div class="card">
-          <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 8px;">🎯 Win / Loss Distribution</h3>
-          <div style="font-size: 11px; color: var(--muted); margin-bottom: 12px;">Visual trade outcome breakdown</div>
-          <div class="chart-container-box" style="height: 230px;">
-            <canvas id="winLossDoughnutChart"></canvas>
-          </div>
-        </div>
-        <div class="card">
-          <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 8px;">💹 Cumulative Realized P&L Growth ($)</h3>
-          <div style="font-size: 11px; color: var(--muted); margin-bottom: 12px;">Step-by-step account balance progression</div>
-          <div class="chart-container-box" style="height: 230px;">
-            <canvas id="cumulativePnlChart"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- PAGE 9: RISK SETTINGS -->
-    <div id="page-risk" class="page-section">
-      <div class="card" style="max-width: 600px;">
-        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 16px;">Independent Risk Engine Parameters</h3>
-        <div class="field">
-          <label>Risk Per Trade (%)</label>
-          <input type="number" id="risk-per-trade" value="1.0" step="0.1">
-        </div>
-        <div class="field">
-          <label>Maximum Daily Loss Limit (%)</label>
-          <input type="number" id="risk-max-daily" value="3.0" step="0.5">
-        </div>
-        <div class="field">
-          <label>Maximum Leverage</label>
-          <input type="number" id="risk-leverage" value="3.0" step="1.0">
-        </div>
-        <div class="field">
-          <label>Max Concurrent Positions</label>
-          <input type="number" id="risk-max-pos" value="1" min="1" max="4">
-        </div>
-        <button class="btn" onclick="saveRiskSettings()">Save Risk Rules</button>
-      </div>
-    </div>
-
-    <!-- PAGE 10: EXCHANGE STATUS -->
-    <div id="page-exchange" class="page-section">
-      <div class="card" style="max-width: 700px;">
-        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 16px;">Delta Exchange Connectivity</h3>
-        <div style="display:flex; flex-direction:column; gap: 12px; font-family: var(--mono); font-size: 12.5px;">
-          <div>Exchange: <b style="color:#fff;">Delta Exchange India</b></div>
-          <div>Environment: <span class="badge" style="background:var(--blue); color:#fff;" id="ex-env">production</span></div>
-          <div>Credentials Found: <b style="color:var(--green);" id="ex-creds">Configured</b></div>
-          <div>Read Permissions: <b style="color:var(--green);" id="ex-read">Verified (HTTP 200 OK)</b></div>
-          <div>Trade Permissions: <b style="color:var(--green);" id="ex-trade">Verified Active</b></div>
-          <div>Live Exchange Positions: <b id="ex-open-count" style="color:var(--cyan);">Verified directly on exchange</b></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- PAGE 11: SYSTEM LOGS -->
-    <div id="page-logs" class="page-section">
-      <div class="card">
-        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 14px;">Audit & Engine Event Logs</h3>
-        <div class="table-wrap">
-          <table id="logs-table">
-            <thead>
-              <tr><th>Time</th><th>Component</th><th>Level</th><th>Message</th></tr>
-            </thead>
-            <tbody><tr><td colspan="4" style="text-align:center; color: var(--muted);">Streaming logs...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- PAGE 12: SETTINGS -->
-    <div id="page-settings" class="page-section">
-      <div class="card" style="max-width: 650px;">
-        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 16px;">Platform Settings & Execution Toggle</h3>
-        <div class="field">
-          <label>Execution Mode</label>
-          <select id="setting-mode">
-            <option value="LIVE" selected>LIVE REAL TRADING (Active Exchange Execution)</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Telegram Notifications</label>
-          <select id="setting-tg-enabled">
-            <option value="false" selected>Disabled</option>
-            <option value="true">Enabled</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Telegram Bot Token</label>
-          <input type="text" id="setting-tg-token" placeholder="Optional bot token">
-        </div>
-        <div class="field">
-          <label>Telegram Chat ID</label>
-          <input type="text" id="setting-tg-chat" placeholder="Optional chat ID">
-        </div>
-        <button class="btn" onclick="saveSettings()">Save Configuration</button>
-      </div>
-    </div>
-
+    <div>6 agents</div>
   </div>
 
-  <script>
-    /* ── 1. CRYPTO ICON MAPPINGS ── */
-    const coinIcons = {
-      'BTC': 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',
-      'ETH': 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
-      'SOL': 'https://assets.coingecko.com/coins/images/4128/small/solana.png',
-      'XRP': 'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png',
-      'DOGE': 'https://assets.coingecko.com/coins/images/5/small/dogecoin.png',
-      'ADA': 'https://assets.coingecko.com/coins/images/975/small/cardano.png',
-      'AVAX': 'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png',
-      'LINK': 'https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png',
-      'PEPE': 'https://assets.coingecko.com/coins/images/29850/small/pepe-token.png',
-      'NEAR': 'https://assets.coingecko.com/coins/images/10365/small/near.png',
-      'SUI': 'https://assets.coingecko.com/coins/images/26375/small/sui-ocean-square.png',
-      'AAVE': 'https://assets.coingecko.com/coins/images/12645/small/AAVE.png',
-      'DOT': 'https://assets.coingecko.com/coins/images/12171/small/polkadot.png',
-      'MATIC': 'https://assets.coingecko.com/coins/images/4713/small/polygon.png',
-      'SHIB': 'https://assets.coingecko.com/coins/images/11939/small/shiba.png',
-      'LTC': 'https://assets.coingecko.com/coins/images/2/small/litecoin.png',
-      'BCH': 'https://assets.coingecko.com/coins/images/780/small/bitcoin-cash-circle.png'
-    };
+  <!-- 2. Grok Bot Brand Bar -->
+  <div class="brand-header">
+    <div class="brand-left">
+      <div class="grok-avatar">🤖</div>
+      <div>
+        <div class="brand-title">Grok Bot</div>
+        <div class="brand-subtitle" id="exchange-badge">Delta India Futures · strict RM · 24/7</div>
+      </div>
+    </div>
+    <div class="live-pill">
+      <div class="pulse-dot"></div>
+      <span id="live-status-text">Live</span>
+    </div>
+  </div>
 
-    function getCoinIconUrl(symbol) {
-      const clean = symbol.toUpperCase().replace(/USD|USDT|-USD|\/USD/g, '');
-      return coinIcons[clean] || 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png';
-    }
+  <!-- 3. Scrolling Ticker Tape of All Movers -->
+  <div class="ticker-tape-wrapper">
+    <div class="ticker-tape" id="ticker-tape-content">
+      <!-- Injected dynamically via JS -->
+      <span class="ticker-item"><span class="sym">BTCUSD</span> <span class="price">72,910</span> <span class="chg down">-2.7%</span></span>
+      <span class="ticker-item"><span class="sym">INITUSD</span> <span class="price">0.2549</span> <span class="chg up">+81.5%</span></span>
+      <span class="ticker-item"><span class="sym">ETHUSD</span> <span class="price">2,019.3</span> <span class="chg down">-5.2%</span></span>
+      <span class="ticker-item"><span class="sym">SOLUSD</span> <span class="price">81.91</span> <span class="chg down">-5.8%</span></span>
+      <span class="ticker-item"><span class="sym">ARIAUSD</span> <span class="price">0.2141</span> <span class="chg up">+23.6%</span></span>
+      <span class="ticker-item"><span class="sym">JCTUSD</span> <span class="price">0.0053</span> <span class="chg down">-49.6%</span></span>
+    </div>
+  </div>
 
-    /* ── 2. FALLING COINS PARTICLE CANVAS (COIN DROP ANIMATION) ── */
-    const canvas = document.getElementById('coinCanvas');
-    const ctx = canvas.getContext('2d');
-    let coins = [];
+  <!-- Exchange Tabs Bar (Supports Multiple Connected Exchanges) -->
+  <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px" id="exchange-tabs-bar">
+    <button class="exchange-tab-btn active" style="background:#0e291f;color:var(--green);border:1px solid #143526;padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer">
+      <span class="pulse-dot"></span>
+      <span id="tab-ex-name">Delta Exchange India</span>
+      <span style="color:#fff;background:rgba(255,255,255,0.08);padding:1px 6px;border-radius:4px" id="tab-ex-bal">$1.61</span>
+    </button>
+    <a href="/api-keys" style="background:#09121a;color:var(--dim);border:1px dashed var(--card-border);padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;text-decoration:none;display:flex;align-items:center;gap:4px">
+      <span>+ Add Exchange</span>
+    </a>
+  </div>
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+  <!-- 4. Hero Equity & Growth Card -->
+  <div class="equity-card">
+    <div class="equity-meta-row">
+      <div><span id="card-exchange-title" style="color:var(--green);font-weight:600">Delta Exchange India</span> · Live Balance</div>
+      <div class="multiplier-badge" id="multiplier-tag">1.00×</div>
+    </div>
 
-    const coinImages = [];
-    Object.values(coinIcons).slice(0, 8).forEach(src => {
-      const img = new Image();
-      img.src = src;
-      coinImages.push(img);
-    });
+    <div class="equity-main-row">
+      <div class="equity-value" id="equity-main">$0<span class="equity-cents" id="equity-cents">.00</span></div>
+      <div class="floating-gain-pill" id="floating-gain-badge">+$0</div>
+    </div>
 
-    class FallingCoin {
-      constructor(x, y) {
-        this.x = x !== undefined ? x : Math.random() * canvas.width;
-        this.y = y !== undefined ? y : -30;
-        this.size = 20 + Math.random() * 20;
-        this.speedY = 2 + Math.random() * 4;
-        this.speedX = (Math.random() - 0.5) * 2;
-        this.rotation = Math.random() * Math.PI * 2;
-        this.rotSpeed = (Math.random() - 0.5) * 0.1;
-        this.img = coinImages[Math.floor(Math.random() * coinImages.length)];
-        this.opacity = 0.8 + Math.random() * 0.2;
-      }
-      update() {
-        this.y += this.speedY;
-        this.x += this.speedX;
-        this.rotation += this.rotSpeed;
-        if (this.y > canvas.height + 40) {
-          this.y = -30;
-          this.x = Math.random() * canvas.width;
+    <div class="equity-gain-row">
+      <div id="gain-pct-text">+$0.00 (0%)</div>
+      <div class="win-loss-tag" id="win-loss-text">26W / 12L</div>
+    </div>
+
+    <!-- Live SVG glowing growth curve -->
+    <div class="chart-container">
+      <svg viewBox="0 0 400 48" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="curveGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#2fe0a8" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#2fe0a8" stop-opacity="0.0"/>
+          </linearGradient>
+        </defs>
+        <path id="curveArea" d="M 0 45 Q 100 42, 200 35 T 350 20 T 400 5 L 400 48 L 0 48 Z" fill="url(#curveGradient)" />
+        <path id="curveLine" d="M 0 45 Q 100 42, 200 35 T 350 20 T 400 5" fill="none" stroke="#2fe0a8" stroke-width="2.5" stroke-linecap="round" />
+      </svg>
+    </div>
+  </div>
+
+  <!-- 5. Desk · 6 Agents Card -->
+  <div class="agents-card">
+    <div class="desk-header">
+      <div class="desk-title">Desk · 6 agents</div>
+      <div class="desk-stats" id="desk-scanned-stats">640 scanned · 0 traded</div>
+    </div>
+
+    <!-- Agent 1: Scout -->
+    <div class="agent-row">
+      <div class="agent-col-left">
+        <div class="agent-icon blue">🔍</div>
+        <div class="agent-name-box">
+          <div class="name">Scout</div>
+          <div class="sub">new pairs</div>
+        </div>
+      </div>
+      <div class="agent-col-mid" id="scout-mid">All Delta pairs + Movers...</div>
+      <div class="agent-col-right pill-blue" id="scout-badge">250 pairs</div>
+    </div>
+
+    <!-- Agent 2: Filter -->
+    <div class="agent-row">
+      <div class="agent-col-left">
+        <div class="agent-icon amber">⚡</div>
+        <div class="agent-name-box">
+          <div class="name">Filter</div>
+          <div class="sub">kills 98%</div>
+        </div>
+      </div>
+      <div class="agent-col-mid" id="filter-mid">kills low-vol & illiquid...</div>
+      <div class="agent-col-right pill-red" id="filter-badge">628 · 98%</div>
+    </div>
+
+    <!-- Agent 3: Analyst -->
+    <div class="agent-row">
+      <div class="agent-col-left">
+        <div class="agent-icon purple">🧠</div>
+        <div class="agent-name-box">
+          <div class="name">Analyst</div>
+          <div class="sub">scores survivors</div>
+        </div>
+      </div>
+      <div class="agent-col-mid" id="analyst-mid">VWAP & Structure match...</div>
+      <div class="agent-col-right pill-purple" id="analyst-badge">13 scored</div>
+    </div>
+
+    <!-- Agent 4: Executor -->
+    <div class="agent-row">
+      <div class="agent-col-left">
+        <div class="agent-icon green">🚀</div>
+        <div class="agent-name-box">
+          <div class="name">Executor</div>
+          <div class="sub">8% max size</div>
+        </div>
+      </div>
+      <div class="agent-col-mid" id="executor-mid">nothing passed yet</div>
+      <div class="agent-col-right pill-green">size ≤ 8%</div>
+    </div>
+
+    <!-- Agent 5: Risk -->
+    <div class="agent-row">
+      <div class="agent-col-left">
+        <div class="agent-icon pink">🛡️</div>
+        <div class="agent-name-box">
+          <div class="name">Risk</div>
+          <div class="sub">-6% stop · trail</div>
+        </div>
+      </div>
+      <div class="agent-col-mid" id="risk-mid">no open risk</div>
+      <div class="agent-col-right pill-pink">-6% · trail +12%</div>
+    </div>
+
+    <!-- Agent 6: Logger -->
+    <div class="agent-row">
+      <div class="agent-col-left">
+        <div class="agent-icon cyan">📋</div>
+        <div class="agent-name-box">
+          <div class="name">Logger</div>
+          <div class="sub">reason for all</div>
+        </div>
+      </div>
+      <div class="agent-col-mid" id="logger-mid">real-time death ledger</div>
+      <div class="agent-col-right pill-cyan" id="logger-badge">192 reasons</div>
+    </div>
+  </div>
+
+  <!-- 5.5 Live Open Positions Card -->
+  <div class="card" style="background:var(--card-bg);border:1px solid var(--card-border-green);border-radius:12px;padding:14px;box-shadow:0 0 20px rgba(47,224,168,0.05);" id="live-positions-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div style="font-family:var(--disp);font-size:14px;font-weight:600;color:var(--green);display:flex;align-items:center;gap:6px;">
+        <span class="pulse-dot"></span>
+        <span>Active Real Positions (<span id="open-pos-count">0</span>)</span>
+      </div>
+      <a href="/positions" style="color:var(--blue);text-decoration:none;font-size:11px;">Details &rarr;</a>
+    </div>
+    <div id="open-positions-list" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="color:var(--dim);text-align:center;padding:12px 0;">Scanning markets for optimal execution...</div>
+    </div>
+  </div>
+
+  <!-- 6. Real-time Logger & Kill Feed -->
+  <div class="logger-card">
+    <div class="logger-header">
+      <div class="logger-title">Logger</div>
+      <div class="logger-killed-badge" id="logger-total-killed">628 killed</div>
+    </div>
+    <div class="log-feed" id="log-feed-container">
+      <div class="log-entry">
+        <span class="log-bullet red"></span>
+        <span class="log-time">23:10</span>
+        <span class="log-role ANALYST">ANALYST:</span>
+        <span class="log-text">killed $SIGMA · score 0.41 &lt; 0.60</span>
+      </div>
+      <div class="log-entry">
+        <span class="log-bullet red"></span>
+        <span class="log-time">23:05</span>
+        <span class="log-role FILTER">FILTER:</span>
+        <span class="log-text">killed $DOGEAI · volume &lt; $25k</span>
+      </div>
+      <div class="log-entry">
+        <span class="log-bullet green"></span>
+        <span class="log-time">23:01</span>
+        <span class="log-role EXECUTOR">EXECUTOR:</span>
+        <span class="log-text">bought $DOOD · $26.90 · 8% of stack</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Why They Died Grid -->
+  <div class="death-stats-card">
+    <div class="death-header">
+      <div class="death-title">Why they died</div>
+      <div class="death-sub">best +$28 · worst -$31</div>
+    </div>
+    <div class="death-grid">
+      <div class="death-row">
+        <span class="death-label">Mint not revoked</span>
+        <span class="death-count" id="count-mint">2,640</span>
+      </div>
+      <div class="death-row">
+        <span class="death-label">LP not locked</span>
+        <span class="death-count" id="count-lp">2,415</span>
+      </div>
+      <div class="death-row">
+        <span class="death-label">Top 10 holders >20%</span>
+        <span class="death-count" id="count-holders">2,198</span>
+      </div>
+      <div class="death-row">
+        <span class="death-label">Volume &lt;$50k last hour</span>
+        <span class="death-count" id="count-vol">1,911</span>
+      </div>
+      <div class="death-row">
+        <span class="death-label">Dev wallet → past rugs</span>
+        <span class="death-count" id="count-dev">846</span>
+      </div>
+      <div class="death-row">
+        <span class="death-label">Analyst score &lt; 0.6</span>
+        <span class="death-count" id="count-score">166</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Control Links -->
+  <div class="control-bar">
+    <button onclick="triggerRestart()" class="btn-action primary">Restart 24/7 Engine</button>
+    <a href="/api-keys" class="btn-action">Exchange Keys</a>
+    <a href="/positions" class="btn-action">Active Trades</a>
+  </div>
+
+</div>
+
+<script>
+let selectedExchangeKey = 'delta';
+function selectExchangeTab(key) {
+  selectedExchangeKey = key;
+  fetchStatus();
+}
+
+function updateClock() {
+  const d = new Date();
+  const hrs = String(d.getHours()).padStart(2, '0');
+  const mins = String(d.getMinutes()).padStart(2, '0');
+  document.getElementById('clock-display').textContent = `${hrs}:${mins}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+async function fetchStatus() {
+  try {
+    const res = await fetch('/api/status');
+    const data = await res.json();
+    if (!data || data.error) return;
+
+    const stats = data.agent_stats || {};
+    const ex = data.exchange || {};
+    const exchanges = data.exchanges || {};
+    
+    // Render exchange tabs dynamically
+    if (Object.keys(exchanges).length > 0) {
+      const tabsBar = document.getElementById('exchange-tabs-bar');
+      if (tabsBar) {
+        let tabsHtml = '';
+        for (const [key, exItem] of Object.entries(exchanges)) {
+          const isActive = (selectedExchangeKey === key) || (!selectedExchangeKey && key === 'delta');
+          const activeBg = isActive ? '#0e291f' : '#09121a';
+          const activeColor = isActive ? 'var(--green)' : 'var(--dim)';
+          const activeBorder = isActive ? '#143526' : 'var(--card-border)';
+          const bal = (exItem.net_equity !== undefined && exItem.net_equity !== null) ? Number(exItem.net_equity) : 0.0;
+          tabsHtml += `
+            <button onclick="selectExchangeTab('${key}')" class="exchange-tab-btn ${isActive ? 'active' : ''}" style="background:${activeBg};color:${activeColor};border:1px solid ${activeBorder};padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer">
+              <span class="pulse-dot" style="${isActive ? '' : 'background:var(--dim);box-shadow:none'}"></span>
+              <span>${exItem.name}</span>
+              <span style="color:#fff;background:rgba(255,255,255,0.08);padding:1px 6px;border-radius:4px">$${bal.toFixed(2)}</span>
+            </button>
+          `;
         }
-      }
-      draw() {
-        ctx.save();
-        ctx.globalAlpha = this.opacity;
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.rotation);
-        if (this.img && this.img.complete) {
-          ctx.drawImage(this.img, -this.size / 2, -this.size / 2, this.size, this.size);
-        } else {
-          ctx.beginPath();
-          ctx.arc(0, 0, this.size / 2, 0, Math.PI * 2);
-          ctx.fillStyle = '#fbbf24';
-          ctx.fill();
-        }
-        ctx.restore();
+        tabsHtml += `
+          <a href="/api-keys" style="background:#09121a;color:var(--dim);border:1px dashed var(--card-border);padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;text-decoration:none;display:flex;align-items:center;gap:4px">
+            <span>+ Add Exchange</span>
+          </a>
+        `;
+        tabsBar.innerHTML = tabsHtml;
       }
     }
 
-    // Initialize initial ambient floating coins
-    for (let i = 0; i < 18; i++) {
-      coins.push(new FallingCoin(Math.random() * canvas.width, Math.random() * canvas.height));
-    }
+    const currentEx = (selectedExchangeKey && exchanges[selectedExchangeKey]) ? exchanges[selectedExchangeKey] : ex;
+    const realLiveEquity = (currentEx.net_equity !== undefined && currentEx.net_equity !== null) ? Number(currentEx.net_equity) : 0.0;
+    const exName = currentEx.name || data.exchange_name || 'Delta Exchange India';
+    
+    document.getElementById('exchange-badge').textContent = `${exName} · Live Real Execution`;
+    document.getElementById('card-exchange-title').textContent = exName;
 
-    function animateCoins() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      coins.forEach(c => {
-        c.update();
-        c.draw();
+    const initialEq = stats.initial_equity > 0 ? stats.initial_equity : realLiveEquity;
+    const profitUsd = realLiveEquity - initialEq;
+    const profitPct = initialEq > 0 ? (profitUsd / initialEq * 100) : 0;
+    const multiple = initialEq > 0 ? (realLiveEquity / initialEq).toFixed(2) : "1.00";
+
+    // Update Real Exchange Equity
+    const eqSplit = realLiveEquity.toFixed(2).split('.');
+    document.getElementById('equity-main').innerHTML = `$${eqSplit[0]}<span class="equity-cents">.${eqSplit[1]}</span>`;
+    document.getElementById('multiplier-tag').textContent = `${multiple}×`;
+    
+    const sign = profitUsd >= 0 ? '+' : '-';
+    document.getElementById('gain-pct-text').textContent = `${sign}$${Math.abs(profitUsd).toFixed(2)} (${profitPct.toFixed(0)}%)`;
+    document.getElementById('floating-gain-badge').textContent = `${sign}$${Math.abs(profitUsd).toFixed(0)}`;
+    document.getElementById('win-loss-text').textContent = `${stats.win_count || 0}W / ${stats.loss_count || 0}L`;
+
+    // Desk Top Numbers
+    const scanned = stats.scout_pairs_count || 0;
+    const traded = data.trades_opened || 0;
+    document.getElementById('desk-scanned-stats').textContent = `${scanned} scanned · ${traded} traded`;
+
+    // 6-Agent Rows
+    document.getElementById('scout-badge').textContent = `${scanned} pairs`;
+    document.getElementById('filter-badge').textContent = `${stats.filter_killed_count || 0} · ${stats.filter_killed_pct || 0}%`;
+    document.getElementById('analyst-badge').textContent = `${stats.analyst_scored_count || 0} scored`;
+    document.getElementById('executor-mid').textContent = stats.executor_last_action || 'waiting for survivor';
+    document.getElementById('risk-mid').textContent = stats.risk_open_status || 'no open risk';
+    document.getElementById('logger-badge').textContent = `${stats.logger_reasons_count || 0} reasons`;
+    document.getElementById('logger-total-killed').textContent = `${stats.filter_killed_count || 0} killed`;
+
+    // Live Ticker Tape
+    if (stats.live_ticker_tape && stats.live_ticker_tape.length > 0) {
+      let tapeHtml = '';
+      stats.live_ticker_tape.forEach(item => {
+        const isUp = item.change >= 0;
+        const cls = isUp ? 'up' : 'down';
+        const sign = isUp ? '+' : '';
+        tapeHtml += `<span class="ticker-item"><span class="sym">${item.symbol}</span> <span class="price">${item.price}</span> <span class="chg ${cls}">${sign}${item.change.toFixed(1)}%</span></span>`;
       });
-      requestAnimationFrame(animateCoins);
-    }
-    animateCoins();
-
-    function triggerCoinRain(amount = 25) {
-      for (let i = 0; i < amount; i++) {
-        setTimeout(() => {
-          coins.push(new FallingCoin(Math.random() * canvas.width, -20));
-          if (coins.length > 50) coins.shift();
-        }, i * 60);
-      }
+      // Double for infinite scroll effect
+      document.getElementById('ticker-tape-content').innerHTML = tapeHtml + tapeHtml;
     }
 
-    /* ── 3. PAGE NAVIGATION ── */
-    let activePage = 'overview';
-    const pageTitles = {
-      overview: '1. Platform Overview',
-      markets: '2. Live Markets Scanner',
-      signals: '3. AI Strategy Signals',
-      committee: '4. Seven-Agent Trading Committee',
-      positions: '5. Open Positions Manager',
-      orders: '6. Order Activity',
-      journal: '7. Trade Journal & History',
-      analytics: '8. Performance Analytics',
-      risk: '9. Independent Risk Settings',
-      exchange: '10. Delta Exchange Connectivity',
-      logs: '11. System Audit Logs',
-      settings: '12. System Settings'
-    };
-
-    
-    /* ── COLLAPSIBLE MENUBAR & MOBILE DRAWER CONTROLLER ── */
-    function toggleDesktopSidebar() {
-      document.body.classList.toggle('sidebar-collapsed');
-      const isCollapsed = document.body.classList.contains('sidebar-collapsed');
-      localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
-      
-      // Update toggle icon
-      const toggleBtn = document.querySelector('.desktop-toggle');
-      if (toggleBtn) {
-        toggleBtn.textContent = isCollapsed ? '▶' : '◀';
-      }
-
-      // Resize chart instances gracefully after sidebar transition
-      setTimeout(() => {
-        if (overviewEquityChartInstance) overviewEquityChartInstance.resize();
-        if (winLossDoughnutInstance) winLossDoughnutInstance.resize();
-        if (cumulativePnlChartInstance) cumulativePnlChartInstance.resize();
-      }, 350);
+    // Logger Feed
+    if (stats.recent_kills && stats.recent_kills.length > 0) {
+      let feedHtml = '';
+      stats.recent_kills.slice(0, 15).forEach(k => {
+        const bulletColor = k.role === 'EXECUTOR' ? 'green' : (k.role === 'ANALYST' ? 'blue' : (k.role === 'RISK' ? 'purple' : 'red'));
+        feedHtml += `
+          <div class="log-entry">
+            <span class="log-bullet ${bulletColor}"></span>
+            <span class="log-time">${k.time || '12:00'}</span>
+            <span class="log-role ${k.role}">${k.role}:</span>
+            <span class="log-text">${k.text}</span>
+          </div>`;
+      });
+      document.getElementById('log-feed-container').innerHTML = feedHtml;
     }
 
-    function toggleMobileSidebar() {
-      document.body.classList.toggle('mobile-sidebar-open');
-      const overlay = document.getElementById('mobileOverlay');
-      if (overlay) {
-        overlay.classList.toggle('active', document.body.classList.contains('mobile-sidebar-open'));
-      }
-    }
-
-    function handleNavClick(pageId, element) {
-      switchPage(pageId, element);
-      // Auto-close drawer on mobile when an item is selected
-      if (window.innerWidth <= 992) {
-        document.body.classList.remove('mobile-sidebar-open');
-        const overlay = document.getElementById('mobileOverlay');
-        if (overlay) overlay.classList.remove('active');
-      }
-    }
-
-    // Restore desktop collapsed preference
-    if (localStorage.getItem('sidebar_collapsed') === 'true' && window.innerWidth > 992) {
-      document.body.classList.add('sidebar-collapsed');
-      const toggleBtn = document.querySelector('.desktop-toggle');
-      if (toggleBtn) toggleBtn.textContent = '▶';
-    }
-
-    function switchPage(pageId, element) {
-      activePage = pageId;
-      document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-      const target = document.getElementById(`page-${pageId}`);
-      if (target) target.classList.add('active');
-      document.getElementById('page-title').textContent = pageTitles[pageId] || 'Platform';
-      if (element) {
-        element.classList.add('active');
-      } else if (window.event && window.event.currentTarget) {
-        window.event.currentTarget.classList.add('active');
-      }
-      triggerCoinRain(6);
-    }
-
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('clock-display').textContent = `UTC: ${now.toUTCString().slice(17, 25)}`;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    /* ── 4. REAL-TIME DATA POLLING & UI POPULATION ── */
-    
-    /* ── 4. REAL-TIME INTERACTIVE CHART.JS CONTROLLER ── */
-    let overviewEquityChartInstance = null;
-    let winLossDoughnutInstance = null;
-    let cumulativePnlChartInstance = null;
-
-    let equityHistory = [];
-    let timeLabels = [];
-
-    function initCharts() {
-      // 1. Overview Equity Curve
-      const ctxEquity = document.getElementById('overviewEquityChart');
-      if (ctxEquity) {
-        const gradient = ctxEquity.getContext('2d').createLinearGradient(0, 0, 0, 220);
-        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
-        gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
-
-        overviewEquityChartInstance = new Chart(ctxEquity, {
-          type: 'line',
-          data: {
-            labels: timeLabels,
-            datasets: [{
-              label: 'Net Equity ($)',
-              data: equityHistory,
-              borderColor: '#10b981',
-              backgroundColor: gradient,
-              borderWidth: 2.5,
-              tension: 0.35,
-              fill: true,
-              pointBackgroundColor: '#10b981',
-              pointBorderColor: '#fff',
-              pointBorderWidth: 1.5,
-              pointRadius: 4,
-              pointHoverRadius: 7
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: { duration: 1200, easing: 'easeOutQuart' },
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                backgroundColor: 'rgba(8, 14, 28, 0.95)',
-                titleFont: { family: 'JetBrains Mono', size: 12 },
-                bodyFont: { family: 'JetBrains Mono', size: 13, weight: 'bold' },
-                borderColor: 'rgba(16, 185, 129, 0.5)',
-                borderWidth: 1,
-                callbacks: {
-                  label: function(c) { return ' Equity: $' + c.raw.toFixed(4); }
-                }
-              }
-            },
-            scales: {
-              x: {
-                grid: { color: 'rgba(255, 255, 255, 0.04)' },
-                ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } }
-              },
-              y: {
-                grid: { color: 'rgba(255, 255, 255, 0.04)' },
-                ticks: {
-                  color: '#94a3b8',
-                  font: { family: 'JetBrains Mono', size: 10 },
-                  callback: function(v) { return '$' + v.toFixed(2); }
-                }
-              }
-            }
-          }
-        });
-      }
-
-      // 2. Win / Loss Doughnut
-      const ctxDoughnut = document.getElementById('winLossDoughnutChart');
-      if (ctxDoughnut) {
-        winLossDoughnutInstance = new Chart(ctxDoughnut, {
-          type: 'doughnut',
-          data: {
-            labels: ['Wins 🏆', 'Losses ⚠️'],
-            datasets: [{
-              data: [3, 1],
-              backgroundColor: ['#10b981', '#f43f5e'],
-              borderColor: 'rgba(4, 7, 17, 0.8)',
-              borderWidth: 3,
-              hoverOffset: 8
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: { animateScale: true, animateRotate: true, duration: 1500 },
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 }, padding: 14 }
-              }
-            },
-            cutout: '68%'
-          }
-        });
-      }
-
-      // 3. Cumulative PnL Chart
-      const ctxCumPnl = document.getElementById('cumulativePnlChart');
-      if (ctxCumPnl) {
-        const pnlGradient = ctxCumPnl.getContext('2d').createLinearGradient(0, 0, 0, 230);
-        pnlGradient.addColorStop(0, 'rgba(6, 182, 212, 0.35)');
-        pnlGradient.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
-
-        cumulativePnlChartInstance = new Chart(ctxCumPnl, {
-          type: 'line',
-          data: {
-            labels: ['Trade 1', 'Trade 2', 'Trade 3', 'Trade 4'],
-            datasets: [{
-              label: 'Cumulative Realized ($)',
-              data: [0.00, 0.02, 0.015, 0.05],
-              borderColor: '#06b6d4',
-              backgroundColor: pnlGradient,
-              borderWidth: 2.5,
-              tension: 0.3,
-              fill: true,
-              pointBackgroundColor: '#06b6d4',
-              pointRadius: 4
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: { duration: 1200 },
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                backgroundColor: 'rgba(8, 14, 28, 0.95)',
-                callbacks: {
-                  label: function(c) { return ' Realized: +$' + c.raw.toFixed(4); }
-                }
-              }
-            },
-            scales: {
-              x: { grid: { color: 'rgba(255, 255, 255, 0.04)' }, ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } } },
-              y: { grid: { color: 'rgba(255, 255, 255, 0.04)' }, ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 }, callback: function(v){ return '+$' + v.toFixed(3); } } }
-            }
-          }
-        });
-      }
-    }
-
-    function updateLivePnlAndCharts(currentEquity, openPositions, signals) {
-      const startingCapital = 3.00;
-      let totalUnrealizedPnl = 0.0;
-
-      if (openPositions && openPositions.length > 0) {
-        openPositions.forEach(p => {
-          totalUnrealizedPnl += Number(p.unrealized_pnl || 0);
-        });
-      }
-
-      const totalPnl = (currentEquity - startingCapital) + totalUnrealizedPnl;
-      const totalPnlPct = (totalPnl / startingCapital) * 100.0;
-
-      // Update PnL element with animated styles
-      const pnlEl = document.getElementById('ov-pnl');
-      const pnlPctEl = document.getElementById('ov-pnl-pct');
-
-      if (pnlEl) {
-        const sign = totalPnl >= 0 ? '+' : '';
-        pnlEl.textContent = `${sign}$${totalPnl.toFixed(4)}`;
-        if (totalPnl >= 0) {
-          pnlEl.className = 'card-value pnl-live-up';
-          if (pnlPctEl) {
-            pnlPctEl.textContent = `+${totalPnlPct.toFixed(2)}%`;
-            pnlPctEl.style.color = '#34d399';
-          }
-        } else {
-          pnlEl.className = 'card-value pnl-live-down';
-          if (pnlPctEl) {
-            pnlPctEl.textContent = `${totalPnlPct.toFixed(2)}%`;
-            pnlPctEl.style.color = '#fb7185';
-          }
-        }
-      }
-
-      // Calculate 100% REAL Win / Loss stats from actual exchange signals
-      let wins = 0;
-      let losses = 0;
-      if (signals && signals.length > 0) {
-        signals.forEach(s => {
-          if (s.status === 'APPROVED' || s.status === 'EXECUTED') {
-            wins++;
-          } else if (s.status === 'REJECTED' || s.status === 'VETOED') {
-            losses++;
-          }
-        });
-      }
-
-      const totalTrades = wins + losses;
-      const winRate = totalTrades > 0 ? ((wins / totalTrades) * 100.0).toFixed(1) : '0.0';
-
-      // Update UI Win/Loss elements
-      const winBadge = document.getElementById('ov-win-badge');
-      const lossBadge = document.getElementById('ov-loss-badge');
-      const winBar = document.getElementById('ov-win-bar');
-      const winPctEl = document.getElementById('ov-win-pct');
-
-      if (winBadge) winBadge.textContent = `🏆 ${wins} Wins`;
-      if (lossBadge) lossBadge.textContent = `⚠️ ${losses} Losses`;
-      if (winBar) winBar.style.width = `${winRate}%`;
-      if (winPctEl) winPctEl.textContent = `Win Rate: ${winRate}%`;
-
-      // Update Analytics page elements
-      const anWinRate = document.getElementById('an-winrate');
-      const anSplit = document.getElementById('an-win-loss-split');
-      const anSignals = document.getElementById('an-signals-count');
-
-      if (anWinRate) anWinRate.textContent = `${winRate}%`;
-      if (anSplit) anSplit.textContent = `${wins} Wins · ${losses} Losses`;
-      if (anSignals && signals) anSignals.textContent = signals.length;
-
-      // Update Chart data with REAL live exchange equity ticks
-      if (overviewEquityChartInstance && currentEquity > 0) {
-        const nowStr = new Date().toTimeString().slice(0, 8);
-        if (equityHistory.length === 0 || Math.abs(equityHistory[equityHistory.length - 1] - currentEquity) > 0.0001 || equityHistory.length < 5) {
-          equityHistory.push(currentEquity);
-          timeLabels.push(nowStr);
-          if (equityHistory.length > 25) {
-            equityHistory.shift();
-            timeLabels.shift();
-          }
-          overviewEquityChartInstance.data.labels = timeLabels;
-          overviewEquityChartInstance.data.datasets[0].data = equityHistory;
-          overviewEquityChartInstance.update();
-        }
-      }
-
-      if (winLossDoughnutInstance) {
-        winLossDoughnutInstance.data.datasets[0].data = [wins, losses];
-        winLossDoughnutInstance.update();
-      }
-    }
-
-    async function pollPlatformData() {
-      try {
-        let d = null;
-        try {
-          const res = await fetch('/api/platform/status');
-          if (res.ok) d = await res.json();
-        } catch(e) {}
-
-        if (!d || !d.status) {
-          const res2 = await fetch('/api/status');
-          const d2 = await res2.json();
-          const stats = d2.agent_stats || {};
-          const tape = stats.live_ticker_tape || [];
-          const wl = tape.map((item, idx) => {
-            const chg = Number(item.change || 0);
-            return {
-              symbol: item.symbol,
-              mark_price: item.price,
-              change_24h: chg,
-              volume_usd: 150000 + idx * 25000,
-              funding_rate: 0.0001,
-              direction: chg >= 0 ? 'BUY' : 'SELL',
-              scores: { trend: 18, momentum: 17, volume: 14, total: Math.round(75 + Math.abs(chg)) },
-              total_score: Math.round(75 + Math.abs(chg))
-            };
-          });
-
-          const sigs = (stats.recent_kills || []).map(k => {
-            const isPass = (k.text || '').includes('passed') || (k.text || '').includes('bought');
-            return {
-              id: 'sig',
-              symbol: ((k.text || '').match(/\$[A-Z0-9-]+/) || ['$MKT'])[0].replace('$', ''),
-              direction: (k.text || '').includes('short') ? 'SELL' : 'BUY',
-              strategy: 'SevenAgent_Committee',
-              entry_price: 1.0,
-              stop_loss: 0.96,
-              take_profit: 1.10,
-              risk_reward: 2.5,
-              status: isPass ? 'APPROVED' : 'REJECTED',
-              rejection_reason: k.text,
-              created_at: k.timestamp || Date.now() / 1000
-            };
-          });
-
-          d = {
-            status: 'OPERATIONAL',
-            mode: (d2.mode || 'real').toUpperCase(),
-            equity: Number(d2.equity || 3.0),
-            open_positions_count: (d2.open_positions || []).length,
-            positions: d2.open_positions || [],
-            watchlist: wl,
-            signals: sigs
-          };
-        }
-
-        if (!d) return;
-
-        // Mode badge update - Real Trading Locked
-        const modeBadge = document.getElementById('mode-badge');
-        modeBadge.className = 'pill pill-live';
-        modeBadge.innerHTML = '<span class="pulse-dot"></span> LIVE REAL TRADING';
-
-        // Metrics
-        document.getElementById('ov-equity').textContent = `$${d.equity.toFixed(2)}`;
-        document.getElementById('ov-inr').textContent = `₹${(d.equity * 85.0).toFixed(2)} INR`;
-        document.getElementById('ov-pos').textContent = d.open_positions_count;
-
-        // Populate Watchlist with Coin Icons
-        const wlTable = document.getElementById('ov-watchlist-table').querySelector('tbody');
-        if (d.watchlist && d.watchlist.length > 0) {
-          let html = '';
-          d.watchlist.slice(0, 10).forEach(m => {
-            const chgClass = m.change_24h >= 0 ? 'up' : 'down';
-            const iconUrl = getCoinIconUrl(m.symbol);
-            html += `<tr>
-              <td>
-                <div class="coin-cell">
-                  <img src="${iconUrl}" class="coin-icon-img" alt="${m.symbol}">
-                  <span>${m.symbol}</span>
+    // Render Live Open Positions
+    const livePos = data.open_positions || currentEx.open_positions || [];
+    const posCountEl = document.getElementById('open-pos-count');
+    const posListEl = document.getElementById('open-positions-list');
+    if (posCountEl) posCountEl.textContent = livePos.length;
+    if (posListEl) {
+      if (livePos.length === 0) {
+        posListEl.innerHTML = '<div style="color:var(--dim);text-align:center;padding:10px 0;">No active open positions on exchange</div>';
+      } else {
+        let posHtml = '';
+        livePos.forEach(p => {
+          const sideColor = (p.side === 'BUY') ? 'var(--green)' : 'var(--red)';
+          const pnlVal = parseFloat(p.unrealized_pnl || 0);
+          const pnlColor = pnlVal >= 0 ? 'var(--green)' : 'var(--red)';
+          const sign = pnlVal >= 0 ? '+' : '';
+          posHtml += `
+            <div style="background:rgba(255,255,255,0.03);border:1px solid var(--card-border);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px;">
+                  <span style="color:#fff;">${p.symbol}</span>
+                  <span style="color:${sideColor};background:rgba(255,255,255,0.06);padding:1px 6px;border-radius:4px;font-size:10px;">${p.side} ${p.size}x</span>
                 </div>
-              </td>
-              <td>$${m.mark_price}</td>
-              <td class="${chgClass}">${m.change_24h > 0 ? '+' : ''}${m.change_24h}%</td>
-              <td>$${Number(m.volume_usd).toLocaleString()}</td>
-              <td><b style="color:var(--cyan);">${m.total_score}/100</b></td>
-              <td><span class="badge ${m.direction === 'BUY' ? 'badge-buy' : 'badge-sell'}">${m.direction}</span></td>
-            </tr>`;
-          });
-          wlTable.innerHTML = html;
-
-          // Update Ticker Tape
-          let tapeHtml = '';
-          d.watchlist.slice(0, 12).forEach(m => {
-            const iconUrl = getCoinIconUrl(m.symbol);
-            const chgClass = m.change_24h >= 0 ? 'up' : 'down';
-            tapeHtml += `
-              <span class="ticker-coin-item">
-                <img src="${iconUrl}" class="coin-icon-img">
-                <b>${m.symbol}</b> $${m.mark_price}
-                <span class="${chgClass}">${m.change_24h > 0 ? '+' : ''}${m.change_24h}%</span>
-              </span>
-            `;
-          });
-          document.getElementById('ticker-content').innerHTML = tapeHtml + tapeHtml;
-        }
-
-        // Populate Markets Full
-        const mTable = document.getElementById('markets-full-table').querySelector('tbody');
-        document.getElementById('markets-count').textContent = `${d.watchlist.length} markets scanned`;
-        if (d.watchlist && d.watchlist.length > 0) {
-          let html = '';
-          d.watchlist.forEach(m => {
-            const chgClass = m.change_24h >= 0 ? 'up' : 'down';
-            const iconUrl = getCoinIconUrl(m.symbol);
-            html += `<tr>
-              <td>
-                <div class="coin-cell">
-                  <img src="${iconUrl}" class="coin-icon-img" alt="${m.symbol}">
-                  <span>${m.symbol}</span>
-                </div>
-              </td>
-              <td>$${m.mark_price}</td>
-              <td class="${chgClass}">${m.change_24h > 0 ? '+' : ''}${m.change_24h}%</td>
-              <td>$${Number(m.volume_usd).toLocaleString()}</td>
-              <td>${(m.funding_rate * 100).toFixed(4)}%</td>
-              <td>${m.scores.trend}/20</td>
-              <td><b style="color:var(--cyan);">${m.total_score}</b></td>
-            </tr>`;
-          });
-          mTable.innerHTML = html;
-        }
-
-        // Populate Playful 7-Agent Committee Cards
-        const commContainer = document.getElementById('agents-grid-container');
-        const defaultAgents = [
-          { name: '1. Scanner Agent', icon: '🔍', role: 'Ranked candidate discovery', vote: 'PASS', score: '82/100', desc: 'Monitors 250+ perpetual contracts; triggers on volume and momentum expansion.' },
-          { name: '2. Trend Analyst Agent', icon: '📈', role: 'EMA 9/21/43/200 & VWAP', vote: 'PASS', score: '78/100', desc: 'Multi-timeframe trend alignment across M1, M5, M15, H1.' },
-          { name: '3. Momentum Hunter Agent', icon: '🚀', role: 'Price velocity & continuation', vote: 'PASS', score: '85/100', desc: 'Evaluates breakout continuation probability; filters out reversal hazards.' },
-          { name: '4. Skeptic Agent', icon: '🛡️', role: 'VETO AUTHORITY', vote: 'PASS', score: 'Veto Check OK', desc: 'Actively searches for reasons to reject: spread traps, funding drag, fakeouts.' },
-          { name: '5. Position Sizer Agent', icon: '⚖️', role: 'Micro-capital risk bounds', vote: 'PASS', score: '1% Risk Limit', desc: 'Sizes 1 contract; enforces $3 account survival and margin sufficiency.' },
-          { name: '6. Trader Agent', icon: '🤖', role: 'Deterministic execution gate', vote: 'PASS', score: 'Consensus Gate', desc: 'Isolated order submission; requires unanimous committee approval.' },
-          { name: '7. Journal Agent', icon: '📖', role: 'Audit trail & ledger', vote: 'ACTIVE', score: 'Audited', desc: 'Records every signal, rejection reason, agent vote, and trade fill to SQLite.' }
-        ];
-
-        let agHtml = '';
-        defaultAgents.forEach(a => {
-          agHtml += `
-            <div class="agent-card">
-              <div class="agent-hd">
-                <div class="agent-left">
-                  <div class="agent-avatar play-anim">${a.icon}</div>
-                  <div>
-                    <div class="agent-name">${a.name}</div>
-                    <div style="font-size:10px; color:var(--cyan); font-family:var(--mono); font-weight:600;">${a.role}</div>
-                  </div>
-                </div>
-                <span class="agent-vote ${a.vote === 'PASS' ? 'vote-pass' : 'vote-veto'}">${a.vote}</span>
+                <div style="color:var(--dim);font-size:10px;margin-top:2px;">Entry: $${p.entry_price} · Mark: $${p.mark_price || p.entry_price}</div>
               </div>
-              <div class="agent-desc">${a.desc}</div>
-              <div style="margin-top:12px; font-size:11px; font-weight:800; color:var(--cyan); font-family:var(--mono);">Status: ${a.score}</div>
+              <div style="text-align:right;">
+                <div style="font-weight:700;color:${pnlColor};font-size:12px;">${sign}$${pnlVal.toFixed(4)}</div>
+                <div style="color:var(--dim);font-size:10px;">Margin: $${parseFloat(p.margin || 0).toFixed(4)}</div>
+              </div>
             </div>
           `;
         });
-        commContainer.innerHTML = agHtml;
-
-        // Populate Positions Table with Coin Icons
-        const posTable = document.getElementById('positions-table').querySelector('tbody');
-        if (d.positions && d.positions.length > 0) {
-          let html = '';
-          d.positions.forEach(p => {
-            const pnlClass = p.unrealized_pnl >= 0 ? 'up' : 'down';
-            const iconUrl = getCoinIconUrl(p.symbol);
-            html += `<tr>
-              <td>${p.id || p.product_id || 'pos'}</td>
-              <td>
-                <div class="coin-cell">
-                  <img src="${iconUrl}" class="coin-icon-img" alt="${p.symbol}">
-                  <span>${p.symbol}</span>
-                </div>
-              </td>
-              <td><span class="badge ${p.side === 'BUY' ? 'badge-buy' : 'badge-sell'}">${p.side}</span></td>
-              <td>${p.size}</td>
-              <td>$${p.entry_price}</td>
-              <td>$${p.current_price || p.entry_price}</td>
-              <td>$${p.stop_loss || '—'}</td>
-              <td>$${p.take_profit || '—'}</td>
-              <td class="${pnlClass}">${p.unrealized_pnl >= 0 ? '+' : ''}$${p.unrealized_pnl}</td>
-              <td>$${p.margin}</td>
-            </tr>`;
-          });
-          posTable.innerHTML = html;
-        } else {
-          posTable.innerHTML = '<tr><td colspan="10" style="text-align:center; color: var(--muted); padding: 18px;">No active open positions.</td></tr>';
-        }
-
-        // Populate Signals Table with Coin Icons
-        const sigTable = document.getElementById('signals-table').querySelector('tbody');
-        if (d.signals && d.signals.length > 0) {
-          let sHtml = '';
-          d.signals.slice(0, 15).forEach(s => {
-            const isApproved = s.status === 'APPROVED';
-            const badgeCls = isApproved ? 'vote-pass' : 'vote-veto';
-            const dStr = new Date(s.created_at * 1000).toTimeString().slice(0, 8);
-            const iconUrl = getCoinIconUrl(s.symbol);
-            sHtml += `<tr>
-              <td>${dStr}</td>
-              <td>
-                <div class="coin-cell">
-                  <img src="${iconUrl}" class="coin-icon-img" alt="${s.symbol}">
-                  <span>${s.symbol}</span>
-                </div>
-              </td>
-              <td><span class="badge ${s.direction === 'BUY' ? 'badge-buy' : 'badge-sell'}">${s.direction}</span></td>
-              <td><code>${s.strategy}</code></td>
-              <td>$${s.entry_price}</td>
-              <td>$${s.stop_loss}</td>
-              <td>$${s.take_profit}</td>
-              <td>${s.risk_reward}:1</td>
-              <td><span class="agent-vote ${badgeCls}">${s.status}</span> <div style="font-size:10px; color:var(--muted); margin-top:2px;">${s.rejection_reason || 'Approved by 7 agents'}</div></td>
-            </tr>`;
-          });
-          sigTable.innerHTML = sHtml;
-        }
-
-        // Populate Journal Table
-        const jTable = document.getElementById('journal-table').querySelector('tbody');
-        if (d.signals && d.signals.length > 0) {
-          let jHtml = '';
-          d.signals.slice(0, 20).forEach(j => {
-            const dStr = new Date(j.created_at * 1000).toTimeString().slice(0, 8);
-            const iconUrl = getCoinIconUrl(j.symbol);
-            jHtml += `<tr>
-              <td>${dStr}</td>
-              <td>
-                <div class="coin-cell">
-                  <img src="${iconUrl}" class="coin-icon-img" alt="${j.symbol}">
-                  <span>${j.symbol}</span>
-                </div>
-              </td>
-              <td><span class="badge ${j.direction === 'BUY' ? 'badge-buy' : 'badge-sell'}">${j.direction}</span></td>
-              <td>${j.strategy}</td>
-              <td>$${j.entry_price}</td>
-              <td>$${j.take_profit}</td>
-              <td>$0.00</td>
-              <td>0.0%</td>
-              <td>${j.rejection_reason || 'Real Exchange Execution'}</td>
-            </tr>`;
-          });
-          jTable.innerHTML = jHtml;
-        }
-
-        // Populate Audit Logs
-        const logsTable = document.getElementById('logs-table').querySelector('tbody');
-        if (d.signals && d.signals.length > 0) {
-          let lHtml = '';
-          d.signals.slice(0, 15).forEach(logItem => {
-            const dStr = new Date(logItem.created_at * 1000).toTimeString().slice(0, 8);
-            const levelCls = logItem.status === 'APPROVED' ? 'up' : 'down';
-            lHtml += `<tr>
-              <td>${dStr}</td>
-              <td><b>TraderCommittee</b></td>
-              <td class="${levelCls}">${logItem.status}</td>
-              <td>Candidate ${logItem.symbol} [${logItem.direction}]: ${logItem.rejection_reason || 'All 7 agents passed with clean risk'}</td>
-            </tr>`;
-          });
-          logsTable.innerHTML = lHtml;
-        }
-
-        // Analytics
-        document.getElementById('an-total').textContent = d.signals ? d.signals.length : '0';
-
-        // Update Live Running PnL, Win/Loss and Charts
-        updateLivePnlAndCharts(d.equity, d.positions, d.signals);
-
-
-      } catch (err) {
-        console.error('Polling error:', err);
+        posListEl.innerHTML = posHtml;
       }
     }
 
-    async function saveSettings() {
-      const mode = document.getElementById('setting-mode').value;
-      const tgEnabled = document.getElementById('setting-tg-enabled').value === 'true';
-      const tgToken = document.getElementById('setting-tg-token').value;
-      const tgChat = document.getElementById('setting-tg-chat').value;
-
-      try {
-        const res = await fetch('/api/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mode, tg_enabled: tgEnabled, tg_token: tgToken, tg_chat: tgChat })
-        });
-        const out = await res.json();
-        alert(out.message || 'Settings saved successfully!');
-        pollPlatformData();
-      } catch (e) {
-        alert('Failed to save settings: ' + e);
-      }
+    // Why They Died counts
+    if (stats.why_they_died) {
+      const w = stats.why_they_died;
+      if (w["Mint not revoked"]) document.getElementById('count-mint').textContent = w["Mint not revoked"].toLocaleString();
+      if (w["LP not locked"]) document.getElementById('count-lp').textContent = w["LP not locked"].toLocaleString();
+      if (w["Top 10 holders >20%"]) document.getElementById('count-holders').textContent = w["Top 10 holders >20%"].toLocaleString();
+      if (w["Volume <$50k last hour"]) document.getElementById('count-vol').textContent = w["Volume <$50k last hour"].toLocaleString();
+      if (w["Dev wallet -> past rugs"]) document.getElementById('count-dev').textContent = w["Dev wallet -> past rugs"].toLocaleString();
+      if (w["Analyst score < 0.6"]) document.getElementById('count-score').textContent = w["Analyst score < 0.6"].toLocaleString();
     }
 
-    async function saveRiskSettings() {
-      const riskPerTrade = parseFloat(document.getElementById('risk-per-trade').value);
-      const maxDaily = parseFloat(document.getElementById('risk-max-daily').value);
-      const leverage = parseFloat(document.getElementById('risk-leverage').value);
-      const maxPos = parseInt(document.getElementById('risk-max-pos').value);
+  } catch (err) {
+    console.error('Error fetching live status:', err);
+  }
+}
 
-      try {
-        const res = await fetch('/api/risk/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ risk_per_trade_pct: riskPerTrade, max_daily_loss_pct: maxDaily, max_leverage: leverage, max_concurrent_positions: maxPos })
-        });
-        const out = await res.json();
-        alert(out.message || 'Risk rules updated!');
-      } catch (e) {
-        alert('Failed to update risk rules: ' + e);
-      }
-    }
+async function triggerRestart() {
+  if (!confirm("Restart Grok 6-Agent 24/7 Trading Engine?")) return;
+  try {
+    const res = await fetch('/api/restart', { method: 'POST' });
+    const json = await res.json();
+    alert(json.message || "Restarted successfully!");
+    fetchStatus();
+  } catch (e) {
+    alert("Restart request sent!");
+  }
+}
 
-    setInterval(pollPlatformData, 3000);
-    initCharts();
-    pollPlatformData();
-  </script>
+setInterval(fetchStatus, 3000);
+fetchStatus();
+</script>
+
 </body>
 </html>
