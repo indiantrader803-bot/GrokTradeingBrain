@@ -267,11 +267,12 @@ class CoinbaseAdapter(ExchangeAdapter):
     async def get_open_positions(self) -> List[Dict]:
         if not self.client:
             return []
+        import asyncio
+        parsed = []
+        # 1. Try list_perps_positions
         try:
-            import asyncio
             res = await asyncio.to_thread(self.client.list_perps_positions, self.intx_portfolio_uuid)
             plist = getattr(res, "positions", None) or (res.get("positions") if isinstance(res, dict) else [])
-            parsed = []
             for p in plist:
                 p_dict = p.to_dict() if hasattr(p, "to_dict") else (p if isinstance(p, dict) else {})
                 size = float(p_dict.get("net_size", 0.0) or 0.0)
@@ -286,10 +287,34 @@ class CoinbaseAdapter(ExchangeAdapter):
                         "unrealized_pnl": float(pnl.get("value", 0.0) if isinstance(pnl, dict) else 0.0),
                         "leverage": float(p_dict.get("leverage") or 1.0)
                     })
-            return parsed
         except Exception as e:
-            log.debug("Coinbase list_perps_positions error: %s", e)
-            return []
+            log.debug("Coinbase list_perps_positions check: %s", e)
+
+        # 2. If list_perps_positions returned empty, fallback to get_portfolio_breakdown
+        if not parsed:
+            try:
+                b = await asyncio.to_thread(self.client.get_portfolio_breakdown, self.intx_portfolio_uuid)
+                perp_p = getattr(getattr(b, "breakdown", None), "perp_positions", []) or []
+                for p in perp_p:
+                    p_dict = p.to_dict() if hasattr(p, "to_dict") else (p if isinstance(p, dict) else {})
+                    size = float(p_dict.get("net_size", 0.0) or 0.0)
+                    if size != 0.0:
+                        vwap = p_dict.get("vwap", {})
+                        pnl = p_dict.get("unrealized_pnl", {})
+                        raw_v = vwap.get("rawCurrency", {}).get("value", 0.0) if isinstance(vwap, dict) else 0.0
+                        raw_p = pnl.get("rawCurrency", {}).get("value", 0.0) if isinstance(pnl, dict) else 0.0
+                        parsed.append({
+                            "symbol": p_dict.get("symbol") or p_dict.get("product_id"),
+                            "side": "BUY" if size > 0 else "SELL",
+                            "size": abs(size),
+                            "entry_price": float(raw_v or 0.0),
+                            "unrealized_pnl": float(raw_p or 0.0),
+                            "leverage": float(p_dict.get("leverage") or 1.0)
+                        })
+            except Exception as be:
+                log.debug("Coinbase get_portfolio_breakdown perp fallback check: %s", be)
+
+        return parsed
 
     async def health_check(self) -> bool:
         try:
