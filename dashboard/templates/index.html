@@ -623,6 +623,35 @@ body {
     </div>
   </div>
 
+
+  <!-- 5.8 Live Delta Exchange Tracked Markets & Instant Execution Desk -->
+  <div class="card" style="background:var(--card-bg);border:1px solid #142236;border-radius:12px;padding:14px;box-shadow:0 0 20px rgba(56,189,248,0.06);" id="delta-markets-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div style="font-family:var(--disp);font-size:14px;font-weight:700;color:var(--blue);display:flex;align-items:center;gap:6px;">
+        <span class="pulse-dot" style="background:var(--blue);box-shadow:0 0 6px var(--blue);"></span>
+        <span>Delta Exchange Live Markets (<span id="delta-markets-count">0</span>)</span>
+      </div>
+      <span style="font-size:10px;color:var(--green);font-weight:600;background:rgba(47,224,168,0.1);border:1px solid #113426;padding:2px 8px;border-radius:10px;">24/7 Delta Live Stream</span>
+    </div>
+    
+    <div style="overflow-x:auto;max-height:220px;overflow-y:auto;border:1px solid var(--card-border);border-radius:8px;">
+      <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:var(--mono);text-align:left;">
+        <thead>
+          <tr style="background:#080c12;color:var(--dim);border-bottom:1px solid var(--card-border);position:sticky;top:0;">
+            <th style="padding:6px 10px;">Market</th>
+            <th style="padding:6px 8px;">Mark Price</th>
+            <th style="padding:6px 8px;">24h Chg</th>
+            <th style="padding:6px 8px;">Funding</th>
+            <th style="padding:6px 8px;text-align:right;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="delta-markets-tbody">
+          <tr><td colspan="5" style="text-align:center;padding:14px;color:var(--dim);">Streaming live Delta Exchange tickers...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- 6. Real-time Logger & Kill Feed -->
   <div class="logger-card">
     <div class="logger-header">
@@ -797,6 +826,36 @@ async function fetchStatus() {
       document.getElementById('ticker-tape-content').innerHTML = tapeHtml + tapeHtml;
     }
 
+
+    // Populate Live Delta Exchange Tickers Table
+    if (stats.live_ticker_tape && stats.live_ticker_tape.length > 0) {
+      const mCountEl = document.getElementById('delta-markets-count');
+      const mTbodyEl = document.getElementById('delta-markets-tbody');
+      if (mCountEl) mCountEl.textContent = stats.live_ticker_tape.length;
+      if (mTbodyEl) {
+        let rowsHtml = '';
+        stats.live_ticker_tape.forEach(item => {
+          const isUp = item.change >= 0;
+          const cls = isUp ? 'var(--green)' : 'var(--red)';
+          const sign = isUp ? '+' : '';
+          const cleanSym = item.symbol.replace('-', '');
+          rowsHtml += `
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+              <td style="padding:6px 10px;font-weight:700;color:#fff;">${cleanSym}</td>
+              <td style="padding:6px 8px;color:#cbd5e1;">$${Number(item.price).toLocaleString()}</td>
+              <td style="padding:6px 8px;color:${cls};font-weight:600;">${sign}${item.change.toFixed(2)}%</td>
+              <td style="padding:6px 8px;color:var(--dim);">0.0100%</td>
+              <td style="padding:6px 8px;text-align:right;">
+                <button onclick="executeQuickTrade('${cleanSym}', 'BUY')" style="background:#091a14;color:var(--green);border:1px solid #143526;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;margin-right:4px;">BUY</button>
+                <button onclick="executeQuickTrade('${cleanSym}', 'SELL')" style="background:#2a1118;color:var(--red);border:1px solid #4a1822;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;">SELL</button>
+              </td>
+            </tr>
+          `;
+        });
+        mTbodyEl.innerHTML = rowsHtml;
+      }
+    }
+
     // Logger Feed
     if (stats.recent_kills && stats.recent_kills.length > 0) {
       let feedHtml = '';
@@ -861,6 +920,23 @@ async function fetchStatus() {
 
   } catch (err) {
     console.error('Error fetching live status:', err);
+  }
+}
+
+
+async function executeQuickTrade(symbol, side) {
+  if (!confirm(`Execute LIVE real ${side} order on Delta Exchange for ${symbol}?`)) return;
+  try {
+    const res = await fetch('/api/trade/quick', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symbol: symbol, side: side, platform: 'delta' })
+    });
+    const result = await res.json();
+    alert(result.message || `Order submitted for ${symbol}: ${result.status || 'OK'}`);
+    fetchStatus();
+  } catch (err) {
+    alert(`Order submission response: ${err}`);
   }
 }
 

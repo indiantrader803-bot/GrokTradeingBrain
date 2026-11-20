@@ -451,6 +451,38 @@ async def set_weekend_flags(
     }}
 
 
+
+@app.post("/api/trade/quick")
+async def quick_trade(req: Request):
+    try:
+        data = await req.json()
+        symbol = data.get("symbol", "BTCUSD").upper()
+        side = data.get("side", "BUY").upper()
+        platform = data.get("platform", "delta").lower()
+
+        if not orchestrator:
+            return {"status": "error", "message": "Orchestrator not initialized"}
+
+        adapter = orchestrator.adapters.get(platform)
+        if not adapter:
+            return {"status": "error", "message": f"Adapter for {platform} not active"}
+
+        # Place 1 contract on live exchange
+        result = await adapter.place_order(
+            symbol=symbol,
+            side=side,
+            size=1
+        )
+        return {
+            "status": "success",
+            "message": f"LIVE order placed on {platform.upper()}: {side} 1x {symbol} (Order #{result.get('order_id')})",
+            "order": result
+        }
+    except Exception as e:
+        log.error("Quick trade error: %s", e)
+        return {"status": "error", "message": f"Exchange order rejected: {str(e)}"}
+
+
 @app.post("/api/restart")
 async def restart_system():
     global orchestrator, background_task
