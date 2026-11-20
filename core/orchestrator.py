@@ -199,9 +199,9 @@ class MasterOrchestrator:
 
     async def _run_6agent_market_scan(self):
         """
-        Runs the full 6-agent pipeline exclusively on Delta Exchange India.
+        Runs the full 6-agent pipeline across configured exchanges (Delta Exchange and Coinbase).
         """
-        for platform_name in ["delta"]:
+        for platform_name in ["delta", "coinbase"]:
             adapter = self.adapters.get(platform_name)
             if not adapter:
                 continue
@@ -649,6 +649,22 @@ class MasterOrchestrator:
         }
 
 
+
+        if "coinbase" in self.adapters:
+            cb_adapter = self.adapters["coinbase"]
+            cb_eq = 0.0
+            try:
+                cb_eq = await cb_adapter.get_equity()
+            except Exception:
+                pass
+            exchanges_data["coinbase"] = {
+                "name": "Coinbase Advanced Trade",
+                "net_equity": cb_eq,
+                "available_cash": cb_eq,
+                "wallets": {"USD": {"balance": cb_eq, "available": cb_eq, "inr": cb_eq * 85.0}},
+                "open_positions": [],
+                "open_positions_count": 0
+            }
 
         base_status["exchanges"] = exchanges_data
         base_status["debug_msg"] = str(getattr(self, "_last_ex_error", "OK"))

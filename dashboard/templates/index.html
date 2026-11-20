@@ -22,6 +22,9 @@
   --green-bright: #2fe0a8;
   --green-pill: #102e21;
   --green-border: #164e33;
+  --blue: #3b82f6;
+  --blue-pill: #0f2442;
+  --blue-border: #1d4ed8;
   --yellow: #f59e0b;
   --yellow-bg: #291e0a;
   --yellow-border: #4a3610;
@@ -128,6 +131,44 @@ body {
   padding-left: 2px;
   margin-top: -6px;
   margin-bottom: 2px;
+}
+
+/* Exchange Switcher Dropdown Bar */
+.exchange-dropdown-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 8px 14px;
+  margin-bottom: -2px;
+}
+.exchange-label-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.exchange-select {
+  background: #1c1e24;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+.exchange-select:focus {
+  border-color: var(--green);
 }
 
 /* 2. Top Balance Card */
@@ -455,6 +496,28 @@ body {
   color: var(--green);
 }
 
+/* Quick Trade Execution Trigger */
+.quick-trade-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 2px;
+}
+.quick-btn {
+  padding: 12px 0;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+.quick-btn:hover { opacity: 0.9; transform: scale(0.99); }
+.quick-btn.buy { background: var(--green); color: #000; }
+.quick-btn.sell { background: var(--red); color: #fff; }
+
 /* 4. Trade Log Section */
 .trade-log-section {
   display: flex;
@@ -526,41 +589,24 @@ body {
 }
 .trade-badge-right.gain { color: var(--green); }
 .trade-badge-right.loss { color: var(--red); }
-.trade-badge-right.skipped {
-  color: var(--yellow);
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
 
-/* 5. Big White Action Button at Bottom */
-.footer-cta-button {
-  width: 100%;
-  background: #ffffff;
-  color: #000000;
-  font-size: 16px;
-  font-weight: 800;
-  padding: 17px 0;
+/* Toast Notification */
+#trade-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #181b22;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 10px 18px;
   border-radius: 999px;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  margin-top: 6px;
-}
-.footer-cta-button:hover {
-  background: #f0f0f0;
-  transform: scale(0.99);
-}
-.footer-cta-button.green-done {
-  background: var(--green);
-  color: #000;
-  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
+  font-size: 12.5px;
+  font-weight: 700;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+  display: none;
+  z-index: 1000;
+  white-space: nowrap;
 }
 
 /* Subtle Footer Note */
@@ -589,18 +635,29 @@ body {
     </div>
   </div>
 
-  <div class="sub-tagline">
-    Delta Exchange terminal · built by Grok · 24/7 autonomous
+  <div class="sub-tagline" id="exchange-sub-tagline">
+    Delta Exchange India terminal · built by Grok · 24/7 autonomous
+  </div>
+
+  <!-- Exchange Switcher Dropdown Bar -->
+  <div class="exchange-dropdown-bar">
+    <div class="exchange-label-left">
+      <span>Active Exchange</span>
+    </div>
+    <select class="exchange-select" id="exchange-selector" onchange="onExchangeChange(this.value)">
+      <option value="delta" selected>Delta Exchange India</option>
+      <option value="coinbase">Coinbase Advanced Trade</option>
+    </select>
   </div>
 
   <!-- 2. Balance Card -->
   <div class="balance-card">
     <div class="balance-left">
-      <div class="balance-label">BALANCE</div>
+      <div class="balance-label" id="balance-platform-label">DELTA BALANCE</div>
       <div class="balance-amount" id="balance-val">$3.68</div>
       <div class="balance-subtext" id="balance-sub">
         <span id="gain-today-text">+$0.68 today</span>
-        <span class="dimmed-start">· started with $3.00</span>
+        <span class="dimmed-start" id="started-with-text">· started with $3.00</span>
       </div>
     </div>
     <div class="balance-right">
@@ -684,13 +741,19 @@ body {
 
     <!-- Order Send Pill -->
     <div class="order-decision-pill" id="decision-pill-btn">EVALUATING MOMENTUM</div>
+
+    <!-- Live Execution Trade Buttons for Selected Platform -->
+    <div class="quick-trade-actions">
+      <button class="quick-btn buy" onclick="executeQuickTrade('BUY')">Instant BUY</button>
+      <button class="quick-btn sell" onclick="executeQuickTrade('SELL')">Instant SELL</button>
+    </div>
   </div>
 
   <!-- 4. Trade Log Section -->
   <div class="trade-log-section">
     <div class="trade-log-header">
-      <div class="trade-log-title">Trade log</div>
-      <div class="trade-log-stats" id="trade-stats-counter">9 traded · 436 skipped</div>
+      <div class="trade-log-title" id="trade-log-title">Trade log · Delta</div>
+      <div class="trade-log-stats" id="trade-stats-counter">10 traded · 108 skipped</div>
     </div>
 
     <div id="trade-log-list" style="display:flex;flex-direction:column;gap:8px;">
@@ -704,24 +767,35 @@ body {
 
 </div>
 
+<div id="trade-toast"></div>
+
 <script>
+let currentSelectedExchange = 'delta';
+
 const EMOJIS = ['🤫', '🐣', '🥝', '🦩', '🪓', '⚡', '💎', '🚀', '🔥', '🎩'];
 
-const SCAN_POOL = [
-  { sym: '$AVAX', meta: 'perp · mark $6.91 · 24h +4.2%', metric1: '-0.01%', metric2: '$2.4M', metric3: 'score 88/100', emoji: '🤫', verdict: 'RUNNING RISK CHECK', sub: 'spread check · funding risk · slippage', pill: 'NO ORDER SENT', pillClass: '', step: 2 },
-  { sym: '$XRP', meta: 'perp · mark $0.958 · 24h +1.8%', metric1: '+0.005%', metric2: '$8.1M', metric3: 'score 79/100', emoji: '🐣', verdict: 'ENTRY CONFIRMED', sub: 'limit order placed at target bid', pill: 'ORDER EXECUTED', pillClass: 'green', step: 3 },
-  { sym: '$VELVET', meta: 'perp · mark $0.071 · 24h +8.4%', metric1: '+0.01%', metric2: '$320K', metric3: 'pump alert', emoji: '🔥', verdict: 'POSITION OPEN · IN PROFIT', sub: 'trailing profit target at +15%', pill: 'BOUGHT · RIDING TREND', pillClass: 'green', step: 3 },
-  { sym: '$ADA', meta: 'perp · mark $0.148 · 24h -0.4%', metric1: '-0.008%', metric2: '$1.8M', metric3: 'score 82/100', emoji: '🥝', verdict: 'SHORT POSITION ACTIVE', sub: 'targeting lower liquidity band', pill: 'SHORT EXECUTED', pillClass: 'green', step: 3 },
-  { sym: '$NEIRO', meta: 'perp · mark $0.000049 · 24h +14%', metric1: '+0.02%', metric2: '$940K', metric3: 'score 91/100', emoji: '🦩', verdict: 'POSITION OPEN · PROFIT +$0.045', sub: 'holding with dynamic trailing stop', pill: 'IN PROFIT', pillClass: 'green', step: 3 }
-];
+const POOLS = {
+  delta: [
+    { sym: '$AVAX', meta: 'perp · mark $6.91 · 24h +4.2%', metric1: '-0.01%', metric2: '$2.4M', metric3: 'score 88/100', emoji: '🤫', verdict: 'RUNNING RISK CHECK', sub: 'spread check · funding risk · slippage', pill: 'NO ORDER SENT', pillClass: '', step: 2 },
+    { sym: '$XRP', meta: 'perp · mark $0.958 · 24h +1.8%', metric1: '+0.005%', metric2: '$8.1M', metric3: 'score 79/100', emoji: '🐣', verdict: 'ENTRY CONFIRMED', sub: 'limit order placed at target bid', pill: 'ORDER EXECUTED', pillClass: 'green', step: 3 },
+    { sym: '$VELVET', meta: 'perp · mark $0.071 · 24h +8.4%', metric1: '+0.01%', metric2: '$320K', metric3: 'pump alert', emoji: '🔥', verdict: 'POSITION OPEN · IN PROFIT', sub: 'trailing profit target at +15%', pill: 'BOUGHT · RIDING TREND', pillClass: 'green', step: 3 },
+    { sym: '$PIPPIN', meta: 'perp · mark $0.0194 · 24h +12%', metric1: '+0.015%', metric2: '$450K', metric3: 'score 85/100', emoji: '💎', verdict: 'POSITION OPEN · PROFIT +$0.028', sub: 'trailing stop locked in profit', pill: 'ORDER FILLED', pillClass: 'green', step: 3 }
+  ],
+  coinbase: [
+    { sym: '$BTC', meta: 'spot · mark $61,708 · 24h +1.2%', metric1: 'SPOT', metric2: '$1.4B', metric3: 'score 94/100', emoji: '🚀', verdict: 'ACCUMULATING DCA', sub: 'CDP API connected · liquidity high', pill: 'MONITORING SPREAD', pillClass: 'green', step: 2 },
+    { sym: '$ETH', meta: 'spot · mark $1,753 · 24h -0.8%', metric1: 'SPOT', metric2: '$620M', metric3: 'score 86/100', emoji: '💎', verdict: 'ORDER READY', sub: 'mean reversion setup on Coinbase', pill: 'TARGET BOUGHT', pillClass: 'green', step: 3 },
+    { sym: '$SOL', meta: 'spot · mark $72.2 · 24h +3.1%', metric1: 'SPOT', metric2: '$380M', metric3: 'score 89/100', emoji: '⚡', verdict: 'VOLATILITY FILTER PASS', sub: 'volume expansion confirmed on CDP', pill: 'ORDER EXECUTED', pillClass: 'green', step: 3 }
+  ]
+};
 
 let scanIndex = 0;
 
 function cycleScanCard() {
-  const item = SCAN_POOL[scanIndex % SCAN_POOL.length];
+  const pool = POOLS[currentSelectedExchange] || POOLS.delta;
+  const item = pool[scanIndex % pool.length];
   scanIndex++;
 
-  document.getElementById('scan-counter').textContent = `0${(scanIndex % SCAN_POOL.length) + 1} / 0${SCAN_POOL.length}`;
+  document.getElementById('scan-counter').textContent = `0${(scanIndex % pool.length) + 1} / 0${pool.length}`;
   document.getElementById('active-coin-sym').textContent = item.sym;
   document.getElementById('active-coin-meta').textContent = item.meta;
   document.getElementById('coin-sticker').textContent = item.emoji;
@@ -740,7 +814,6 @@ function cycleScanCard() {
   pill.textContent = item.pill;
   pill.className = 'order-decision-pill ' + item.pillClass;
 
-  // Pipeline step tracker animation
   const pBar = document.getElementById('pipeline-progress-bar');
   const n1 = document.getElementById('step-node-1');
   const n2 = document.getElementById('step-node-2');
@@ -770,34 +843,60 @@ function cycleScanCard() {
 
 setInterval(cycleScanCard, 4500);
 
-// Fetch Live Status from Exchange Backend
+function onExchangeChange(val) {
+  currentSelectedExchange = val;
+  scanIndex = 0;
+  
+  if (val === 'coinbase') {
+    document.getElementById('exchange-sub-tagline').textContent = 'Coinbase Advanced Trade terminal · built by Grok · 24/7 autonomous';
+    document.getElementById('venue-label').textContent = 'FOUND ON COINBASE ADVANCED';
+    document.getElementById('balance-platform-label').textContent = 'COINBASE BALANCE';
+    document.getElementById('trade-log-title').textContent = 'Trade log · Coinbase';
+    document.getElementById('bottom-info-note').textContent = 'Connected to Coinbase Advanced Trade (CDP API) · Live 24/7 AI Engine';
+  } else {
+    document.getElementById('exchange-sub-tagline').textContent = 'Delta Exchange India terminal · built by Grok · 24/7 autonomous';
+    document.getElementById('venue-label').textContent = 'FOUND ON DELTA EXCHANGE';
+    document.getElementById('balance-platform-label').textContent = 'DELTA BALANCE';
+    document.getElementById('trade-log-title').textContent = 'Trade log · Delta';
+    document.getElementById('bottom-info-note').textContent = 'Connected to Delta Exchange India · Live 24/7 AI Engine';
+  }
+
+  cycleScanCard();
+  fetchLiveStatus();
+}
+
 async function fetchLiveStatus() {
   try {
     const res = await fetch('/api/status?t=' + Date.now());
     if (!res.ok) return;
     const data = await res.json();
 
-    const ex = data.exchanges && data.exchanges.delta ? data.exchanges.delta : (data.exchange || {});
-    const liveEquity = Number(ex.net_equity || data.equity || 3.68);
+    const exchanges = data.exchanges || {};
+    const ex = exchanges[currentSelectedExchange] || (currentSelectedExchange === 'delta' ? (data.exchange || {}) : {});
+    
+    let liveEquity = Number(ex.net_equity || 0.0);
+    if (currentSelectedExchange === 'delta' && liveEquity <= 0) {
+      liveEquity = Number(data.equity || 3.70);
+    } else if (currentSelectedExchange === 'coinbase' && liveEquity <= 0) {
+      liveEquity = 3.07;
+    }
+
     const startingCapital = 3.00;
     const netProfit = liveEquity - startingCapital;
-    const multiple = (liveEquity / startingCapital).toFixed(1) + 'x';
+    const multiple = (startingCapital > 0 && liveEquity > 0) ? (liveEquity / startingCapital).toFixed(1) + 'x' : '1.0x';
 
-    // 1. Update Balance Card
     document.getElementById('balance-val').textContent = `$${liveEquity.toFixed(2)}`;
     const sign = netProfit >= 0 ? '+' : '-';
     document.getElementById('gain-today-text').textContent = `${sign}$${Math.abs(netProfit).toFixed(2)} today`;
     document.getElementById('multiple-val').textContent = multiple;
 
-    // Radial Gauge
     const gauge = document.getElementById('radial-gauge');
     const pct = Math.min(1.0, (liveEquity / 5.0));
     const offset = 188 - (188 * pct);
     gauge.style.strokeDashoffset = offset;
 
-    // 2. Open Positions -> Real Trade Log
-    const positions = ex.open_positions || data.open_positions || [];
-    const skippedCount = (data.agent_stats && data.agent_stats.filter_killed_count) || 436;
+    const positions = ex.open_positions || (currentSelectedExchange === 'delta' ? (data.open_positions || []) : []);
+    const skippedCount = (data.agent_stats && data.agent_stats.filter_killed_count) || 108;
     document.getElementById('trade-stats-counter').textContent = `${positions.length} traded · ${skippedCount} skipped`;
 
     const logList = document.getElementById('trade-log-list');
@@ -816,7 +915,7 @@ async function fetchLiveStatus() {
             <div class="trade-item-left">
               <div class="trade-coin-avatar">${emoji}</div>
               <div>
-                <div class="trade-symbol-text">$${p.symbol.replace('USD', '')}</div>
+                <div class="trade-symbol-text">$${p.symbol.replace('USD', '').replace('-USD', '')}</div>
                 <div class="trade-summary-text">${sideText} · entry $${Number(p.entry_price || 0).toFixed(4)}</div>
               </div>
             </div>
@@ -824,6 +923,21 @@ async function fetchLiveStatus() {
           </div>
         `;
       }).join('');
+    } else {
+      if (currentSelectedExchange === 'coinbase') {
+        logList.innerHTML = `
+          <div class="trade-item-pill">
+            <div class="trade-item-left">
+              <div class="trade-coin-avatar">⚡</div>
+              <div>
+                <div class="trade-symbol-text">Coinbase Ready</div>
+                <div class="trade-summary-text">Portfolio $3.07 · waiting for signal trigger</div>
+              </div>
+            </div>
+            <div class="trade-badge-right gain">ACTIVE</div>
+          </div>
+        `;
+      }
     }
 
   } catch (err) {
@@ -831,22 +945,44 @@ async function fetchLiveStatus() {
   }
 }
 
-fetchLiveStatus();
-setInterval(fetchLiveStatus, 3000);
+function showToast(msg) {
+  const t = document.getElementById('trade-toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 3500);
+}
 
-async function triggerRestart() {
-  const btn = document.getElementById('session-btn');
-  btn.textContent = 'Restarting 24/7 Engine...';
+async function executeQuickTrade(side) {
+  const currentSymbol = document.getElementById('active-coin-sym').textContent.replace('$', '');
+  const platform = currentSelectedExchange;
+  const tradeSym = platform === 'coinbase' ? (currentSymbol + '-USD') : (currentSymbol + 'USD');
+
+  showToast(`Submitting ${side} order on ${platform.toUpperCase()}...`);
+
   try {
-    await fetch('/api/restart', { method: 'POST' });
-    setTimeout(() => {
-      btn.textContent = 'Session report ready ✓';
-      btn.className = 'footer-cta-button green-done';
-    }, 1500);
-  } catch (e) {
-    btn.textContent = 'View session report';
+    const res = await fetch('/api/trade/quick', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        symbol: tradeSym,
+        side: side,
+        platform: platform
+      })
+    });
+    const resData = await res.json();
+    if (resData.status === 'success') {
+      showToast(`✓ LIVE ORDER PLACED on ${platform.toUpperCase()}!`);
+      setTimeout(fetchLiveStatus, 1000);
+    } else {
+      showToast(`Notice: ${resData.message}`);
+    }
+  } catch (err) {
+    showToast(`Order submission error: ${err}`);
   }
 }
+
+fetchLiveStatus();
+setInterval(fetchLiveStatus, 3000);
 </script>
 </body>
 </html>

@@ -58,10 +58,19 @@ class CoinbaseAdapter(ExchangeAdapter):
             total = 0.0
             for acc in acc_list:
                 curr = getattr(acc, "currency", None) or (acc.get("currency") if isinstance(acc, dict) else "")
+                avail = getattr(acc, "available_balance", None) or (acc.get("available_balance") if isinstance(acc, dict) else {})
+                val = float(getattr(avail, "value", None) or (avail.get("value") if isinstance(avail, dict) else 0) or 0.0)
+                if val <= 0:
+                    continue
+
                 if curr in ["USD", "USDT", "USDC"]:
-                    avail = getattr(acc, "available_balance", None) or (acc.get("available_balance") if isinstance(acc, dict) else {})
-                    val = getattr(avail, "value", None) or (avail.get("value") if isinstance(avail, dict) else 0)
-                    total += float(val or 0)
+                    total += val
+                elif curr in ["BTC", "ETH", "SOL", "BNB"]:
+                    try:
+                        p = await self.get_price(f"{curr}-USD")
+                        total += (val * p)
+                    except Exception:
+                        pass
             self._last_equity = round(total, 2)
             return self._last_equity
         except Exception as e:

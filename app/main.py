@@ -114,6 +114,14 @@ async def lifespan(app: FastAPI):
     else:
         log.info("Delta Exchange India adapter not activated (DELTA_INDIA_API_KEY or DELTA_INDIA_API_SECRET not set in .env)")
 
+    # Coinbase Advanced Trade Integration
+    from adapters.coinbase_adapter import CoinbaseAdapter
+    cb_key = os.getenv("COINBASE_API_KEY", "").strip()
+    cb_sec = os.getenv("COINBASE_API_SECRET", "").strip()
+    if cb_key and cb_sec:
+        adapters["coinbase"] = CoinbaseAdapter(api_key=cb_key, api_secret=cb_sec)
+        log.info("Coinbase Advanced Trade adapter registered (CDP Key configured)")
+
     # Only fallback to paper if in DEMO mode or no real exchange configured
     if trading_mode == TradingMode.DEMO or not adapters:
         adapters["paper"] = PaperAdapter(starting_equity=config.starting_equity)
@@ -538,6 +546,12 @@ async def restart_system():
         base_url=delta_url
     )
     adapters["delta"] = delta_adapter
+
+    cb_key = os.getenv("COINBASE_API_KEY", "").strip()
+    cb_sec = os.getenv("COINBASE_API_SECRET", "").strip()
+    if cb_key and cb_sec:
+        from adapters.coinbase_adapter import CoinbaseAdapter
+        adapters["coinbase"] = CoinbaseAdapter(api_key=cb_key, api_secret=cb_sec)
     try:
         live_eq = await delta_adapter.get_equity()
         if live_eq > 0:
