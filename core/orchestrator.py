@@ -659,13 +659,30 @@ class MasterOrchestrator:
             except Exception:
                 pass
             exchanges_data["coinbase"] = {
-                "name": "Coinbase Advanced Trade",
+                "name": "Coinbase Advanced Trade (INTX)",
                 "net_equity": cb_eq,
                 "available_cash": cb_eq,
                 "wallets": {"USD": {"balance": cb_eq, "available": cb_eq, "inr": cb_eq * 85.0}},
                 "open_positions": [],
                 "open_positions_count": 0
             }
+
+        # Merge synced multi-exchange data if relayed
+        synced_exchanges = getattr(self, "_synced_exchanges", None)
+        if synced_exchanges and isinstance(synced_exchanges, dict):
+            for ex_name, ex_info in synced_exchanges.items():
+                if ex_name == "coinbase":
+                    eq = float(ex_info.get("net_equity", 0.0) or 0.0)
+                    avail = float(ex_info.get("available_cash", 0.0) or 0.0)
+                    c_positions = ex_info.get("open_positions", [])
+                    exchanges_data["coinbase"] = {
+                        "name": "Coinbase Advanced Trade (INTX)",
+                        "net_equity": eq,
+                        "available_cash": avail,
+                        "wallets": {"USDC": {"balance": eq, "available": avail, "inr": round(eq * 85.0, 2)}},
+                        "open_positions": c_positions,
+                        "open_positions_count": len(c_positions)
+                    }
 
         base_status["exchanges"] = exchanges_data
         base_status["debug_msg"] = str(getattr(self, "_last_ex_error", "OK"))
