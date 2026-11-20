@@ -709,6 +709,22 @@ async def platform_status():
         }
 
 
+
+@app.get("/api/version")
+async def get_version():
+    delta_adapter = orchestrator.adapters.get("delta") if orchestrator else None
+    user_agent = None
+    if delta_adapter:
+        h = delta_adapter._sign("GET", "/v2/wallet/balances")
+        user_agent = h.get("User-Agent")
+    return {
+        "version": "2.2.0-clean-headers",
+        "commit": "f81c30d",
+        "adapter_user_agent": user_agent,
+        "delta_adapter_active": bool(delta_adapter)
+    }
+
+
 @app.get("/api/outbound-ip")
 async def get_outbound_ip():
     try:
