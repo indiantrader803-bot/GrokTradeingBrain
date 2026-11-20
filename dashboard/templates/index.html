@@ -765,6 +765,7 @@ body {
 
 <script>
 let currentSelectedExchange = 'delta';
+let liveServerData = null;
 
 const EMOJIS = ['🤫', '🐣', '🥝', '🦩', '🪓', '⚡', '💎', '🚀', '🔥', '🎩'];
 
@@ -785,11 +786,54 @@ const POOLS = {
 let scanIndex = 0;
 
 function cycleScanCard() {
-  const pool = POOLS[currentSelectedExchange] || POOLS.delta;
-  const item = pool[scanIndex % pool.length];
+  let item = null;
+  let totalCount = 0;
+  let currentIdx = 0;
+
+  // Use 100% REAL live open positions from the server when available
+  if (liveServerData) {
+    const ex = (liveServerData.exchanges && liveServerData.exchanges[currentSelectedExchange]) ||
+               (currentSelectedExchange === 'delta' ? (liveServerData.exchange || {}) : {});
+    const livePos = ex.open_positions || (currentSelectedExchange === 'delta' ? (liveServerData.open_positions || []) : []);
+
+    if (livePos && livePos.length > 0) {
+      totalCount = livePos.length;
+      currentIdx = scanIndex % totalCount;
+      const p = livePos[currentIdx];
+      const cleanSym = p.symbol.replace('USD', '').replace('-USD', '');
+      const pnl = parseFloat(p.unrealized_pnl || 0);
+      const isUp = pnl >= 0;
+      const pnlSign = isUp ? '+' : '-';
+      const sideText = (p.side || 'BUY').toUpperCase();
+      const markPr = p.mark_price || p.entry_price || 0;
+
+      item = {
+        sym: `$${cleanSym}`,
+        meta: `live contract · entry $${Number(p.entry_price || 0).toFixed(4)} · ${sideText}`,
+        metric1: `${p.leverage || 1.0}x LEV`,
+        metric2: `$${Number(p.margin || 0).toFixed(2)} MARGIN`,
+        metric3: `${pnlSign}$${Math.abs(pnl).toFixed(3)} PNL`,
+        emoji: EMOJIS[currentIdx % EMOJIS.length],
+        verdict: isUp ? 'LIVE IN PROFIT' : 'ACTIVE TRADE RUNNING',
+        sub: `liquidation: $${Number(p.liquidation_price || 0).toFixed(4)} · real live order`,
+        pill: `CONTRACT ACTIVE (${sideText})`,
+        pillClass: isUp ? 'green' : '',
+        step: 3
+      };
+    }
+  }
+
+  // Fallback to pool if no active positions
+  if (!item) {
+    const pool = POOLS[currentSelectedExchange] || POOLS.delta;
+    totalCount = pool.length;
+    currentIdx = scanIndex % pool.length;
+    item = pool[currentIdx];
+  }
+
   scanIndex++;
 
-  document.getElementById('scan-counter').textContent = `0${(scanIndex % pool.length) + 1} / 0${pool.length}`;
+  document.getElementById('scan-counter').textContent = `0${currentIdx + 1} / 0${totalCount}`;
   document.getElementById('active-coin-sym').textContent = item.sym;
   document.getElementById('active-coin-meta').textContent = item.meta;
   document.getElementById('coin-sticker').textContent = item.emoji;
@@ -864,6 +908,7 @@ async function fetchLiveStatus() {
     const res = await fetch('/api/status?t=' + Date.now());
     if (!res.ok) return;
     const data = await res.json();
+    liveServerData = data;
 
     const exchanges = data.exchanges || {};
     const ex = exchanges[currentSelectedExchange] || (currentSelectedExchange === 'delta' ? (data.exchange || {}) : {});

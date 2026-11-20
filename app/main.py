@@ -491,7 +491,9 @@ async def sync_live_exchange(req: Request):
     try:
         data = await req.json()
         equity = float(data.get("equity", 0.0) or 0.0)
+        available_cash = float(data.get("available_cash", 0.0) or 0.0)
         positions = data.get("positions", [])
+        exchanges = data.get("exchanges", {})
 
         if orchestrator and equity > 0:
             orchestrator.risk.update_equity(equity)
@@ -501,10 +503,13 @@ async def sync_live_exchange(req: Request):
 
             # Update cached live exchange data directly
             orchestrator._synced_live_equity = equity
+            orchestrator._synced_available_cash = available_cash
             orchestrator._synced_live_positions = positions
+            if exchanges:
+                orchestrator._synced_exchanges = exchanges
             orchestrator._synced_time = time.time()
 
-        return {"status": "ok", "synced_equity": equity, "positions_count": len(positions)}
+        return {"status": "ok", "synced_equity": equity, "available_cash": available_cash, "positions_count": len(positions)}
     except Exception as e:
         return {"status": "error", "error": str(e)}
 

@@ -626,6 +626,7 @@ class MasterOrchestrator:
         # If direct cloud request was blocked by IP whitelist, use verified synced live equity & positions
         if net_equity == 0 and getattr(self, "_synced_live_equity", 0) > 0:
             net_equity = getattr(self, "_synced_live_equity")
+            available_balance = getattr(self, "_synced_available_cash", 0.0)
             if getattr(self, "_synced_live_positions", None):
                 exchange_positions = getattr(self, "_synced_live_positions")
 
