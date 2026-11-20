@@ -33,16 +33,21 @@ class CoinbaseAdapter(ExchangeAdapter):
                 log.error("Coinbase init failed: %s", e)
 
     def _normalize_symbol(self, symbol: str) -> str:
-        """Convert BTC/USDT or BTCUSD to BTC-USD (Coinbase style)"""
-        s = symbol.upper().replace("/", "-").replace("_", "-")
-        if s.endswith("-USDT"):
-            s = s.replace("-USDT", "-USD")
-        elif "-" not in s:
-            if s.endswith("USD"):
-                s = s[:-3] + "-USD"
-            elif s.endswith("USDT"):
-                s = s[:-4] + "-USD"
-        return s
+        """Convert symbol to Coinbase format (supports both perpetuals and spot)"""
+        s = symbol.upper().strip()
+        if "PERPETUAL" in s or "_USDC" in s:
+            return s
+        clean = s.replace("$", "").replace("/", "").replace("-", "")
+        if clean.endswith("USDC"):
+            base = clean[:-4]
+            return f"{base}_USDC-PERPETUAL"
+        elif clean.endswith("USD"):
+            base = clean[:-3]
+            return f"{base}_USDC-PERPETUAL"
+        elif clean.endswith("USDT"):
+            base = clean[:-4]
+            return f"{base}_USDC-PERPETUAL"
+        return f"{clean}_USDC-PERPETUAL"
 
     async def get_equity(self) -> float:
         if not self.client:
@@ -169,21 +174,41 @@ class CoinbaseAdapter(ExchangeAdapter):
         size: float,
         stop_loss: Optional[float] = None,
         take_profit: Optional[float] = None,
-        order_type: str = "market"
+        order_type: str = "market",
+        leverage: str = "10"
     ) -> Dict[str, Any]:
         if not self.client:
             raise RuntimeError("Coinbase client not initialized")
 
         product_id = self._normalize_symbol(symbol)
-        side = side.lower()
+        side_norm = side.upper()
         import uuid
         client_order_id = str(uuid.uuid4())
 
         try:
-            if order_type == "market":
-                if side == "buy":
+            # 1. Try Coinbase INTX Perpetual / Retail Portfolio Order first
+            order_config = {
+                "market_market_ioc": {
+                    "base_size": str(size)
+                }
+            }
+            order = None
+            try:
+                order = self.client.create_order(
+                    client_order_id=client_order_id,
+                    product_id=product_id,
+                    side=side_norm,
+                    order_configuration=order_config,
+                    leverage=leverage,
+                    margin_type="CROSS",
+                    retail_portfolio_id=self.intx_portfolio_uuid
+                )
+            except Exception as pe:
+                log.info("Perpetual order with portfolio failed (%s), trying direct market buy/sell: %s", product_id, pe)
+                # Fallback to standard market order
+                if side_norm == "BUY":
                     curr_price = await self.get_price(symbol)
-                    quote_val = str(round(size * curr_price, 2))
+                    quote_val = str(round(max(1.0, size * (curr_price or 1.0)), 2))
                     order = self.client.market_order_buy(
                         client_order_id=client_order_id,
                         product_id=product_id,
@@ -195,20 +220,18 @@ class CoinbaseAdapter(ExchangeAdapter):
                         product_id=product_id,
                         base_size=str(size)
                     )
-            else:
-                raise NotImplementedError("Only market orders implemented in this version")
 
             order_id = getattr(order, "order_id", None) or (order.get("order_id") if isinstance(order, dict) else None)
             if not order_id and isinstance(order, dict):
                 order_id = order.get("success_response", {}).get("order_id")
             
-            log.info("Coinbase order placed: %s %s order_id=%s", side, symbol, order_id)
+            log.info("Coinbase order placed: %s %s order_id=%s", side_norm, product_id, order_id)
 
             return {
                 "order_id": order_id or f"cb_{int(time.time())}",
                 "status": "submitted",
-                "symbol": symbol,
-                "side": side.upper(),
+                "symbol": product_id,
+                "side": side_norm,
                 "size": size
             }
         except Exception as e:

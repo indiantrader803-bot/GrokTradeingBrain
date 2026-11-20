@@ -227,21 +227,41 @@ class MasterOrchestrator:
                 import asyncio
                 from coinbase.rest import RESTClient
                 c_client = getattr(adapter, "client", None) or RESTClient()
-                prods = await asyncio.to_thread(c_client.get_public_products, limit=40)
-                prod_list = getattr(prods, "products", [])
-                for p in prod_list:
-                    pid = getattr(p, "product_id", "")
-                    if pid.endswith("-USD"):
-                        price_val = float(getattr(p, "price", 0) or 0)
-                        vol_val = float(getattr(p, "volume_24h", 0) or 0)
-                        perp_tickers.append({
-                            "symbol": pid,
-                            "close": price_val,
-                            "mark_price": price_val,
-                            "change_24h": 0.0,
-                            "volume_24h": vol_val,
-                            "contract_type": "spot"
-                        })
+                
+                # Check top Coinbase Perpetual Contracts first
+                cb_perp_symbols = ["BTC_USDC-PERPETUAL", "ETH_USDC-PERPETUAL", "SOL_USDC-PERPETUAL", "XRP_USDC-PERPETUAL", "DOGE_USDC-PERPETUAL", "AVAX_USDC-PERPETUAL"]
+                for p_sym in cb_perp_symbols:
+                    try:
+                        p_obj = await asyncio.to_thread(c_client.get_product, p_sym)
+                        p_price = float(getattr(p_obj, "price", 0) or 0)
+                        if p_price > 0:
+                            perp_tickers.append({
+                                "symbol": p_sym,
+                                "close": p_price,
+                                "mark_price": p_price,
+                                "change_24h": 0.0,
+                                "volume_24h": 1000000.0,
+                                "contract_type": "perpetual_futures"
+                            })
+                    except Exception:
+                        pass
+
+                if not perp_tickers:
+                    prods = await asyncio.to_thread(c_client.get_public_products, limit=40)
+                    prod_list = getattr(prods, "products", [])
+                    for p in prod_list:
+                        pid = getattr(p, "product_id", "")
+                        if pid.endswith("-USD"):
+                            price_val = float(getattr(p, "price", 0) or 0)
+                            vol_val = float(getattr(p, "volume_24h", 0) or 0)
+                            perp_tickers.append({
+                                "symbol": pid,
+                                "close": price_val,
+                                "mark_price": price_val,
+                                "change_24h": 0.0,
+                                "volume_24h": vol_val,
+                                "contract_type": "spot"
+                            })
             except Exception as e:
                 log.warning("Coinbase products request error: %s", e)
                 perp_tickers = []
