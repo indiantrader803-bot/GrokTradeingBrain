@@ -710,6 +710,52 @@ async def platform_status():
 
 
 
+
+@app.get("/api/delta-diagnose")
+async def delta_diagnose():
+    delta_adapter = orchestrator.adapters.get("delta") if orchestrator else None
+    if not delta_adapter:
+        return {"error": "delta adapter not in orchestrator"}
+
+    key = delta_adapter.api_key
+    sec = delta_adapter.api_secret
+    base_url = delta_adapter.base_url
+
+    # Check key and secret lengths without leaking values
+    info = {
+        "key_len": len(key),
+        "key_prefix": key[:4] if len(key) >= 4 else "",
+        "key_suffix": key[-4:] if len(key) >= 4 else "",
+        "sec_len": len(sec),
+        "sec_prefix": sec[:4] if len(sec) >= 4 else "",
+        "sec_suffix": sec[-4:] if len(sec) >= 4 else "",
+        "base_url": base_url,
+    }
+
+    # Perform a signed request and capture raw response body
+    try:
+        ts = str(int(time.time()))
+        path = "/v2/wallet/balances"
+        msg = "GET" + ts + path
+        sig = hmac.new(sec.encode("utf-8"), msg.encode("utf-8"), hashlib.sha256).hexdigest()
+        headers = {
+            "api-key": key,
+            "timestamp": ts,
+            "signature": sig,
+            "User-Agent": "DeltaAIPlatform/2.0",
+            "Accept": "application/json"
+        }
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            r = await client.get(f"{base_url}{path}", headers=headers)
+            info["status_code"] = r.status_code
+            info["response_headers"] = dict(r.headers)
+            info["response_body"] = r.text[:500]
+    except Exception as e:
+        info["exception"] = str(e)
+
+    return info
+
+
 @app.get("/api/version")
 async def get_version():
     delta_adapter = orchestrator.adapters.get("delta") if orchestrator else None
