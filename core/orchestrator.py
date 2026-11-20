@@ -704,8 +704,16 @@ class MasterOrchestrator:
             }
         }
 
-        if "coinbase" in self.adapters:
-            cb_adapter = self.adapters["coinbase"]
+        cb_adapter = self.adapters.get("coinbase")
+        if not cb_adapter:
+            try:
+                from adapters.coinbase_adapter import CoinbaseAdapter
+                cb_adapter = CoinbaseAdapter()
+                self.adapters["coinbase"] = cb_adapter
+            except Exception as e:
+                log.warning("Could not auto-instantiate CoinbaseAdapter: %s", e)
+
+        if cb_adapter:
             cb_eq = 0.0
             cb_positions = []
             try:
