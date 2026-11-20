@@ -657,7 +657,7 @@ body {
       <div class="balance-amount" id="balance-val">$3.68</div>
       <div class="balance-subtext" id="balance-sub">
         <span id="gain-today-text">+$0.68 today</span>
-        <span class="dimmed-start" id="started-with-text">· started with $3.00</span>
+        <span class="dimmed-start" id="started-with-text">· cash: $0.01</span>
       </div>
     </div>
     <div class="balance-right">
@@ -879,9 +879,11 @@ async function fetchLiveStatus() {
     const netProfit = liveEquity - startingCapital;
     const multiple = (startingCapital > 0 && liveEquity > 0) ? (liveEquity / startingCapital).toFixed(1) + 'x' : '1.0x';
 
+    const availCash = Number(ex.available_cash !== undefined ? ex.available_cash : (data.available_cash || 0.0));
     document.getElementById('balance-val').textContent = `$${liveEquity.toFixed(2)}`;
     const sign = netProfit >= 0 ? '+' : '-';
     document.getElementById('gain-today-text').textContent = `${sign}$${Math.abs(netProfit).toFixed(2)} today`;
+    document.getElementById('started-with-text').textContent = `· avail cash: $${availCash.toFixed(2)}`;
     document.getElementById('multiple-val').textContent = multiple;
 
     const gauge = document.getElementById('radial-gauge');
