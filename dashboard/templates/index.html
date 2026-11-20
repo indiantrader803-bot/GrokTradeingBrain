@@ -326,13 +326,44 @@ body {
   width: 58px;
   height: 58px;
   border-radius: 50%;
-  background: #fde68a;
+  background: #1c1d22;
+  border: 2px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
-  transition: transform 0.3s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+.coin-sticker-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.coin-sticker-circle .coin-fallback-text {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+.coin-verified-badge {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: 2px solid #131417;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.6);
 }
 
 /* Metric Pills Grid */
@@ -503,27 +534,200 @@ body {
   color: var(--green);
 }
 
-/* Quick Trade Execution Trigger */
-.quick-trade-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 2px;
+/* Autonomous Multi-Agent Swarm Section */
+.swarm-pipeline-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+  position: relative;
+  overflow: hidden;
 }
-.quick-btn {
-  padding: 12px 0;
-  border-radius: 12px;
+.swarm-pipeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.swarm-pipeline-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 13px;
   font-weight: 800;
-  border: none;
-  cursor: pointer;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  transition: transform 0.15s ease, opacity 0.2s ease;
+  color: #fff;
 }
-.quick-btn:hover { opacity: 0.9; transform: scale(0.99); }
-.quick-btn.buy { background: var(--green); color: #000; }
-.quick-btn.sell { background: var(--red); color: #fff; }
+.swarm-live-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: var(--green);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+.swarm-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulseGreen 1.5s infinite;
+}
+@keyframes pulseGreen {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+/* Agents Row Container */
+.swarm-agents-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  position: relative;
+}
+.agent-node-card {
+  background: #181a1f;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 12px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2;
+}
+.agent-node-card.active {
+  border-color: #3b82f6;
+  background: #141b2a;
+  box-shadow: 0 0 16px rgba(59, 130, 246, 0.25);
+  transform: translateY(-2px);
+}
+.agent-node-card.success {
+  border-color: #22c55e;
+  background: #11231b;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.25);
+}
+.agent-icon-halo {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #232731;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+.agent-node-card.active .agent-icon-halo {
+  background: #1e3a8a;
+  transform: scale(1.08);
+}
+.agent-node-card.success .agent-icon-halo {
+  background: #14532d;
+}
+.agent-role-name {
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+.agent-status-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.agent-node-card.active .agent-status-label {
+  color: #60a5fa;
+  font-weight: 700;
+}
+.agent-node-card.success .agent-status-label {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+/* Flying Token Animation Track */
+.agent-flying-track {
+  position: relative;
+  height: 28px;
+  margin: -6px 8px -2px 8px;
+  display: flex;
+  align-items: center;
+}
+.agent-track-rail {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #3b82f6 0%, #a855f7 50%, #22c55e 100%);
+  opacity: 0.3;
+  border-radius: 2px;
+}
+.flying-coin-orb {
+  position: absolute;
+  top: 50%;
+  left: 12.5%;
+  transform: translate(-50%, -50%);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #f59e0b;
+  border: 2px solid #fff;
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.8), 0 0 24px rgba(59, 130, 246, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  color: #000;
+  z-index: 5;
+  transition: left 1.2s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s ease;
+  overflow: hidden;
+}
+.flying-coin-orb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.flying-coin-sparkle {
+  position: absolute;
+  pointer-events: none;
+  font-size: 10px;
+  animation: sparkleFade 1s infinite alternate;
+}
+@keyframes sparkleFade {
+  0% { opacity: 0.2; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+
+.swarm-footer-msg {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #17191e;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.swarm-msg-highlight {
+  color: #fff;
+  font-weight: 700;
+}
 
 /* 4. Trade Log Section */
 .trade-log-section {
@@ -578,6 +782,14 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 19px;
+  position: relative;
+  overflow: hidden;
+}
+.trade-coin-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 .trade-symbol-text {
   font-size: 16px;
@@ -692,7 +904,11 @@ body {
         <div class="coin-symbol" id="active-coin-sym">$AVAX</div>
         <div class="coin-subtitle" id="active-coin-meta">perp · mark $6.91 · 24h +4.2%</div>
       </div>
-      <div class="coin-sticker-circle" id="coin-sticker">🤫</div>
+      <div class="coin-sticker-circle" id="coin-sticker">
+        <img id="coin-main-icon" src="https://assets.coincap.io/assets/icons/avax@2x.png" alt="AVAX" onerror="this.style.display='none'; document.getElementById('coin-fallback-label').style.display='block';">
+        <span class="coin-fallback-text" id="coin-fallback-label" style="display:none;">AVAX</span>
+        <div class="coin-verified-badge" title="Verified Asset">✓</div>
+      </div>
     </div>
 
     <!-- 3 Metrics Pill Row -->
@@ -751,6 +967,60 @@ body {
     <div class="order-decision-pill" id="decision-pill-btn">EVALUATING MOMENTUM</div>
   </div>
 
+  <!-- Real-Time Autonomous Multi-Agent Swarm Section with Live Coin Flow Animation -->
+  <div class="swarm-pipeline-card">
+    <div class="swarm-pipeline-header">
+      <div class="swarm-pipeline-title">
+        <span>🤖 Autonomous Agent Swarm</span>
+      </div>
+      <div class="swarm-live-badge">
+        <div class="swarm-live-dot"></div>
+        <span>FLOW ACTIVE</span>
+      </div>
+    </div>
+
+    <!-- 4 Specialized Agents Grid -->
+    <div class="swarm-agents-grid">
+      <div class="agent-node-card active" id="agent-card-1">
+        <div class="agent-icon-halo">🔍</div>
+        <div class="agent-role-name">Scout</div>
+        <div class="agent-status-label" id="agent-status-1">Scanning</div>
+      </div>
+
+      <div class="agent-node-card" id="agent-card-2">
+        <div class="agent-icon-halo">⚡</div>
+        <div class="agent-role-name">Momentum</div>
+        <div class="agent-status-label" id="agent-status-2">Standby</div>
+      </div>
+
+      <div class="agent-node-card" id="agent-card-3">
+        <div class="agent-icon-halo">🛡️</div>
+        <div class="agent-role-name">Risk Guard</div>
+        <div class="agent-status-label" id="agent-status-3">Checking</div>
+      </div>
+
+      <div class="agent-node-card" id="agent-card-4">
+        <div class="agent-icon-halo">🚀</div>
+        <div class="agent-role-name">Execution</div>
+        <div class="agent-status-label" id="agent-status-4">Armed</div>
+      </div>
+    </div>
+
+    <!-- Animated Inter-Agent Coin Flow Track -->
+    <div class="agent-flying-track">
+      <div class="agent-track-rail"></div>
+      <div class="flying-coin-orb" id="flying-coin-node" style="left: 12.5%;">
+        <img id="flying-coin-img" src="https://assets.coincap.io/assets/icons/avax@2x.png" alt="coin" onerror="this.style.display='none'; document.getElementById('flying-coin-fallback').style.display='block';">
+        <span id="flying-coin-fallback" style="display:none; font-size:10px; font-weight:800;">AVAX</span>
+      </div>
+    </div>
+
+    <div class="swarm-footer-msg">
+      <span id="swarm-agent-brief">Scout Agent analyzing volume spikes and order flow</span>
+      <span class="swarm-msg-highlight" id="swarm-active-target">$AVAX</span>
+    </div>
+  </div>
+
   <!-- 4. Trade Log Section -->
   <div class="trade-log-section">
     <div class="trade-log-header">
@@ -777,21 +1047,91 @@ let liveServerData = null;
 
 const EMOJIS = ['🤫', '🐣', '🥝', '🦩', '🪓', '⚡', '💎', '🚀', '🔥', '🎩'];
 
+function getCoinIconUrl(rawSym) {
+  const clean = (rawSym || '').toUpperCase().replace('$', '').replace('USD', '').replace('-USD', '').replace('-PERPETUAL', '').replace('_USDC', '').trim();
+  const lower = clean.toLowerCase();
+  return `https://assets.coincap.io/assets/icons/${lower}@2x.png`;
+}
+
 const POOLS = {
   delta: [
-    { sym: '$AVAX', meta: 'perp · mark $6.91 · 24h +4.2%', metric1: '-0.01%', metric2: '$2.4M', metric3: 'score 88/100', emoji: '🤫', verdict: 'RUNNING RISK CHECK', sub: 'spread check · funding risk · slippage', pill: 'NO ORDER SENT', pillClass: '', step: 2 },
-    { sym: '$XRP', meta: 'perp · mark $0.958 · 24h +1.8%', metric1: '+0.005%', metric2: '$8.1M', metric3: 'score 79/100', emoji: '🐣', verdict: 'ENTRY CONFIRMED', sub: 'limit order placed at target bid', pill: 'ORDER EXECUTED', pillClass: 'green', step: 3 },
-    { sym: '$VELVET', meta: 'perp · mark $0.071 · 24h +8.4%', metric1: '+0.01%', metric2: '$320K', metric3: 'pump alert', emoji: '🔥', verdict: 'POSITION OPEN · IN PROFIT', sub: 'trailing profit target at +15%', pill: 'BOUGHT · RIDING TREND', pillClass: 'green', step: 3 },
-    { sym: '$PIPPIN', meta: 'perp · mark $0.0194 · 24h +12%', metric1: '+0.015%', metric2: '$450K', metric3: 'score 85/100', emoji: '💎', verdict: 'POSITION OPEN · PROFIT +$0.028', sub: 'trailing stop locked in profit', pill: 'ORDER FILLED', pillClass: 'green', step: 3 }
+    { sym: '$AVAX', clean: 'AVAX', meta: 'perp · mark $6.91 · 24h +4.2%', metric1: '-0.01%', metric2: '$2.4M', metric3: 'score 88/100', emoji: '🤫', verdict: 'RUNNING RISK CHECK', sub: 'spread check · funding risk · slippage', pill: 'NO ORDER SENT', pillClass: '', step: 2 },
+    { sym: '$XRP', clean: 'XRP', meta: 'perp · mark $0.958 · 24h +1.8%', metric1: '+0.005%', metric2: '$8.1M', metric3: 'score 79/100', emoji: '🐣', verdict: 'ENTRY CONFIRMED', sub: 'limit order placed at target bid', pill: 'ORDER EXECUTED', pillClass: 'green', step: 3 },
+    { sym: '$VELVET', clean: 'VELVET', meta: 'perp · mark $0.071 · 24h +8.4%', metric1: '+0.01%', metric2: '$320K', metric3: 'pump alert', emoji: '🔥', verdict: 'POSITION OPEN · IN PROFIT', sub: 'trailing profit target at +15%', pill: 'BOUGHT · RIDING TREND', pillClass: 'green', step: 3 },
+    { sym: '$PIPPIN', clean: 'PIPPIN', meta: 'perp · mark $0.0194 · 24h +12%', metric1: '+0.015%', metric2: '$450K', metric3: 'score 85/100', emoji: '💎', verdict: 'POSITION OPEN · PROFIT +$0.028', sub: 'trailing stop locked in profit', pill: 'ORDER FILLED', pillClass: 'green', step: 3 }
   ],
   coinbase: [
-    { sym: '$BTC', meta: 'spot · mark $61,708 · 24h +1.2%', metric1: 'SPOT', metric2: '$1.4B', metric3: 'score 94/100', emoji: '🚀', verdict: 'ACCUMULATING DCA', sub: 'CDP API connected · liquidity high', pill: 'MONITORING SPREAD', pillClass: 'green', step: 2 },
-    { sym: '$ETH', meta: 'spot · mark $1,753 · 24h -0.8%', metric1: 'SPOT', metric2: '$620M', metric3: 'score 86/100', emoji: '💎', verdict: 'ORDER READY', sub: 'mean reversion setup on Coinbase', pill: 'TARGET BOUGHT', pillClass: 'green', step: 3 },
-    { sym: '$SOL', meta: 'spot · mark $72.2 · 24h +3.1%', metric1: 'SPOT', metric2: '$380M', metric3: 'score 89/100', emoji: '⚡', verdict: 'VOLATILITY FILTER PASS', sub: 'volume expansion confirmed on CDP', pill: 'ORDER EXECUTED', pillClass: 'green', step: 3 }
+    { sym: '$BTC', clean: 'BTC', meta: 'perp · mark $61,708 · 24h +1.2%', metric1: '50x LEV', metric2: '$1.4B', metric3: 'score 94/100', emoji: '🚀', verdict: 'ACCUMULATING DCA', sub: 'INTX API connected · depth verified', pill: 'POSITION OPEN', pillClass: 'green', step: 3 },
+    { sym: '$ETH', clean: 'ETH', meta: 'perp · mark $1,753 · 24h -0.8%', metric1: '50x LEV', metric2: '$620M', metric3: 'score 86/100', emoji: '💎', verdict: 'ORDER READY', sub: 'mean reversion setup on Coinbase', pill: 'TARGET BOUGHT', pillClass: 'green', step: 3 },
+    { sym: '$SOL', clean: 'SOL', meta: 'perp · mark $72.2 · 24h +3.1%', metric1: '25x LEV', metric2: '$380M', metric3: 'score 89/100', emoji: '⚡', verdict: 'VOLATILITY FILTER PASS', sub: 'volume expansion confirmed on INTX', pill: 'ORDER EXECUTED', pillClass: 'green', step: 3 }
   ]
 };
 
 let scanIndex = 0;
+let currentSwarmStep = 1;
+
+// Autonomous Swarm Agents State Progression
+const SWARM_STAGES = [
+  { step: 1, left: '12.5%', card: 1, brief: 'Scout Agent analyzing volume spikes & 24h order flow', stat1: 'Active', stat2: 'Standby', stat3: 'Standby', stat4: 'Standby' },
+  { step: 2, left: '37.5%', card: 2, brief: 'Momentum Agent testing RSI breakout & volatility expansion', stat1: 'Passed', stat2: 'Evaluating', stat3: 'Standby', stat4: 'Standby' },
+  { step: 3, left: '62.5%', card: 3, brief: 'Risk Guard Agent verifying leverage limits, drawdown & slippage', stat1: 'Passed', stat2: 'Approved', stat3: 'Verifying', stat4: 'Standby' },
+  { step: 4, left: '87.5%', card: 4, brief: 'Execution Agent ready on exchange with smart IOC limit order', stat1: 'Passed', stat2: 'Approved', stat3: 'Approved', stat4: 'Executed' }
+];
+
+function updateSwarmFlow(targetSymbol) {
+  const stage = SWARM_STAGES[currentSwarmStep - 1];
+  const flyingOrb = document.getElementById('flying-coin-node');
+  const flyingImg = document.getElementById('flying-coin-img');
+  const flyingFallback = document.getElementById('flying-coin-fallback');
+
+  if (flyingOrb) {
+    flyingOrb.style.left = stage.left;
+    flyingOrb.style.transform = 'translate(-50%, -50%) scale(1.15)';
+    setTimeout(() => {
+      flyingOrb.style.transform = 'translate(-50%, -50%) scale(1.0)';
+    }, 300);
+  }
+
+  const clean = targetSymbol.replace('$', '').trim();
+  const iconUrl = getCoinIconUrl(clean);
+  if (flyingImg) {
+    flyingImg.style.display = 'block';
+    flyingFallback.style.display = 'none';
+    flyingImg.src = iconUrl;
+    flyingImg.onerror = function() {
+      this.style.display = 'none';
+      if (flyingFallback) {
+        flyingFallback.textContent = clean.slice(0, 4);
+        flyingFallback.style.display = 'block';
+      }
+    };
+  }
+
+  // Update Agent Cards
+  for (let i = 1; i <= 4; i++) {
+    const card = document.getElementById(`agent-card-${i}`);
+    const status = document.getElementById(`agent-status-${i}`);
+    if (card && status) {
+      if (i < stage.card) {
+        card.className = 'agent-node-card success';
+        status.textContent = 'Passed ✓';
+      } else if (i === stage.card) {
+        card.className = 'agent-node-card active';
+        status.textContent = stage[`stat${i}`] || 'Active';
+      } else {
+        card.className = 'agent-node-card';
+        status.textContent = 'Standby';
+      }
+    }
+  }
+
+  const briefElem = document.getElementById('swarm-agent-brief');
+  const targetElem = document.getElementById('swarm-active-target');
+  if (briefElem) briefElem.textContent = stage.brief;
+  if (targetElem) targetElem.textContent = `$${clean}`;
+
+  currentSwarmStep = (currentSwarmStep % 4) + 1;
+}
 
 function cycleScanCard() {
   let item = null;
@@ -808,7 +1148,7 @@ function cycleScanCard() {
       totalCount = livePos.length;
       currentIdx = scanIndex % totalCount;
       const p = livePos[currentIdx];
-      const cleanSym = p.symbol.replace('USD', '').replace('-USD', '');
+      const cleanSym = p.symbol.replace('USD', '').replace('-USD', '').replace('-PERPETUAL', '').replace('_USDC', '');
       const pnl = parseFloat(p.unrealized_pnl || 0);
       const isUp = pnl >= 0;
       const pnlSign = isUp ? '+' : '-';
@@ -817,6 +1157,7 @@ function cycleScanCard() {
 
       item = {
         sym: `$${cleanSym}`,
+        clean: cleanSym,
         meta: `live contract · entry $${Number(p.entry_price || 0).toFixed(4)} · ${sideText}`,
         metric1: `${p.leverage || 1.0}x LEV`,
         metric2: `$${Number(p.margin || 0).toFixed(2)} MARGIN`,
@@ -844,7 +1185,26 @@ function cycleScanCard() {
   document.getElementById('scan-counter').textContent = `0${currentIdx + 1} / 0${totalCount}`;
   document.getElementById('active-coin-sym').textContent = item.sym;
   document.getElementById('active-coin-meta').textContent = item.meta;
-  document.getElementById('coin-sticker').textContent = item.emoji;
+
+  // Set Verified Coin Icon with Fallback
+  const coinImg = document.getElementById('coin-main-icon');
+  const coinFallback = document.getElementById('coin-fallback-label');
+  const iconUrl = getCoinIconUrl(item.clean || item.sym);
+  if (coinImg) {
+    coinImg.style.display = 'block';
+    if (coinFallback) coinFallback.style.display = 'none';
+    coinImg.src = iconUrl;
+    coinImg.onerror = function() {
+      this.style.display = 'none';
+      if (coinFallback) {
+        coinFallback.textContent = (item.clean || item.sym.replace('$', '')).slice(0, 4);
+        coinFallback.style.display = 'block';
+      }
+    };
+  }
+
+  // Step the Agent Swarm Animation with this active coin
+  updateSwarmFlow(item.sym);
 
   document.getElementById('metric-val-1').textContent = item.metric1;
   document.getElementById('metric-val-2').textContent = item.metric2;
@@ -960,16 +1320,20 @@ async function fetchLiveStatus() {
         const isUp = pnl >= 0;
         const pnlSign = isUp ? '+' : '-';
         const pnlClass = isUp ? 'gain' : 'loss';
-        const emoji = EMOJIS[idx % EMOJIS.length];
+        const cleanSym = p.symbol.replace('USD', '').replace('-USD', '').replace('-PERPETUAL', '').replace('_USDC', '');
         const sideText = (p.side || 'BUY').toLowerCase();
         const pnlFormatted = `${pnlSign}$${Math.abs(pnl).toFixed(3)}`;
+        const iconUrl = getCoinIconUrl(cleanSym);
 
         return `
           <div class="trade-item-pill">
             <div class="trade-item-left">
-              <div class="trade-coin-avatar">${emoji}</div>
+              <div class="trade-coin-avatar">
+                <img src="${iconUrl}" alt="${cleanSym}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <span style="display:none;font-size:11px;font-weight:800;color:#fff;">${cleanSym.slice(0,3)}</span>
+              </div>
               <div>
-                <div class="trade-symbol-text">$${p.symbol.replace('USD', '').replace('-USD', '')}</div>
+                <div class="trade-symbol-text">$${cleanSym}</div>
                 <div class="trade-summary-text">${sideText} · entry $${Number(p.entry_price || 0).toFixed(4)}</div>
               </div>
             </div>
