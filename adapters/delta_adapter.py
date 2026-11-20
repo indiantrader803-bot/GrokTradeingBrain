@@ -38,8 +38,8 @@ class DeltaAdapter(ExchangeAdapter):
         timestamp = str(int(time.time()))
         prehash = method.upper() + timestamp + path + query + body
         signature = hmac.new(
-            self.api_secret.encode(),
-            prehash.encode(),
+            self.api_secret.encode("utf-8"),
+            prehash.encode("utf-8"),
             hashlib.sha256
         ).hexdigest()
 
@@ -47,11 +47,11 @@ class DeltaAdapter(ExchangeAdapter):
             "api-key": self.api_key,
             "timestamp": timestamp,
             "signature": signature,
-            "User-Agent": "GrokTradingBrain/1.0",
-            "Content-Type": "application/json",
-            "X-Forwarded-For": "45.251.233.150",
-            "X-Real-IP": "45.251.233.150"
+            "User-Agent": "DeltaAIPlatform/2.0",
+            "Accept": "application/json"
         }
+        if body:
+            headers["Content-Type"] = "application/json"
         return headers
 
     async def _request(self, method: str, path: str, params: dict = None, body: dict = None):
