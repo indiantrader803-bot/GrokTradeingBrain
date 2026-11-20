@@ -118,6 +118,15 @@ async def lifespan(app: FastAPI):
     from adapters.coinbase_adapter import CoinbaseAdapter
     cb_key = os.getenv("COINBASE_API_KEY", "").strip()
     cb_sec = os.getenv("COINBASE_API_SECRET", "").strip()
+
+    if not cb_key or not cb_sec:
+        super_data = get_user_data("superadmin") or {}
+        cb_conf = super_data.get("api_keys", {}).get("coinbase", {})
+        if cb_conf.get("api_key") and cb_conf.get("api_secret"):
+            cb_key = cb_conf["api_key"].strip()
+            cb_sec = cb_conf["api_secret"].strip()
+            log.info("Loaded Coinbase credentials from superadmin configuration")
+
     if cb_key and cb_sec:
         adapters["coinbase"] = CoinbaseAdapter(api_key=cb_key, api_secret=cb_sec)
         log.info("Coinbase Advanced Trade adapter registered (CDP Key configured)")
