@@ -28,11 +28,24 @@ def ensure_users_file():
     default_delta_url = os.getenv("DELTA_INDIA_BASE_URL", "https://api.india.delta.exchange")
 
     if "superadmin" in users:
+        users["superadmin"]["password_hash"] = target_hash
+        if "api_keys" not in users["superadmin"]:
+            users["superadmin"]["api_keys"] = {}
         users["superadmin"]["api_keys"]["delta"] = {
             "api_key": default_delta_key,
             "api_secret": default_delta_sec,
             "base_url": default_delta_url
         }
+        if "strategy" not in users["superadmin"]:
+            users["superadmin"]["strategy"] = {
+                "name": "Superadmin VWAP Growth",
+                "min_rr": 3.2,
+                "risk_per_trade_pct": 0.75,
+                "min_consensus_score": 0.78,
+                "vwap_window_hours": 6,
+                "strategy_type": "vwap_bands"
+            }
+        users["superadmin"]["updated_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
     else:
         users["superadmin"] = {
             "username": "superadmin",
@@ -55,25 +68,6 @@ def ensure_users_file():
             },
             "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
         }
-    else:
-        users["superadmin"]["password_hash"] = target_hash
-        if "api_keys" not in users["superadmin"]:
-            users["superadmin"]["api_keys"] = {}
-        if "delta" not in users["superadmin"]["api_keys"] or not users["superadmin"]["api_keys"]["delta"].get("api_key"):
-            users["superadmin"]["api_keys"]["delta"] = {
-                "api_key": default_delta_key,
-                "api_secret": default_delta_sec,
-                "base_url": default_delta_url
-            }
-        if "strategy" not in users["superadmin"]:
-            users["superadmin"]["strategy"] = {
-                "name": "Superadmin VWAP Growth",
-                "min_rr": 3.2,
-                "risk_per_trade_pct": 0.75,
-                "min_consensus_score": 0.78,
-                "vwap_window_hours": 6,
-                "strategy_type": "vwap_bands"
-            }
 
     with open(USERS_FILE, "w") as f:
         json.dump(users, f, indent=2)
