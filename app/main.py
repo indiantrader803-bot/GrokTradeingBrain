@@ -826,9 +826,10 @@ async def get_version():
     if delta_adapter:
         h = delta_adapter._sign("GET", "/v2/wallet/balances")
         user_agent = h.get("User-Agent")
+    commit_sha = os.getenv("RAILWAY_GIT_COMMIT_SHA") or "dac6fb6"
     return {
-        "version": "2.2.0-clean-headers",
-        "commit": "f81c30d",
+        "version": "2.3.0-live-sync",
+        "commit": commit_sha[:7],
         "adapter_user_agent": user_agent,
         "delta_adapter_active": bool(delta_adapter)
     }
