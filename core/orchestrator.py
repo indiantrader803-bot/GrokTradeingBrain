@@ -462,32 +462,6 @@ class MasterOrchestrator:
             except Exception as e:
                 log.error("Grok order execution failed (%s on %s): %s", best_candidate["symbol"], platform_name, e)
                 self._add_logger_event("EXECUTOR", f"order dispatch error on {best_candidate['symbol']} ({platform_name}): {e}")
-                
-                # If cloud exchange blocked order due to IP whitelist or CDP key permission,
-                # register active simulated position so user trade log and equity tracking continue uninterrupted
-                sim_order_id = f"sim-{str(uuid.uuid4())[:8]}"
-                sim_position = Position(
-                    id=sim_order_id,
-                    symbol=best_candidate["symbol"],
-                    platform=platform_name,
-                    side=best_candidate["direction"],
-                    size=order_size,
-                    entry_price=entry_price,
-                    stop_loss=best_candidate["stop_loss"],
-                    take_profit=best_candidate["take_profit"],
-                    risk_amount=risk_amount,
-                    asset_class=best_candidate["asset_class"]
-                )
-                self.risk.register_position(sim_position)
-                self.trades_opened += 1
-                self.signals_generated += 1
-                action_desc = f"opened trade ${best_candidate['symbol']} ({platform_name}) · ${allocated_capital:.2f}"
-                self.agent_stats["executor_last_action"] = action_desc
-                self._add_logger_event("EXECUTOR", f"active trade registered ${best_candidate['symbol']} ({platform_name})")
-                
-                open_positions = list(self.risk.get_open_positions())
-                if len(open_positions) >= self.config.risk.max_open_positions:
-                    return
                 continue
 
     def _add_logger_event(self, role: str, text: str):
@@ -743,8 +717,7 @@ class MasterOrchestrator:
         if net_equity > 0:
             base_status["equity"] = round(net_equity, 2)
         base_status["adapters_present"] = list(self.adapters.keys())
-        if exchange_positions:
-            base_status["open_positions"] = exchange_positions
+        base_status["open_positions"] = exchange_positions
         
         # Multi-exchange dictionary
         exchanges_data = {

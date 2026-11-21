@@ -1,14 +1,14 @@
 {
-  "net_equity": 4.9,
-  "available_cash": 4.9,
+  "net_equity": 4.885,
+  "available_cash": 4.885,
   "wallets": {
     "USDC": {
-      "balance": 4.9,
-      "available": 4.9,
-      "inr": 416.5
+      "balance": 4.885,
+      "available": 4.885,
+      "inr": 415.22
     }
   },
   "open_positions": [],
   "open_positions_count": 0,
-  "updated_at": "2026-11-21 11:42:00"
+  "updated_at": "2026-11-21 12:28:00"
 }
