@@ -338,8 +338,10 @@ class MasterOrchestrator:
 
         total_equity = max(self.risk.equity, 0.50)
         open_positions = list(self.risk.get_open_positions())
-        if len(open_positions) >= self.config.risk.max_open_positions:
-            self.agent_stats["executor_last_action"] = f"max positions reached ({len(open_positions)})"
+        # Check max open positions per exchange platform
+        platform_positions = [p for p in open_positions if getattr(p, "platform", None) == platform_name]
+        if len(platform_positions) >= 4:
+            self.agent_stats["executor_last_action"] = f"max positions reached on {platform_name} ({len(platform_positions)})"
             return
 
         # Evaluate top candidate matches to find best trade conforming with AI approval and free margin
