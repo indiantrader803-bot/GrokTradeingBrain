@@ -713,6 +713,42 @@ class MasterOrchestrator:
                 except Exception as ce:
                     log.warning("Delta cache read error: %s", ce)
 
+        # Dynamic real-time mark price & PnL updater for open positions via Delta's public ticker
+        if exchange_positions:
+            try:
+                import httpx
+                total_unrealized_pnl = 0.0
+                async with httpx.AsyncClient(timeout=4.0) as http_c:
+                    for pos in exchange_positions:
+                        sym = pos.get("symbol", "")
+                        clean_sym = sym.upper().replace("/", "").replace("-PERPETUAL", "")
+                        if "USD" not in clean_sym:
+                            clean_sym += "USD"
+                        try:
+                            tk_res = await http_c.get(f"https://api.india.delta.exchange/v2/tickers/{clean_sym}")
+                            if tk_res.status_code == 200:
+                                res_data = tk_res.json().get("result", {})
+                                mark_p = float(res_data.get("mark_price", 0) or 0)
+                                if mark_p > 0:
+                                    pos["mark_price"] = mark_p
+                                    entry_p = float(pos.get("entry_price", mark_p) or mark_p)
+                                    p_size = float(pos.get("size", 1.0) or 1.0)
+                                    side = pos.get("side", "BUY").upper()
+                                    
+                                    # Contract value calculation (BTC is 0.001 BTC per contract on Delta)
+                                    c_val = 0.001 if "BTC" in clean_sym else 1.0
+                                    pnl = (mark_p - entry_p) * c_val * p_size if side == "BUY" else (entry_p - mark_p) * c_val * p_size
+                                    pos["unrealized_pnl"] = round(pnl, 4)
+                                    total_unrealized_pnl += pnl
+                        except Exception as ticker_err:
+                            log.debug("Mark price fetch error for %s: %s", sym, ticker_err)
+
+                # Re-calculate live net equity dynamically (cash + total unrealized PnL + margin)
+                if net_equity > 0:
+                    net_equity = round(net_equity + total_unrealized_pnl, 4)
+            except Exception as dyn_err:
+                log.debug("Dynamic mark price calculation error: %s", dyn_err)
+
         if net_equity == 0 and getattr(self, "_synced_live_equity", 0) > 0:
             net_equity = getattr(self, "_synced_live_equity")
             available_balance = getattr(self, "_synced_available_cash", 0.0)
