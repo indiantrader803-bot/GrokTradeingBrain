@@ -228,11 +228,13 @@ class MasterOrchestrator:
                 from coinbase.rest import RESTClient
                 c_client = getattr(adapter, "client", None) or RESTClient()
                 
-                # Check top Coinbase Perpetual Contracts (supported on INTX retail portfolio)
+                # Coinbase INTX perpetual universe expansion (Top volume contracts)
                 cb_perp_symbols = [
                     "XPL_USDC-PERPETUAL", "BTC_USDC-PERPETUAL", "ETH_USDC-PERPETUAL",
                     "SOL_USDC-PERPETUAL", "XRP_USDC-PERPETUAL", "DOGE_USDC-PERPETUAL",
-                    "ADA_USDC-PERPETUAL", "AVAX_USDC-PERPETUAL"
+                    "ADA_USDC-PERPETUAL", "AVAX_USDC-PERPETUAL", "NEAR_USDC-PERPETUAL",
+                    "SUI_USDC-PERPETUAL", "LINK_USDC-PERPETUAL", "PEPE_USDC-PERPETUAL",
+                    "WIF_USDC-PERPETUAL", "LTC_USDC-PERPETUAL", "APT_USDC-PERPETUAL"
                 ]
                 for p_sym in cb_perp_symbols:
                     try:
@@ -466,7 +468,12 @@ class MasterOrchestrator:
                 self._add_logger_event("RISK", f"stop set ${best_candidate['symbol']} ({platform_name}) -6% hard | trail +12%")
 
                 log.info("GROK BOT TRADE OPENED | %s on %s | Order: %s", best_candidate["symbol"], platform_name, order_id)
-                return
+                
+                # Check if we still have available capacity for additional trades
+                open_positions = list(self.risk.get_open_positions())
+                if len(open_positions) >= self.config.risk.max_open_positions:
+                    return
+                continue
 
             except Exception as e:
                 log.error("Grok order execution failed (%s on %s): %s", best_candidate["symbol"], platform_name, e)
