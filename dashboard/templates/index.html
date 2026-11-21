@@ -1066,7 +1066,7 @@ body {
   <div class="trade-log-section">
     <div class="trade-log-header">
       <div class="trade-log-title" id="trade-log-title">Trade log · Delta</div>
-      <div class="trade-log-stats" id="trade-stats-counter">10 traded · 108 skipped</div>
+      <div class="trade-log-stats" id="trade-stats-counter">0 open · 0 skipped</div>
     </div>
 
     <div id="trade-log-list" style="display:flex;flex-direction:column;gap:8px;max-height:460px;overflow-y:auto;padding-right:4px;-webkit-overflow-scrolling:touch;">
@@ -1365,8 +1365,8 @@ async function fetchLiveStatus() {
       : ((currentSelectedExchange === 'delta' && data.open_positions && data.open_positions.length > 0) 
           ? data.open_positions 
           : []);
-    const skippedCount = (data.agent_stats && data.agent_stats.filter_killed_count) || 108;
-    document.getElementById('trade-stats-counter').textContent = `${positions.length} traded · ${skippedCount} skipped`;
+    const skippedCount = (data.agent_stats && data.agent_stats.filter_killed_count) || 0;
+    document.getElementById('trade-stats-counter').textContent = `${positions.length} open · ${skippedCount} scanned`;
 
     const logList = document.getElementById('trade-log-list');
     if (positions.length > 0) {
