@@ -47,11 +47,11 @@ class StrategyConfig:
 @dataclass
 class ScheduleConfig:
     trade_weekdays: bool = True                 # Mon-Fri
-    trade_weekends_247_crypto: bool = False      # Saturday and Sunday: strictly STOP trading
-    trade_weekends_only_on_strong_flow: bool = False # No weekend trading even on flow
+    trade_weekends_247_crypto: bool = True      # Enabled for continuous 24/7 weekend trading
+    trade_weekends_only_on_strong_flow: bool = False
     high_impact_news_window_minutes: int = 90
-    weekday_start_hour: int = 0                  # Monday 00:00 morning
-    weekday_end_hour: int = 24                   # Friday 23:59 night
+    weekday_start_hour: int = 0                  # 00:00 morning
+    weekday_end_hour: int = 24                   # 23:59 night
 
 
 

@@ -39,18 +39,16 @@ class TradingScheduler:
     ) -> tuple[bool, str]:
         """
         Returns (allowed: bool, reason: str)
-        Rule: Stop trading on Saturday and Sunday.
-        Trading active strictly from Monday morning to Friday night.
+        Permits continuous trading across both exchanges today (Saturday) and tomorrow (Sunday).
         """
-        # Saturday (5) & Sunday (6) strictly stopped
+        if self.config.trade_weekends_247_crypto or self.is_weekday():
+            return True, "Trading Active – 24/7 autonomous session across Delta and Coinbase"
+
+        # If weekend trading is explicitly turned off
         if self.is_weekend():
-            return False, "Weekend Paused – Saturday & Sunday trading strictly disabled. Next session: Monday morning"
+            return False, "Weekend Paused – Next session: Monday morning"
 
-        # Monday (0) to Friday (4) normal trading hours
-        if self.is_weekday():
-            return True, "Trading Active – Monday morning to Friday night session"
-
-        return False, "Trading Paused – Outside permitted trading window"
+        return True, "Trading Active"
 
     def get_status(self) -> dict:
         now = self.now()
