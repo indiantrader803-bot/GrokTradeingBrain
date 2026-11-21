@@ -1,14 +1,23 @@
 {
-  "net_equity": 4.22829005664,
-  "available_cash": 4.22829005664,
+  "net_equity": 3.58193037664,
+  "available_cash": 0.75161864164,
   "wallets": {
     "USD": {
-      "balance": 4.22829005664,
-      "available": 4.22829005664,
-      "inr": 359.4
+      "balance": 3.58193037664,
+      "available": 0.75161864164,
+      "inr": 304.46
     }
   },
-  "open_positions": [],
-  "open_positions_count": 0,
-  "updated_at": "2026-11-21 11:42:00"
+  "open_positions": [
+    {
+      "symbol": "BTCUSD",
+      "side": "BUY",
+      "size": 1.0,
+      "entry_price": 56430.5,
+      "mark_price": 56407.69188537,
+      "margin": 2.821525,
+      "unrealized_pnl": -0.0215
+    }
+  ],
+  "open_positions_count": 1
 }
