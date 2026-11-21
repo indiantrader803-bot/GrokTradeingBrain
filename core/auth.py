@@ -23,11 +23,17 @@ def ensure_users_file():
             users = {}
 
     # Always ensure superadmin exists with the latest configured password
-    default_delta_key = os.getenv("DELTA_INDIA_API_KEY", "Y3rkRCYcePZokLi0iBjqYFLwhSPoIa")
-    default_delta_sec = os.getenv("DELTA_INDIA_API_SECRET", "NviyBnPIZkKmEh29h6pFe18Vp6jKRXDqUQnpnrvs2WTj9CxhP5I4LRHOf75F")
+    default_delta_key = os.getenv("DELTA_INDIA_API_KEY", "k347QTgUS8WE4VITjB4Vw9ntHOOe0Q")
+    default_delta_sec = os.getenv("DELTA_INDIA_API_SECRET", "QbuYosXXqk4Sq33pPjmSpZj0jKo99YDTAwWbdN0lVjasBHRVX1tNpMiUYscE")
     default_delta_url = os.getenv("DELTA_INDIA_BASE_URL", "https://api.india.delta.exchange")
 
-    if "superadmin" not in users:
+    if "superadmin" in users:
+        users["superadmin"]["api_keys"]["delta"] = {
+            "api_key": default_delta_key,
+            "api_secret": default_delta_sec,
+            "base_url": default_delta_url
+        }
+    else:
         users["superadmin"] = {
             "username": "superadmin",
             "password_hash": target_hash,
