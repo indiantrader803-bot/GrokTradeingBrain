@@ -316,7 +316,7 @@ async def api_keys_page(request: Request):
     current_user = verify_session_token(token) if token else "superadmin"
 
     user_info = get_user_data(current_user) or {}
-    server_ip = os.getenv("SERVER_IP", "152.55.180.93")
+    server_ip = os.getenv("SERVER_IP", "152.55.181.218")
     return templates.TemplateResponse(
         "api_keys.html",
         {
@@ -344,7 +344,7 @@ async def save_api_keys(
 
     update_user_api_key(current_user, exchange, api_key, api_secret, base_url)
     user_info = get_user_data(current_user) or {}
-    server_ip = os.getenv("SERVER_IP", "152.55.180.93")
+    server_ip = os.getenv("SERVER_IP", "152.55.181.218")
 
     return templates.TemplateResponse(
         "api_keys.html",
@@ -550,7 +550,7 @@ async def restart_system():
     trading_mode = TradingMode.REAL if mode_str == "real" else TradingMode.DEMO
     starting_eq = float(os.getenv("STARTING_EQUITY", "3.0"))
     check_interval = int(os.getenv("CHECK_INTERVAL_SECONDS", "60"))
-    server_ip = os.getenv("SERVER_IP", "152.55.181.14")
+    server_ip = os.getenv("SERVER_IP", "152.55.181.218")
 
     config = SystemConfig(
         mode=trading_mode,
