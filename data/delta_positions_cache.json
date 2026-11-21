@@ -1,113 +1,14 @@
 {
-  "net_equity": 4.12240262664,
-  "available_cash": 0.3741592673316,
+  "net_equity": 4.22829005664,
+  "available_cash": 4.22829005664,
   "wallets": {
     "USD": {
-      "balance": 3.60330317664,
-      "available": 0.3741592673316,
-      "inr": 306.2807700144
+      "balance": 4.22829005664,
+      "available": 4.22829005664,
+      "inr": 359.4
     }
   },
-  "open_positions": [
-    {
-      "symbol": "XRPUSD",
-      "side": "SELL",
-      "size": 2.0,
-      "entry_price": 0.9633,
-      "mark_price": 0.90637288,
-      "margin": 0.48190707,
-      "unrealized_pnl": 0.114
-    },
-    {
-      "symbol": "WIFUSD",
-      "side": "SELL",
-      "size": 1.0,
-      "entry_price": 0.126,
-      "mark_price": 0.11889211,
-      "margin": 0.0315,
-      "unrealized_pnl": 0.0069
-    },
-    {
-      "symbol": "ADAUSD",
-      "side": "SELL",
-      "size": 2.0,
-      "entry_price": 0.14608,
-      "mark_price": 0.139477,
-      "margin": 0.07304,
-      "unrealized_pnl": 0.01256
-    },
-    {
-      "symbol": "SEIUSD",
-      "side": "SELL",
-      "size": 4.0,
-      "entry_price": 0.0374125,
-      "mark_price": 0.0348258,
-      "margin": 0.37427715,
-      "unrealized_pnl": 0.1029
-    },
-    {
-      "symbol": "LDOUSD",
-      "side": "SELL",
-      "size": 1.0,
-      "entry_price": 0.2554,
-      "mark_price": 0.23763131,
-      "margin": 0.06385,
-      "unrealized_pnl": 0.0175
-    },
-    {
-      "symbol": "APTUSD",
-      "side": "SELL",
-      "size": 1.0,
-      "entry_price": 0.4096,
-      "mark_price": 0.37742703,
-      "margin": 0.1024,
-      "unrealized_pnl": 0.0321
-    },
-    {
-      "symbol": "NEIROUSD",
-      "side": "SELL",
-      "size": 14.0,
-      "entry_price": 4.9828264910257e-05,
-      "mark_price": 4.486e-05,
-      "margin": 0.17298756,
-      "unrealized_pnl": 0.0687157
-    },
-    {
-      "symbol": "GRIFFAINUSD",
-      "side": "SELL",
-      "size": 2.0,
-      "entry_price": 0.009591,
-      "mark_price": 0.00857442,
-      "margin": 0.04817346,
-      "unrealized_pnl": 0.02006
-    },
-    {
-      "symbol": "ZORAUSD",
-      "side": "SELL",
-      "size": 5.0,
-      "entry_price": 0.004708,
-      "mark_price": 0.00458562,
-      "margin": 0.5885,
-      "unrealized_pnl": 0.0575
-    },
-    {
-      "symbol": "XAUTUSD",
-      "side": "SELL",
-      "size": 1.0,
-      "entry_price": 3567.43,
-      "mark_price": 3547.61305324,
-      "margin": 0.8918575,
-      "unrealized_pnl": 0.01954
-    },
-    {
-      "symbol": "JCTUSD",
-      "side": "SELL",
-      "size": 1.0,
-      "entry_price": 0.001573,
-      "mark_price": 0.00151222,
-      "margin": 0.39325,
-      "unrealized_pnl": 0.055
-    }
-  ],
-  "updated_at": 1795189622.3968298
+  "open_positions": [],
+  "open_positions_count": 0,
+  "updated_at": "2026-11-21 11:42:00"
 }

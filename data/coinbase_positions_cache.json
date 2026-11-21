@@ -1,23 +1,14 @@
 {
-  "net_equity": 4.91,
-  "available_cash": 4.91,
+  "net_equity": 4.9,
+  "available_cash": 4.9,
   "wallets": {
     "USDC": {
-      "balance": 4.91,
-      "available": 4.91,
-      "inr": 417.35
+      "balance": 4.9,
+      "available": 4.9,
+      "inr": 416.5
     }
   },
-  "open_positions": [
-    {
-      "symbol": "XPL_USDC-PERPETUAL",
-      "side": "BUY",
-      "size": 70.0,
-      "entry_price": 0.044,
-      "mark_price": 0.04404,
-      "unrealized_pnl": 0.0196,
-      "leverage": 1.0
-    }
-  ],
-  "open_positions_count": 1
+  "open_positions": [],
+  "open_positions_count": 0,
+  "updated_at": "2026-11-21 11:42:00"
 }

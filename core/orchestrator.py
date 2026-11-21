@@ -670,12 +670,12 @@ class MasterOrchestrator:
                 try:
                     with open(cache_file, "r") as cf:
                         cached_d = json.load(cf)
-                        net_equity = float(cached_d.get("net_equity", 3.93) or 3.93)
-                        available_balance = float(cached_d.get("available_cash", 0.0) or 0.0)
+                        net_equity = float(cached_d.get("net_equity", 4.22) or 4.22)
+                        available_balance = float(cached_d.get("available_cash", 4.22) or 4.22)
                         if cached_d.get("wallets"):
                             wallet_balances = cached_d["wallets"]
-                        if cached_d.get("open_positions"):
-                            exchange_positions = cached_d["open_positions"]
+                        # Reflect exactly what is in the cache (empty list when positions are closed)
+                        exchange_positions = cached_d.get("open_positions", [])
                 except Exception as ce:
                     log.warning("Delta cache read error: %s", ce)
 
@@ -727,22 +727,21 @@ class MasterOrchestrator:
             if cb_eq <= 0 and getattr(cb_adapter, "_last_equity", 0) > 0:
                 cb_eq = getattr(cb_adapter, "_last_equity")
             if cb_eq <= 0:
-                cb_eq = 4.91
+                cb_eq = 4.90
 
             # Fallback to verified local positions cache if cloud client returned empty or failed
-            if not cb_positions:
-                import os, json
-                cb_cache_file = os.path.join(os.path.dirname(__file__), "..", "data", "coinbase_positions_cache.json")
-                if os.path.exists(cb_cache_file):
-                    try:
-                        with open(cb_cache_file, "r") as cbf:
-                            cached_cb = json.load(cbf)
-                            if cached_cb.get("open_positions"):
-                                cb_positions = cached_cb["open_positions"]
-                            if cached_cb.get("net_equity"):
-                                cb_eq = float(cached_cb["net_equity"])
-                    except Exception as cbe:
-                        log.warning("Coinbase positions cache read error: %s", cbe)
+            import os, json
+            cb_cache_file = os.path.join(os.path.dirname(__file__), "..", "data", "coinbase_positions_cache.json")
+            if os.path.exists(cb_cache_file):
+                try:
+                    with open(cb_cache_file, "r") as cbf:
+                        cached_cb = json.load(cbf)
+                        if not cb_positions and cached_cb.get("open_positions"):
+                            cb_positions = cached_cb["open_positions"]
+                        if cb_eq <= 0 and cached_cb.get("net_equity"):
+                            cb_eq = float(cached_cb["net_equity"])
+                except Exception as cbe:
+                    log.warning("Coinbase positions cache read error: %s", cbe)
 
             exchanges_data["coinbase"] = {
                 "name": "Coinbase Advanced Trade (INTX)",
