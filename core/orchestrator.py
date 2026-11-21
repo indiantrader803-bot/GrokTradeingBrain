@@ -228,7 +228,7 @@ class MasterOrchestrator:
                 from coinbase.rest import RESTClient
                 c_client = getattr(adapter, "client", None) or RESTClient()
                 
-                # Coinbase INTX perpetual universe expansion (Top volume contracts)
+                # Strictly Global Derivatives (INTX) Perpetual contracts only - zero spot fallback
                 cb_perp_symbols = [
                     "XPL_USDC-PERPETUAL", "BTC_USDC-PERPETUAL", "ETH_USDC-PERPETUAL",
                     "SOL_USDC-PERPETUAL", "XRP_USDC-PERPETUAL", "DOGE_USDC-PERPETUAL",
@@ -255,24 +255,6 @@ class MasterOrchestrator:
                             })
                     except Exception as e:
                         log.debug("Coinbase perp fetch %s: %s", p_sym, e)
-
-                if not perp_tickers:
-                    prods = await asyncio.to_thread(c_client.get_public_products, limit=40)
-                    prod_list = getattr(prods, "products", [])
-                    for p in prod_list:
-                        pid = getattr(p, "product_id", "")
-                        if pid.endswith("-USD"):
-                            price_val = float(getattr(p, "price", 0) or 0)
-                            vol_val = float(getattr(p, "volume_24h", 0) or 0)
-                            perp_tickers.append({
-                                "symbol": pid,
-                                "close": price_val,
-                                "mark_price": price_val,
-                                "change_24h": 0.0,
-                                "volume_24h": vol_val,
-                                "turnover_usd": vol_val * price_val,
-                                "contract_type": "spot"
-                            })
             except Exception as e:
                 log.warning("Coinbase products request error: %s", e)
                 perp_tickers = []
