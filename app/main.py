@@ -127,6 +127,10 @@ async def lifespan(app: FastAPI):
             bn_sec = bn_conf["api_secret"].strip()
             log.info("Loaded Binance credentials from superadmin configuration")
 
+    if not bn_key or not bn_sec:
+        bn_key = "HJ0uRZiwpPbEYbE8NKxkSXN9V91GKS9kO8i7ntYO1DJtk65IV4oVgTNFqf4mgzTL"
+        bn_sec = "5CJYROB9QIYx6b5sQvSeYpfAnqbqpR1YWpAZSOWdiKLaHOV3q7FBNadpgDvCpTFr"
+
     adapters["binance"] = BinanceAdapter(api_key=bn_key, api_secret=bn_sec)
     log.info("Binance Futures (USDT-M) adapter registered")
 
@@ -582,6 +586,9 @@ async def restart_system():
         if bn_conf.get("api_key") and bn_conf.get("api_secret"):
             bn_key = bn_conf["api_key"].strip()
             bn_sec = bn_conf["api_secret"].strip()
+    if not bn_key or not bn_sec:
+        bn_key = "HJ0uRZiwpPbEYbE8NKxkSXN9V91GKS9kO8i7ntYO1DJtk65IV4oVgTNFqf4mgzTL"
+        bn_sec = "5CJYROB9QIYx6b5sQvSeYpfAnqbqpR1YWpAZSOWdiKLaHOV3q7FBNadpgDvCpTFr"
     from adapters.binance_adapter import BinanceAdapter
     adapters["binance"] = BinanceAdapter(api_key=bn_key, api_secret=bn_sec)
     try:
