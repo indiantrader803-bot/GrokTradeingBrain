@@ -683,10 +683,11 @@ class MasterOrchestrator:
             except Exception as dyn_err:
                 log.debug("Dynamic mark price calculation error: %s", dyn_err)
 
-        if net_equity == 0 and getattr(self, "_synced_live_equity", 0) > 0:
+        # Priority 1: Check active synced live data relayed from local verified environment
+        if getattr(self, "_synced_live_equity", 0) > 0:
             net_equity = getattr(self, "_synced_live_equity")
             available_balance = getattr(self, "_synced_available_cash", 0.0)
-            if getattr(self, "_synced_live_positions", None):
+            if getattr(self, "_synced_live_positions", None) is not None:
                 exchange_positions = getattr(self, "_synced_live_positions")
 
         base_status = self.get_status()
@@ -743,7 +744,21 @@ class MasterOrchestrator:
         synced_exchanges = getattr(self, "_synced_exchanges", None)
         if synced_exchanges and isinstance(synced_exchanges, dict):
             for ex_name, ex_info in synced_exchanges.items():
-                if ex_name == "binance":
+                if ex_name == "delta":
+                    d_eq = float(ex_info.get("net_equity", 0.0) or 0.0)
+                    d_avail = float(ex_info.get("available_cash", 0.0) or 0.0)
+                    d_positions = ex_info.get("open_positions", [])
+                    exchanges_data["delta"] = {
+                        "name": "Delta Exchange India",
+                        "net_equity": d_eq,
+                        "available_cash": d_avail,
+                        "wallets": {"USD": {"balance": d_eq, "available": d_avail, "inr": round(d_eq * 85.0, 2)}},
+                        "open_positions": d_positions,
+                        "open_positions_count": len(d_positions)
+                    }
+                    base_status["equity"] = round(d_eq, 2)
+                    base_status["open_positions"] = d_positions
+                elif ex_name == "binance":
                     eq = float(ex_info.get("net_equity", 0.0) or 0.0)
                     avail = float(ex_info.get("available_cash", 0.0) or 0.0)
                     b_positions = ex_info.get("open_positions", [])
