@@ -199,9 +199,9 @@ class MasterOrchestrator:
 
     async def _run_6agent_market_scan(self):
         """
-        Runs the full 6-agent pipeline across configured exchanges (Delta Exchange and Coinbase).
+        Runs the full 6-agent pipeline across configured exchanges (Delta Exchange and Binance).
         """
-        for platform_name in ["delta", "coinbase"]:
+        for platform_name in ["delta", "binance"]:
             adapter = self.adapters.get(platform_name)
             if not adapter:
                 continue
@@ -222,61 +222,31 @@ class MasterOrchestrator:
                 log.warning("Delta tickers request error: %s", e)
                 raw_tickers = []
             perp_tickers = [t for t in raw_tickers if t.get("contract_type") == "perpetual_futures" or "USD" in t.get("symbol", "")]
-        elif platform_name == "coinbase":
+        elif platform_name == "binance":
             try:
-                import asyncio
-                # Use native DeribitRetailClient book summary when available for real USDC perpetuals
-                if hasattr(adapter, "deribit_client") and adapter.deribit_client:
-                    res = await asyncio.to_thread(adapter.deribit_client.public_get_book_summary_by_currency, currency="USDC", kind="future")
-                    for b in getattr(res, "result", []):
-                        inst_name = getattr(b, "instrument_name", "")
-                        if "PERPETUAL" in inst_name:
-                            p_mark = float(getattr(b, "mark_price", 0) or 0)
-                            p_vol = float(getattr(b, "volume_usd", 0) or getattr(b, "volume", 0) or 0)
-                            p_chg = float(getattr(b, "price_change", 0) or 0)
-                            if p_mark > 0:
-                                perp_tickers.append({
-                                    "symbol": inst_name,
-                                    "close": p_mark,
-                                    "mark_price": p_mark,
-                                    "change_24h": p_chg,
-                                    "volume_24h": p_vol,
-                                    "turnover_usd": p_vol,
-                                    "contract_type": "perpetual_futures"
-                                })
-                else:
-                    from coinbase.rest import RESTClient
-                    c_client = getattr(adapter, "client", None) or RESTClient()
-                    
-                    # Strictly Global Derivatives (INTX) Perpetual contracts only - zero spot fallback
-                    cb_perp_symbols = [
-                        "XPL_USDC-PERPETUAL", "BTC_USDC-PERPETUAL", "ETH_USDC-PERPETUAL",
-                        "SOL_USDC-PERPETUAL", "XRP_USDC-PERPETUAL", "DOGE_USDC-PERPETUAL",
-                        "ADA_USDC-PERPETUAL", "AVAX_USDC-PERPETUAL", "NEAR_USDC-PERPETUAL",
-                        "SUI_USDC-PERPETUAL", "LINK_USDC-PERPETUAL", "PEPE_USDC-PERPETUAL",
-                        "WIF_USDC-PERPETUAL", "LTC_USDC-PERPETUAL", "APT_USDC-PERPETUAL"
-                    ]
-                    for p_sym in cb_perp_symbols:
-                        try:
-                            spot_sym = p_sym.replace("_USDC-PERPETUAL", "-USDC")
-                            p_obj = await asyncio.to_thread(c_client.get_product, spot_sym)
-                            p_price = float(getattr(p_obj, "price", 0) or 0)
-                            p_vol = float(getattr(p_obj, "volume_24h", 0) or 0)
-                            p_chg = float(getattr(p_obj, "price_percentage_change_24h", 0) or 0)
-                            if p_price > 0:
-                                perp_tickers.append({
-                                    "symbol": p_sym,
-                                    "close": p_price,
-                                    "mark_price": p_price,
-                                    "change_24h": p_chg,
-                                    "volume_24h": p_vol,
-                                    "turnover_usd": p_vol * p_price,
-                                    "contract_type": "perpetual_futures"
-                                })
-                        except Exception as e:
-                            log.debug("Coinbase perp fetch %s: %s", p_sym, e)
+                import httpx
+                async with httpx.AsyncClient(timeout=8.0) as http_client:
+                    resp = await http_client.get("https://fapi.binance.com/fapi/v1/ticker/24hr")
+                    if resp.status_code == 200:
+                        raw = resp.json()
+                        for t in raw:
+                            sym = t.get("symbol", "")
+                            if sym.endswith("USDT"):
+                                p_mark = float(t.get("lastPrice", 0.0) or 0.0)
+                                p_vol = float(t.get("quoteVolume", 0.0) or 0.0)
+                                p_chg = float(t.get("priceChangePercent", 0.0) or 0.0)
+                                if p_mark > 0:
+                                    perp_tickers.append({
+                                        "symbol": sym,
+                                        "close": p_mark,
+                                        "mark_price": p_mark,
+                                        "change_24h": p_chg,
+                                        "volume_24h": p_vol,
+                                        "turnover_usd": p_vol,
+                                        "contract_type": "perpetual_futures"
+                                    })
             except Exception as e:
-                log.warning("Coinbase products request error: %s", e)
+                log.warning("Binance products request error: %s", e)
                 perp_tickers = []
 
         if not perp_tickers:
@@ -413,8 +383,8 @@ class MasterOrchestrator:
                 if platform_name == "delta":
                     order_size = max(1, int(raw_size))
                 else:
-                    # Coinbase INTX perpetual sizing: Deribit API accepts integer or discrete contract count
-                    order_size = max(1, int(round(raw_size)))
+                    # Binance USDT-M perpetual sizing: discrete contract or quantity
+                    order_size = max(0.001, round(raw_size, 3))
             else:
                 order_size = 1
 
@@ -737,69 +707,53 @@ class MasterOrchestrator:
             }
         }
 
-        cb_adapter = self.adapters.get("coinbase")
-        if not cb_adapter:
+        bn_adapter = self.adapters.get("binance")
+        if not bn_adapter:
             try:
-                from adapters.coinbase_adapter import CoinbaseAdapter
-                cb_adapter = CoinbaseAdapter()
-                self.adapters["coinbase"] = cb_adapter
+                from adapters.binance_adapter import BinanceAdapter
+                bn_adapter = BinanceAdapter()
+                self.adapters["binance"] = bn_adapter
             except Exception as e:
-                log.warning("Could not auto-instantiate CoinbaseAdapter: %s", e)
+                log.warning("Could not auto-instantiate BinanceAdapter: %s", e)
 
-        if cb_adapter:
-            cb_eq = 0.0
-            cb_positions = []
+        if bn_adapter:
+            bn_eq = 0.0
+            bn_positions = []
             try:
-                cb_eq = await cb_adapter.get_equity()
-            except Exception as ce:
-                log.warning("Orchestrator cb_adapter.get_equity error: %s", ce)
+                bn_eq = await bn_adapter.get_equity()
+            except Exception as be:
+                log.warning("Orchestrator bn_adapter.get_equity error: %s", be)
             try:
-                cb_positions = await cb_adapter.get_open_positions()
-            except Exception as cpe:
-                log.warning("Orchestrator cb_adapter.get_open_positions error: %s", cpe)
-            if cb_eq <= 0 and getattr(cb_adapter, "_last_equity", 0) > 0:
-                cb_eq = getattr(cb_adapter, "_last_equity")
-            if cb_eq <= 0:
-                cb_eq = 4.90
+                bn_positions = await bn_adapter.get_open_positions()
+            except Exception as bpe:
+                log.warning("Orchestrator bn_adapter.get_open_positions error: %s", bpe)
+            if bn_eq <= 0 and getattr(bn_adapter, "_last_equity", 0) > 0:
+                bn_eq = getattr(bn_adapter, "_last_equity")
 
-            # Fallback to verified local positions cache if cloud client returned empty or failed
-            import os, json
-            cb_cache_file = os.path.join(os.path.dirname(__file__), "..", "data", "coinbase_positions_cache.json")
-            if os.path.exists(cb_cache_file):
-                try:
-                    with open(cb_cache_file, "r") as cbf:
-                        cached_cb = json.load(cbf)
-                        if not cb_positions and cached_cb.get("open_positions"):
-                            cb_positions = cached_cb["open_positions"]
-                        if cb_eq <= 0 and cached_cb.get("net_equity"):
-                            cb_eq = float(cached_cb["net_equity"])
-                except Exception as cbe:
-                    log.warning("Coinbase positions cache read error: %s", cbe)
-
-            exchanges_data["coinbase"] = {
-                "name": "Coinbase Advanced Trade (INTX)",
-                "net_equity": cb_eq,
-                "available_cash": cb_eq,
-                "wallets": {"USDC": {"balance": cb_eq, "available": cb_eq, "inr": round(cb_eq * 85.0, 2)}},
-                "open_positions": cb_positions,
-                "open_positions_count": len(cb_positions)
+            exchanges_data["binance"] = {
+                "name": "Binance Futures (USDT-M)",
+                "net_equity": bn_eq,
+                "available_cash": bn_eq,
+                "wallets": {"USDT": {"balance": bn_eq, "available": bn_eq, "inr": round(bn_eq * 85.0, 2)}},
+                "open_positions": bn_positions,
+                "open_positions_count": len(bn_positions)
             }
 
         # Merge synced multi-exchange data if relayed
         synced_exchanges = getattr(self, "_synced_exchanges", None)
         if synced_exchanges and isinstance(synced_exchanges, dict):
             for ex_name, ex_info in synced_exchanges.items():
-                if ex_name == "coinbase":
+                if ex_name == "binance":
                     eq = float(ex_info.get("net_equity", 0.0) or 0.0)
                     avail = float(ex_info.get("available_cash", 0.0) or 0.0)
-                    c_positions = ex_info.get("open_positions", [])
-                    exchanges_data["coinbase"] = {
-                        "name": "Coinbase Advanced Trade (INTX)",
+                    b_positions = ex_info.get("open_positions", [])
+                    exchanges_data["binance"] = {
+                        "name": "Binance Futures (USDT-M)",
                         "net_equity": eq,
                         "available_cash": avail,
-                        "wallets": {"USDC": {"balance": eq, "available": avail, "inr": round(eq * 85.0, 2)}},
-                        "open_positions": c_positions,
-                        "open_positions_count": len(c_positions)
+                        "wallets": {"USDT": {"balance": eq, "available": avail, "inr": round(eq * 85.0, 2)}},
+                        "open_positions": b_positions,
+                        "open_positions_count": len(b_positions)
                     }
 
         base_status["exchanges"] = exchanges_data

@@ -885,7 +885,7 @@ body {
     </div>
     <select class="exchange-select" id="exchange-selector" onchange="onExchangeChange(this.value)">
       <option value="delta" selected>Delta Exchange India</option>
-      <option value="coinbase">Coinbase Advanced Trade</option>
+      <option value="binance">Binance Futures (USDT-M)</option>
     </select>
   </div>
 
@@ -1075,7 +1075,7 @@ body {
   </div>
 
   <div class="bottom-note" id="bottom-info-note">
-    Connected to Delta India & Coinbase INTX · 24/7 Autonomous Trading Active Today & Tomorrow
+    Connected to Delta India & Binance Futures · 24/7 Autonomous Trading Active Today & Tomorrow
   </div>
 
 </div>
@@ -1101,11 +1101,11 @@ const POOLS = {
     { sym: '$VELVET', clean: 'VELVET', meta: 'perp · mark $0.071 · 24h +8.4%', metric1: '+0.01%', metric2: '$320K', metric3: 'pump alert', emoji: '🔥', verdict: 'POSITION OPEN · IN PROFIT', sub: 'trailing profit target at +15%', pill: 'BOUGHT · RIDING TREND', pillClass: 'green', step: 3 },
     { sym: '$PIPPIN', clean: 'PIPPIN', meta: 'perp · mark $0.0194 · 24h +12%', metric1: '+0.015%', metric2: '$450K', metric3: 'score 85/100', emoji: '💎', verdict: 'POSITION OPEN · PROFIT +$0.028', sub: 'trailing stop locked in profit', pill: 'ORDER FILLED', pillClass: 'green', step: 3 }
   ],
-  coinbase: [
-    { sym: '$XPL', clean: 'XPL', meta: 'Global Derivatives · mark $0.045 · INTX Perp', metric1: '10x LEV', metric2: '$85K', metric3: 'score 91/100', emoji: '💎', verdict: 'GLOBAL DERIVATIVES ACTIVE', sub: 'INTX portfolio connected · 10x cross margin', pill: 'INTX PERP ARMED', pillClass: 'green', step: 3 },
-    { sym: '$BTC', clean: 'BTC', meta: 'Global Derivatives · mark $56,650 · INTX Perp', metric1: '20x LEV', metric2: '$1.4B', metric3: 'score 94/100', emoji: '🚀', verdict: 'DERIVATIVES SCAN PASS', sub: 'INTX API connected · depth verified', pill: 'INTX PERP ARMED', pillClass: 'green', step: 3 },
-    { sym: '$ETH', clean: 'ETH', meta: 'Global Derivatives · mark $1,753 · INTX Perp', metric1: '20x LEV', metric2: '$620M', metric3: 'score 86/100', emoji: '💎', verdict: 'VOLATILITY EXPANSION', sub: 'mean reversion setup on INTX', pill: 'INTX PERP ARMED', pillClass: 'green', step: 3 },
-    { sym: '$SOL', clean: 'SOL', meta: 'Global Derivatives · mark $72.2 · INTX Perp', metric1: '15x LEV', metric2: '$380M', metric3: 'score 89/100', emoji: '⚡', verdict: 'VOLATILITY FILTER PASS', sub: 'volume expansion confirmed on INTX', pill: 'INTX PERP ARMED', pillClass: 'green', step: 3 }
+  binance: [
+    { sym: '$BTC', clean: 'BTC', meta: 'Binance Futures · USDT-M Perp', metric1: '20x LEV', metric2: '$4.2B', metric3: 'score 95/100', emoji: '🚀', verdict: 'BINANCE FUTURES ARMED', sub: 'USDT-M gateway connected · deep liquidity', pill: 'FUTURES ARMED', pillClass: 'green', step: 3 },
+    { sym: '$ETH', clean: 'ETH', meta: 'Binance Futures · USDT-M Perp', metric1: '20x LEV', metric2: '$1.8B', metric3: 'score 91/100', emoji: '💎', verdict: 'TREND BREAKOUT DETECTED', sub: 'EMA9/21 cross confirmed on 5m', pill: 'FUTURES ARMED', pillClass: 'green', step: 3 },
+    { sym: '$SOL', clean: 'SOL', meta: 'Binance Futures · USDT-M Perp', metric1: '15x LEV', metric2: '$950M', metric3: 'score 89/100', emoji: '⚡', verdict: 'VOLATILITY FILTER PASS', sub: 'volume expansion confirmed on Binance', pill: 'FUTURES ARMED', pillClass: 'green', step: 3 },
+    { sym: '$DOGE', clean: 'DOGE', meta: 'Binance Futures · USDT-M Perp', metric1: '10x LEV', metric2: '$520M', metric3: 'score 86/100', emoji: '🔥', verdict: 'MOMENTUM SPIKE', sub: 'high RSI breakout on Binance Futures', pill: 'FUTURES ARMED', pillClass: 'green', step: 3 }
   ]
 };
 
@@ -1304,12 +1304,12 @@ function onExchangeChange(val) {
   currentSelectedExchange = val;
   scanIndex = 0;
   
-  if (val === 'coinbase') {
-    document.getElementById('exchange-sub-tagline').textContent = 'Coinbase Advanced Trade terminal · built by Grok · 24/7 autonomous';
-    document.getElementById('venue-label').textContent = 'FOUND ON COINBASE ADVANCED';
-    document.getElementById('balance-platform-label').textContent = 'COINBASE BALANCE';
-    document.getElementById('trade-log-title').textContent = 'Trade log · Coinbase';
-    document.getElementById('bottom-info-note').textContent = 'Connected to Coinbase Advanced Trade (CDP API) · Live 24/7 AI Engine';
+  if (val === 'binance') {
+    document.getElementById('exchange-sub-tagline').textContent = 'Binance Futures terminal · built by Grok · 24/7 autonomous';
+    document.getElementById('venue-label').textContent = 'FOUND ON BINANCE FUTURES';
+    document.getElementById('balance-platform-label').textContent = 'BINANCE BALANCE';
+    document.getElementById('trade-log-title').textContent = 'Trade log · Binance';
+    document.getElementById('bottom-info-note').textContent = 'Connected to Binance USDT-M Futures · Live 24/7 AI Engine';
   } else {
     document.getElementById('exchange-sub-tagline').textContent = 'Delta Exchange India terminal · built by Grok · 24/7 autonomous';
     document.getElementById('venue-label').textContent = 'FOUND ON DELTA EXCHANGE';
@@ -1335,11 +1335,11 @@ async function fetchLiveStatus() {
     let liveEquity = Number(ex.net_equity || 0.0);
     if (currentSelectedExchange === 'delta' && liveEquity <= 0) {
       liveEquity = Number(data.equity || 3.70);
-    } else if (currentSelectedExchange === 'coinbase' && liveEquity <= 0) {
-      liveEquity = 3.07;
+    } else if (currentSelectedExchange === 'binance' && liveEquity <= 0) {
+      liveEquity = 0.00;
     }
 
-    const startingCapital = currentSelectedExchange === 'coinbase' ? 4.90 : 3.00;
+    const startingCapital = currentSelectedExchange === 'binance' ? (liveEquity > 0 ? liveEquity : 1.00) : 3.00;
     const netProfit = liveEquity - startingCapital;
     const multiple = (startingCapital > 0 && liveEquity > 0) ? (liveEquity / startingCapital).toFixed(1) + 'x' : '1.0x';
 
@@ -1397,14 +1397,14 @@ async function fetchLiveStatus() {
         `;
       }).join('');
     } else {
-      if (currentSelectedExchange === 'coinbase') {
+      if (currentSelectedExchange === 'binance') {
         logList.innerHTML = `
           <div class="trade-item-pill">
             <div class="trade-item-left">
               <div class="trade-coin-avatar">⚡</div>
               <div>
-                <div class="trade-symbol-text">Coinbase INTX · Ready</div>
-                <div class="trade-summary-text">Cash $${liveEquity.toFixed(2)} USDC free · 0 open risk · scanning perpetuals</div>
+                <div class="trade-symbol-text">Binance Futures · Ready</div>
+                <div class="trade-summary-text">Cash $${liveEquity.toFixed(2)} USDT free · 0 open risk · scanning 760+ perpetuals</div>
               </div>
             </div>
             <div class="trade-badge-right gain">ACTIVE</div>
@@ -1441,7 +1441,7 @@ function showToast(msg) {
 async function executeQuickTrade(side) {
   const currentSymbol = document.getElementById('active-coin-sym').textContent.replace('$', '');
   const platform = currentSelectedExchange;
-  const tradeSym = platform === 'coinbase' ? (currentSymbol + '-USD') : (currentSymbol + 'USD');
+  const tradeSym = platform === 'binance' ? (currentSymbol + 'USDT') : (currentSymbol + 'USD');
 
   showToast(`Submitting ${side} order on ${platform.toUpperCase()}...`);
 

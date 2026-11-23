@@ -114,32 +114,21 @@ async def lifespan(app: FastAPI):
     else:
         log.info("Delta Exchange India adapter not activated (DELTA_INDIA_API_KEY or DELTA_INDIA_API_SECRET not set in .env)")
 
-    # Coinbase Advanced Trade Integration
-    from adapters.coinbase_adapter import CoinbaseAdapter
-    cb_key = os.getenv("COINBASE_API_KEY", "").strip()
-    cb_sec = os.getenv("COINBASE_API_SECRET", "").strip()
+    # Binance Futures (USDT-M) Integration
+    from adapters.binance_adapter import BinanceAdapter
+    bn_key = os.getenv("BINANCE_API_KEY", "").strip()
+    bn_sec = os.getenv("BINANCE_API_SECRET", "").strip()
 
-    if not cb_key or not cb_sec:
+    if not bn_key or not bn_sec:
         super_data = get_user_data("superadmin") or {}
-        cb_conf = super_data.get("api_keys", {}).get("coinbase", {})
-        if cb_conf.get("api_key") and cb_conf.get("api_secret"):
-            cb_key = cb_conf["api_key"].strip()
-            cb_sec = cb_conf["api_secret"].strip()
-            log.info("Loaded Coinbase credentials from superadmin configuration")
+        bn_conf = super_data.get("api_keys", {}).get("binance", {})
+        if bn_conf.get("api_key") and bn_conf.get("api_secret"):
+            bn_key = bn_conf["api_key"].strip()
+            bn_sec = bn_conf["api_secret"].strip()
+            log.info("Loaded Binance credentials from superadmin configuration")
 
-    # Cloud server fallback credentials to guarantee 24/7 Coinbase INTX execution
-    if not cb_key or not cb_sec:
-        import base64
-        try:
-            cb_key = base64.b64decode("b3JnYW5pemF0aW9ucy82ZDI3MjE2ZC04MTAxLTQ5NWMtYjIzNC0zNTJjZjc4ODFmMWQvYXBpS2V5cy8yYjEwYWQ4My1jM2MzLTQyYmUtODM2Zi1hMTA4ZGRjMTNiZDU=").decode()
-            cb_sec = base64.b64decode("blJrREM1Q1VWN3RnOVJOWHNCUEF4bDVVcHgzQTF6TUpURUtJQUlCTEJ0MjErZjFWZGp1RzVkNjFkSnNraVZJQXQ2eFdqWEZHYmpuN2QzT0UzcmtZUlE9PQ==").decode()
-            log.info("Loaded default Coinbase INTX credentials for 24/7 cloud execution")
-        except Exception:
-            pass
-
-    if cb_key and cb_sec:
-        adapters["coinbase"] = CoinbaseAdapter(api_key=cb_key, api_secret=cb_sec)
-        log.info("Coinbase Advanced Trade adapter registered (CDP Key configured)")
+    adapters["binance"] = BinanceAdapter(api_key=bn_key, api_secret=bn_sec)
+    log.info("Binance Futures (USDT-M) adapter registered")
 
     # Only fallback to paper if in DEMO mode or no real exchange configured
     if trading_mode == TradingMode.DEMO or not adapters:
@@ -585,24 +574,16 @@ async def restart_system():
     )
     adapters["delta"] = delta_adapter
 
-    cb_key = os.getenv("COINBASE_API_KEY", "").strip()
-    cb_sec = os.getenv("COINBASE_API_SECRET", "").strip()
-    if not cb_key or not cb_sec:
+    bn_key = os.getenv("BINANCE_API_KEY", "").strip()
+    bn_sec = os.getenv("BINANCE_API_SECRET", "").strip()
+    if not bn_key or not bn_sec:
         super_data = get_user_data("superadmin") or {}
-        cb_conf = super_data.get("api_keys", {}).get("coinbase", {})
-        if cb_conf.get("api_key") and cb_conf.get("api_secret"):
-            cb_key = cb_conf["api_key"].strip()
-            cb_sec = cb_conf["api_secret"].strip()
-    if not cb_key or not cb_sec:
-        import base64
-        try:
-            cb_key = base64.b64decode("b3JnYW5pemF0aW9ucy82ZDI3MjE2ZC04MTAxLTQ5NWMtYjIzNC0zNTJjZjc4ODFmMWQvYXBpS2V5cy8yYjEwYWQ4My1jM2MzLTQyYmUtODM2Zi1hMTA4ZGRjMTNiZDU=").decode()
-            cb_sec = base64.b64decode("blJrREM1Q1VWN3RnOVJOWHNCUEF4bDVVcHgzQTF6TUpURUtJQUlCTEJ0MjErZjFWZGp1RzVkNjFkSnNraVZJQXQ2eFdqWEZHYmpuN2QzT0UzcmtZUlE9PQ==").decode()
-        except Exception:
-            pass
-    if cb_key and cb_sec:
-        from adapters.coinbase_adapter import CoinbaseAdapter
-        adapters["coinbase"] = CoinbaseAdapter(api_key=cb_key, api_secret=cb_sec)
+        bn_conf = super_data.get("api_keys", {}).get("binance", {})
+        if bn_conf.get("api_key") and bn_conf.get("api_secret"):
+            bn_key = bn_conf["api_key"].strip()
+            bn_sec = bn_conf["api_secret"].strip()
+    from adapters.binance_adapter import BinanceAdapter
+    adapters["binance"] = BinanceAdapter(api_key=bn_key, api_secret=bn_sec)
     try:
         live_eq = await delta_adapter.get_equity()
         if live_eq > 0:

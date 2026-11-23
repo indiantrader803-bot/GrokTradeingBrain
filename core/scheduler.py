@@ -42,7 +42,7 @@ class TradingScheduler:
         Permits continuous trading across both exchanges today (Saturday) and tomorrow (Sunday).
         """
         if self.config.trade_weekends_247_crypto or self.is_weekday():
-            return True, "Trading Active – 24/7 autonomous session across Delta and Coinbase"
+            return True, "Trading Active – 24/7 autonomous session across Delta and Binance"
 
         # If weekend trading is explicitly turned off
         if self.is_weekend():

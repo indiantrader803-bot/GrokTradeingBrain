@@ -72,7 +72,7 @@ class SystemConfig:
     # All supported platforms
     enabled_platforms: List[str] = field(default_factory=lambda: [
         "paper",
-        "coinbase",
+        "binance",
         "delta",
         "coinswitch",
         "myfundedperps",

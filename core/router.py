@@ -11,7 +11,7 @@ class PlatformRouter:
     """
 
     # Priority order when multiple platforms can trade the same symbol
-    CRYPTO_PRIORITY = ["coinbase", "delta", "myfundedperps", "coinswitch", "paper"]
+    CRYPTO_PRIORITY = ["binance", "delta", "myfundedperps", "coinswitch", "paper"]
     TRADITIONAL_PRIORITY = ["mt5", "paper"]
 
     @staticmethod
@@ -74,4 +74,4 @@ class PlatformRouter:
         if asset_class == "memecoin":
             return ["delta", "myfundedperps", "coinswitch"]
         # Normal crypto
-        return ["coinbase", "delta", "myfundedperps", "coinswitch", "mt5"]
+        return ["binance", "delta", "myfundedperps", "coinswitch", "mt5"]
