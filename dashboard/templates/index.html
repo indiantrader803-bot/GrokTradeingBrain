@@ -1339,7 +1339,7 @@ async function fetchLiveStatus() {
       liveEquity = 3.07;
     }
 
-    const startingCapital = 3.00;
+    const startingCapital = currentSelectedExchange === 'coinbase' ? 4.90 : 3.00;
     const netProfit = liveEquity - startingCapital;
     const multiple = (startingCapital > 0 && liveEquity > 0) ? (liveEquity / startingCapital).toFixed(1) + 'x' : '1.0x';
 
