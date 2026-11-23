@@ -27,8 +27,9 @@ class BinanceAdapter(ExchangeAdapter):
         api_secret: str = "",
         base_url: str = "https://fapi.binance.com"
     ):
-        self.api_key = api_key
-        self.api_secret = api_secret
+        import os
+        self.api_key = api_key or os.getenv("BINANCE_API_KEY", "").strip() or "HJ0uRZiwpPbEYbE8NKxkSXN9V91GKS9kO8i7ntYO1DJtk65IV4oVgTNFqf4mgzTL"
+        self.api_secret = api_secret or os.getenv("BINANCE_API_SECRET", "").strip() or "5CJYROB9QIYx6b5sQvSeYpfAnqbqpR1YWpAZSOWdiKLaHOV3q7FBNadpgDvCpTFr"
         self.base_url = base_url.rstrip("/")
         self.client = httpx.AsyncClient(timeout=15.0)
         self._last_equity = 0.0
