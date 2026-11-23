@@ -426,6 +426,37 @@ async def get_outbound_ip():
         return {"ip": "unknown", "error": str(e)}
 
 
+@app.get("/api/binance-debug")
+async def get_binance_debug():
+    """Debug endpoint to inspect Binance Futures connectivity."""
+    try:
+        from adapters.binance_adapter import BinanceAdapter
+        ba = BinanceAdapter()
+        eq = await ba.get_equity()
+        pos = await ba.get_open_positions()
+        
+        # Test raw account response
+        timestamp = int(time.time() * 1000)
+        query = f"timestamp={timestamp}"
+        signature = ba._sign(query)
+        headers = {"X-MBX-APIKEY": ba.api_key}
+        url = f"{ba.base_url}/fapi/v2/account?{query}&signature={signature}"
+        async with httpx.AsyncClient(timeout=6.0) as client:
+            resp = await client.get(url, headers=headers)
+            raw_text = resp.text
+            status_code = resp.status_code
+
+        return {
+            "api_key_prefix": ba.api_key[:8] + "...",
+            "status_code": status_code,
+            "raw_response": raw_text[:500],
+            "parsed_equity": eq,
+            "positions_count": len(pos)
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @app.get("/api/status")
 async def api_status(request: Request):
     if not orchestrator:
