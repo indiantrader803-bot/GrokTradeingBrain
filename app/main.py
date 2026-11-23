@@ -422,6 +422,17 @@ async def save_strategy(
     )
 
 
+@app.get("/api/ip")
+async def get_outbound_ip():
+    """Returns the outbound public IP of this server instance for exchange whitelisting."""
+    try:
+        async with httpx.AsyncClient(timeout=4.0) as client:
+            resp = await client.get("https://api.ipify.org?format=json")
+            return resp.json()
+    except Exception as e:
+        return {"ip": "unknown", "error": str(e)}
+
+
 @app.get("/api/status")
 async def api_status(request: Request):
     if not orchestrator:

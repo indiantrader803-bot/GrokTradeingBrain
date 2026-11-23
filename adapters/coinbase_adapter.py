@@ -167,9 +167,49 @@ class CoinbaseAdapter(ExchangeAdapter):
             return 0.0
 
     async def get_candles(self, symbol: str, resolution: str = "5m", limit_hours: int = 4) -> List[Dict[str, Any]]:
-        """Fetches historical candles from Coinbase for strategy scoring."""
+        """Fetches historical candles from Coinbase Global Derivatives (drb.coinbase.com) or Advanced Trade."""
         product_id = self._normalize_symbol(symbol)
-        # Use spot product_id for candles if perpetual has 0 public candles
+        
+        # 1. Native Global Derivatives (Deribit) Tradingview Candles Endpoint
+        if "-PERPETUAL" in product_id or hasattr(self, "deribit_client"):
+            try:
+                import httpx
+                now_ms = int(time.time() * 1000)
+                start_ms = now_ms - (3600 * limit_hours * 1000)
+                res_min = "5"
+                if resolution == "1m": res_min = "1"
+                elif resolution == "15m": res_min = "15"
+                elif resolution == "1h": res_min = "60"
+                elif resolution == "1d": res_min = "1D"
+
+                url = f"https://drb.coinbase.com/api/v2/public/get_tradingview_chart_data?instrument_name={product_id}&start_timestamp={start_ms}&end_timestamp={now_ms}&resolution={res_min}"
+                async with httpx.AsyncClient(timeout=6.0) as http_client:
+                    r = await http_client.get(url)
+                    if r.status_code == 200:
+                        d = r.json().get("result", {})
+                        ticks = d.get("ticks", [])
+                        closes = d.get("close", [])
+                        opens = d.get("open", [])
+                        highs = d.get("high", [])
+                        lows = d.get("low", [])
+                        vols = d.get("volume", [])
+                        parsed = []
+                        for i in range(len(ticks)):
+                            parsed.append({
+                                "start": int(ticks[i] // 1000),
+                                "open": float(opens[i] if i < len(opens) else closes[i]),
+                                "high": float(highs[i] if i < len(highs) else closes[i]),
+                                "low": float(lows[i] if i < len(lows) else closes[i]),
+                                "close": float(closes[i]),
+                                "volume": float(vols[i] if i < len(vols) else 0.0)
+                            })
+                        if parsed:
+                            parsed.sort(key=lambda x: x["start"])
+                            return parsed
+            except Exception as drb_candle_err:
+                log.debug("Deribit candle fetch error for %s: %s", product_id, drb_candle_err)
+
+        # 2. Standard Coinbase Advanced Trade Fallback
         candle_prod = product_id.replace("_USDC-PERPETUAL", "-USDC") if "-PERPETUAL" in product_id else product_id
         now = int(time.time())
         start = now - (3600 * limit_hours)
@@ -253,11 +293,11 @@ class CoinbaseAdapter(ExchangeAdapter):
                         label=f"grok-{client_order_id[:8]}"
                     )
                 res_dict = getattr(res, "result", None) or (res.get("result", {}) if isinstance(res, dict) else {})
-                order_info = res_dict.get("order", {})
-                oid = order_info.get("order_id", f"cb_drb_{int(time.time())}")
+                order_info = getattr(res_dict, "order", None) or (res_dict.get("order", {}) if isinstance(res_dict, dict) else {})
+                oid = getattr(order_info, "order_id", None) or (order_info.get("order_id") if isinstance(order_info, dict) else f"cb_drb_{int(time.time())}")
                 log.info("Coinbase Global Derivatives order executed: %s %s size=%s oid=%s", side_norm, product_id, size, oid)
                 return {
-                    "order_id": oid,
+                    "order_id": str(oid),
                     "status": "filled",
                     "symbol": product_id,
                     "side": side_norm,
