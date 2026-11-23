@@ -234,13 +234,24 @@ class CoinbaseAdapter(ExchangeAdapter):
             try:
                 amt = float(size)
                 fn = self.deribit_client.private_buy if side_norm == "BUY" else self.deribit_client.private_sell
-                res = await asyncio.to_thread(
-                    fn,
-                    instrument_name=product_id,
-                    amount=amt,
-                    type="market",
-                    label=f"grok-{client_order_id[:8]}"
-                )
+                # Try placing by contracts first (most standard on Deribit), fallback to amount
+                try:
+                    res = await asyncio.to_thread(
+                        fn,
+                        instrument_name=product_id,
+                        contracts=amt,
+                        type="market",
+                        label=f"grok-{client_order_id[:8]}"
+                    )
+                except Exception as ce_err:
+                    log.info("Contracts order fallback to amount: %s", ce_err)
+                    res = await asyncio.to_thread(
+                        fn,
+                        instrument_name=product_id,
+                        amount=amt,
+                        type="market",
+                        label=f"grok-{client_order_id[:8]}"
+                    )
                 res_dict = getattr(res, "result", None) or (res.get("result", {}) if isinstance(res, dict) else {})
                 order_info = res_dict.get("order", {})
                 oid = order_info.get("order_id", f"cb_drb_{int(time.time())}")

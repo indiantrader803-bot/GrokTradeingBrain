@@ -225,36 +225,56 @@ class MasterOrchestrator:
         elif platform_name == "coinbase":
             try:
                 import asyncio
-                from coinbase.rest import RESTClient
-                c_client = getattr(adapter, "client", None) or RESTClient()
-                
-                # Strictly Global Derivatives (INTX) Perpetual contracts only - zero spot fallback
-                cb_perp_symbols = [
-                    "XPL_USDC-PERPETUAL", "BTC_USDC-PERPETUAL", "ETH_USDC-PERPETUAL",
-                    "SOL_USDC-PERPETUAL", "XRP_USDC-PERPETUAL", "DOGE_USDC-PERPETUAL",
-                    "ADA_USDC-PERPETUAL", "AVAX_USDC-PERPETUAL", "NEAR_USDC-PERPETUAL",
-                    "SUI_USDC-PERPETUAL", "LINK_USDC-PERPETUAL", "PEPE_USDC-PERPETUAL",
-                    "WIF_USDC-PERPETUAL", "LTC_USDC-PERPETUAL", "APT_USDC-PERPETUAL"
-                ]
-                for p_sym in cb_perp_symbols:
-                    try:
-                        spot_sym = p_sym.replace("_USDC-PERPETUAL", "-USDC")
-                        p_obj = await asyncio.to_thread(c_client.get_product, spot_sym)
-                        p_price = float(getattr(p_obj, "price", 0) or 0)
-                        p_vol = float(getattr(p_obj, "volume_24h", 0) or 0)
-                        p_chg = float(getattr(p_obj, "price_percentage_change_24h", 0) or 0)
-                        if p_price > 0:
-                            perp_tickers.append({
-                                "symbol": p_sym,
-                                "close": p_price,
-                                "mark_price": p_price,
-                                "change_24h": p_chg,
-                                "volume_24h": p_vol,
-                                "turnover_usd": p_vol * p_price,
-                                "contract_type": "perpetual_futures"
-                            })
-                    except Exception as e:
-                        log.debug("Coinbase perp fetch %s: %s", p_sym, e)
+                # Use native DeribitRetailClient book summary when available for real USDC perpetuals
+                if hasattr(adapter, "deribit_client") and adapter.deribit_client:
+                    res = await asyncio.to_thread(adapter.deribit_client.public_get_book_summary_by_currency, currency="USDC", kind="future")
+                    for b in getattr(res, "result", []):
+                        inst_name = getattr(b, "instrument_name", "")
+                        if "PERPETUAL" in inst_name:
+                            p_mark = float(getattr(b, "mark_price", 0) or 0)
+                            p_vol = float(getattr(b, "volume_usd", 0) or getattr(b, "volume", 0) or 0)
+                            p_chg = float(getattr(b, "price_change", 0) or 0)
+                            if p_mark > 0:
+                                perp_tickers.append({
+                                    "symbol": inst_name,
+                                    "close": p_mark,
+                                    "mark_price": p_mark,
+                                    "change_24h": p_chg,
+                                    "volume_24h": p_vol,
+                                    "turnover_usd": p_vol,
+                                    "contract_type": "perpetual_futures"
+                                })
+                else:
+                    from coinbase.rest import RESTClient
+                    c_client = getattr(adapter, "client", None) or RESTClient()
+                    
+                    # Strictly Global Derivatives (INTX) Perpetual contracts only - zero spot fallback
+                    cb_perp_symbols = [
+                        "XPL_USDC-PERPETUAL", "BTC_USDC-PERPETUAL", "ETH_USDC-PERPETUAL",
+                        "SOL_USDC-PERPETUAL", "XRP_USDC-PERPETUAL", "DOGE_USDC-PERPETUAL",
+                        "ADA_USDC-PERPETUAL", "AVAX_USDC-PERPETUAL", "NEAR_USDC-PERPETUAL",
+                        "SUI_USDC-PERPETUAL", "LINK_USDC-PERPETUAL", "PEPE_USDC-PERPETUAL",
+                        "WIF_USDC-PERPETUAL", "LTC_USDC-PERPETUAL", "APT_USDC-PERPETUAL"
+                    ]
+                    for p_sym in cb_perp_symbols:
+                        try:
+                            spot_sym = p_sym.replace("_USDC-PERPETUAL", "-USDC")
+                            p_obj = await asyncio.to_thread(c_client.get_product, spot_sym)
+                            p_price = float(getattr(p_obj, "price", 0) or 0)
+                            p_vol = float(getattr(p_obj, "volume_24h", 0) or 0)
+                            p_chg = float(getattr(p_obj, "price_percentage_change_24h", 0) or 0)
+                            if p_price > 0:
+                                perp_tickers.append({
+                                    "symbol": p_sym,
+                                    "close": p_price,
+                                    "mark_price": p_price,
+                                    "change_24h": p_chg,
+                                    "volume_24h": p_vol,
+                                    "turnover_usd": p_vol * p_price,
+                                    "contract_type": "perpetual_futures"
+                                })
+                        except Exception as e:
+                            log.debug("Coinbase perp fetch %s: %s", p_sym, e)
             except Exception as e:
                 log.warning("Coinbase products request error: %s", e)
                 perp_tickers = []
@@ -393,17 +413,8 @@ class MasterOrchestrator:
                 if platform_name == "delta":
                     order_size = max(1, int(raw_size))
                 else:
-                    # Coinbase INTX perpetual sizing by asset
-                    if "XPL" in best_candidate["symbol"]:
-                        order_size = max(0.1, round(raw_size, 1))
-                    elif any(k in best_candidate["symbol"] for k in ["DOGE", "ADA", "XRP"]):
-                        order_size = max(1.0, round(raw_size, 0))
-                    elif "AVAX" in best_candidate["symbol"]:
-                        order_size = max(0.001, round(raw_size, 3))
-                    elif "SOL" in best_candidate["symbol"]:
-                        order_size = max(0.001, round(raw_size, 3))
-                    else:
-                        order_size = max(0.0001, round(raw_size, 4))
+                    # Coinbase INTX perpetual sizing: Deribit API accepts integer or discrete contract count
+                    order_size = max(1, int(round(raw_size)))
             else:
                 order_size = 1
 
@@ -689,21 +700,16 @@ class MasterOrchestrator:
                                 mark_p = float(res_data.get("mark_price", 0) or 0)
                                 if mark_p > 0:
                                     pos["mark_price"] = mark_p
-                                    entry_p = float(pos.get("entry_price", mark_p) or mark_p)
-                                    p_size = float(pos.get("size", 1.0) or 1.0)
-                                    side = pos.get("side", "BUY").upper()
-                                    
-                                    # Contract value calculation (BTC is 0.001 BTC per contract on Delta)
-                                    c_val = 0.001 if "BTC" in clean_sym else 1.0
-                                    pnl = (mark_p - entry_p) * c_val * p_size if side == "BUY" else (entry_p - mark_p) * c_val * p_size
-                                    pos["unrealized_pnl"] = round(pnl, 4)
-                                    total_unrealized_pnl += pnl
+                                    # If exchange did not already supply exact unrealized_pnl, calculate it
+                                    if "unrealized_pnl" not in pos or pos.get("unrealized_pnl") is None:
+                                        entry_p = float(pos.get("entry_price", mark_p) or mark_p)
+                                        p_size = float(pos.get("size", 1.0) or 1.0)
+                                        side = pos.get("side", "BUY").upper()
+                                        c_val = 0.001 if any(k in clean_sym for k in ["BTC", "PAXG", "XAUT"]) else 1.0
+                                        pnl = (mark_p - entry_p) * c_val * p_size if side == "BUY" else (entry_p - mark_p) * c_val * p_size
+                                        pos["unrealized_pnl"] = round(pnl, 4)
                         except Exception as ticker_err:
                             log.debug("Mark price fetch error for %s: %s", sym, ticker_err)
-
-                # Re-calculate live net equity dynamically (cash + total unrealized PnL + margin)
-                if net_equity > 0:
-                    net_equity = round(net_equity + total_unrealized_pnl, 4)
             except Exception as dyn_err:
                 log.debug("Dynamic mark price calculation error: %s", dyn_err)
 
