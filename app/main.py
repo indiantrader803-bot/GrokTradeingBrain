@@ -46,13 +46,14 @@ log = logging.getLogger("App")
 # Global orchestrator instance
 orchestrator: MasterOrchestrator | None = None
 background_task = None
+relayer_task = None
 
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "dashboard" / "templates"))
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global orchestrator, background_task
+    global orchestrator, background_task, relayer_task
 
     mode_str = os.getenv("TRADING_MODE", "real").lower()
     trading_mode = TradingMode.REAL if mode_str == "real" else TradingMode.DEMO
@@ -139,9 +140,89 @@ async def lifespan(app: FastAPI):
         adapters["paper"] = PaperAdapter(starting_equity=config.starting_equity)
 
 
+    async def server_unified_relayer_loop():
+        """Embedded 24/7 server background task: continuously syncs live Delta Exchange & Binance data."""
+        log.info("Starting embedded server-side unified relayer background loop...")
+        while True:
+            try:
+                # 1. Delta Live Sync
+                if orchestrator and "delta" in orchestrator.adapters:
+                    d_adapter = orchestrator.adapters["delta"]
+                    try:
+                        raw_pos = await d_adapter.get_open_positions()
+                        positions = []
+                        for p in raw_pos:
+                            p_size = float(p.get("size", 0) or 0)
+                            if p_size != 0:
+                                positions.append({
+                                    "symbol": p.get("product_symbol", "UNKNOWN"),
+                                    "side": "BUY" if p_size > 0 else "SELL",
+                                    "size": abs(p_size),
+                                    "entry_price": float(p.get("entry_price", 0) or 0),
+                                    "mark_price": float(p.get("mark_price", 0) or 0),
+                                    "margin": float(p.get("margin", 0) or 0),
+                                    "unrealized_pnl": float(p.get("unrealized_pnl", 0) or 0)
+                                })
+                        raw_wallets = await d_adapter._request("GET", "/v2/wallet/balances")
+                        meta = raw_wallets.get("meta", {})
+                        net_eq = float(meta.get("net_equity", 0) or 0)
+                        avail_cash = 0.0
+                        wallets = {}
+                        for item in raw_wallets.get("result", []):
+                            sym = item.get("asset_symbol")
+                            bal = float(item.get("balance", 0) or 0)
+                            avail = float(item.get("available_balance", 0) or 0)
+                            if bal > 0 or avail > 0:
+                                wallets[sym] = {"balance": bal, "available": avail, "inr": float(item.get("balance_inr", 0) or 0)}
+                                if sym in ["USD", "USDT"]:
+                                    avail_cash += avail
+
+                        if net_eq > 0:
+                            orchestrator.risk.update_equity(net_eq)
+                            d_adapter._last_equity = net_eq
+                            orchestrator._synced_live_equity = net_eq
+                            orchestrator._synced_available_cash = avail_cash
+                            orchestrator._synced_live_positions = positions
+                            if not hasattr(orchestrator, "_synced_exchanges") or not orchestrator._synced_exchanges:
+                                orchestrator._synced_exchanges = {}
+                            orchestrator._synced_exchanges["delta"] = {
+                                "name": "Delta Exchange India",
+                                "net_equity": net_eq,
+                                "available_cash": avail_cash,
+                                "wallets": wallets,
+                                "open_positions": positions,
+                                "open_positions_count": len(positions)
+                            }
+                    except Exception as de:
+                        log.debug("Server Delta background sync error: %s", de)
+
+                # 2. Binance Live Sync
+                if orchestrator and "binance" in orchestrator.adapters:
+                    b_adapter = orchestrator.adapters["binance"]
+                    try:
+                        b_eq = await b_adapter.get_equity()
+                        b_pos = await b_adapter.get_open_positions()
+                        if not hasattr(orchestrator, "_synced_exchanges") or not orchestrator._synced_exchanges:
+                            orchestrator._synced_exchanges = {}
+                        orchestrator._synced_exchanges["binance"] = {
+                            "name": "Binance Futures (USDT-M)",
+                            "net_equity": b_eq,
+                            "available_cash": b_eq,
+                            "wallets": {"USDT": {"balance": b_eq, "available": b_eq, "inr": round(b_eq * 85.0, 2)}},
+                            "open_positions": b_pos,
+                            "open_positions_count": len(b_pos)
+                        }
+                    except Exception as be:
+                        log.debug("Server Binance background sync error: %s", be)
+            except Exception as e:
+                log.debug("Embedded relayer loop tick error: %s", e)
+
+            await asyncio.sleep(4)
+
     orchestrator = MasterOrchestrator(config, adapters)
     background_task = asyncio.create_task(orchestrator.start())
-    log.info("Application started in %s mode", trading_mode.value.upper())
+    relayer_task = asyncio.create_task(server_unified_relayer_loop())
+    log.info("Application started in %s mode with server-side 24/7 background tasks active", trading_mode.value.upper())
 
     yield
 
@@ -151,6 +232,12 @@ async def lifespan(app: FastAPI):
         background_task.cancel()
         try:
             await background_task
+        except asyncio.CancelledError:
+            pass
+    if relayer_task:
+        relayer_task.cancel()
+        try:
+            await relayer_task
         except asyncio.CancelledError:
             pass
     log.info("Application shutdown complete")
