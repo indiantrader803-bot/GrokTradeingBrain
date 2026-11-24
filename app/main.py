@@ -513,6 +513,32 @@ async def get_outbound_ip():
         return {"ip": "unknown", "error": str(e)}
 
 
+@app.get("/api/delta-debug")
+async def get_delta_debug():
+    """Diagnostic endpoint to inspect live Delta Exchange India HTTP response from the server."""
+    try:
+        delta_adapter = orchestrator.adapters.get("delta") if orchestrator else None
+        if not delta_adapter:
+            return {"error": "Delta adapter not registered on orchestrator"}
+        
+        # Make a direct request to /v2/wallet/balances with full exception and response inspection
+        timestamp = str(int(time.time()))
+        path = "/v2/wallet/balances"
+        headers = delta_adapter._sign("GET", path)
+        url = delta_adapter.base_url + path
+        
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            resp = await client.get(url, headers=headers)
+            return {
+                "server_outbound_ip": (await get_outbound_ip()).get("ip"),
+                "api_key_prefix": delta_adapter.api_key[:8] + "...",
+                "status_code": resp.status_code,
+                "response_body": resp.text
+            }
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @app.get("/api/binance-debug")
 async def get_binance_debug():
     """Debug endpoint to inspect Binance Futures connectivity."""
