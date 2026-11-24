@@ -88,8 +88,8 @@ async def lifespan(app: FastAPI):
 
     # Hardcoded fallback credentials to guarantee 24/7 cloud connection even without env vars
     if not delta_key or not delta_secret or delta_key.startswith("Y3rk"):
-        delta_key = "k347QTgUS8WE4VITjB4Vw9ntHOOe0Q"
-        delta_secret = "QbuYosXXqk4Sq33pPjmSpZj0jKo99YDTAwWbdN0lVjasBHRVX1tNpMiUYscE"
+        delta_key = "TXkS5Zk9gPlPXGDH7XJtyoxyvLyK9R"
+        delta_secret = "d38xS6NgMWaZlusaVYpoYTaNYcpzaZuhICmzDLRYwlhWKRO9FcrX7O08HpA2"
         delta_url = "https://api.india.delta.exchange"
         log.info("Loaded default Delta Exchange credentials for 24/7 autonomous monitoring")
 
@@ -595,11 +595,11 @@ async def restart_system():
     )
 
     adapters = {}
-    delta_key = os.getenv("DELTA_INDIA_API_KEY", "k347QTgUS8WE4VITjB4Vw9ntHOOe0Q").strip()
-    delta_secret = os.getenv("DELTA_INDIA_API_SECRET", "QbuYosXXqk4Sq33pPjmSpZj0jKo99YDTAwWbdN0lVjasBHRVX1tNpMiUYscE").strip()
+    delta_key = os.getenv("DELTA_INDIA_API_KEY", "TXkS5Zk9gPlPXGDH7XJtyoxyvLyK9R").strip()
+    delta_secret = os.getenv("DELTA_INDIA_API_SECRET", "d38xS6NgMWaZlusaVYpoYTaNYcpzaZuhICmzDLRYwlhWKRO9FcrX7O08HpA2").strip()
     if delta_key.startswith("Y3rk"):
-        delta_key = "k347QTgUS8WE4VITjB4Vw9ntHOOe0Q"
-        delta_secret = "QbuYosXXqk4Sq33pPjmSpZj0jKo99YDTAwWbdN0lVjasBHRVX1tNpMiUYscE"
+        delta_key = "TXkS5Zk9gPlPXGDH7XJtyoxyvLyK9R"
+        delta_secret = "d38xS6NgMWaZlusaVYpoYTaNYcpzaZuhICmzDLRYwlhWKRO9FcrX7O08HpA2"
     delta_url = os.getenv("DELTA_INDIA_BASE_URL", "https://api.india.delta.exchange").strip()
 
     delta_adapter = DeltaAdapter(

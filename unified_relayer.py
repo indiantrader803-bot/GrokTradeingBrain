@@ -18,8 +18,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 log = logging.getLogger("UnifiedRelayer")
 
 # Delta Exchange India Credentials
-DELTA_KEY = "k347QTgUS8WE4VITjB4Vw9ntHOOe0Q"
-DELTA_SEC = "QbuYosXXqk4Sq33pPjmSpZj0jKo99YDTAwWbdN0lVjasBHRVX1tNpMiUYscE"
+DELTA_KEY = "TXkS5Zk9gPlPXGDH7XJtyoxyvLyK9R"
+DELTA_SEC = "d38xS6NgMWaZlusaVYpoYTaNYcpzaZuhICmzDLRYwlhWKRO9FcrX7O08HpA2"
 DELTA_BASE = "https://api.india.delta.exchange"
 
 # Binance Futures Credentials
