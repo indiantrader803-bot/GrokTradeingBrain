@@ -618,7 +618,130 @@ body {
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
 }
-.swarm-step-item {
+  /* Understand-Anything & Agentic Skills Suite Section */
+  .skills-suite-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 20px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(59, 130, 246, 0.08);
+  }
+  .skills-suite-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .skills-suite-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.01em;
+  }
+  .skills-active-count-badge {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(168, 85, 247, 0.2));
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    color: #c084fc;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .skills-category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .skill-category-box {
+    background: #15171c;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: all 0.2s ease;
+  }
+  .skill-category-box:hover {
+    border-color: rgba(59, 130, 246, 0.4);
+    background: #191c24;
+  }
+  .skill-cat-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 800;
+    color: #e2e8f0;
+  }
+  .skill-cat-desc {
+    font-size: 9.5px;
+    color: var(--text-dim);
+    line-height: 1.3;
+  }
+  .skill-pills-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .skill-tag-pill {
+    background: #1e222d;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #93c5fd;
+    font-size: 8.5px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+  .understand-graph-banner {
+    background: linear-gradient(90deg, rgba(30, 58, 138, 0.35) 0%, rgba(88, 28, 135, 0.35) 100%);
+    border: 1px solid rgba(147, 197, 253, 0.2);
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .understand-graph-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .understand-graph-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: #93c5fd;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .understand-graph-sub {
+    font-size: 9.5px;
+    color: #cbd5e1;
+  }
+  .understand-live-chip {
+    font-size: 9px;
+    font-weight: 800;
+    background: #166534;
+    color: #4ade80;
+    padding: 2px 7px;
+    border-radius: 999px;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    white-space: nowrap;
+  }
+
+  .swarm-step-item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1059,6 +1182,85 @@ body {
     <div class="swarm-footer-msg">
       <span id="swarm-agent-brief">Scout Agent analyzing volume spikes and order flow</span>
       <span class="swarm-msg-highlight" id="swarm-active-target">$AVAX</span>
+    </div>
+  </div>
+
+  <!-- Global Antigravity Skills & Code Knowledge Suite (Understand-Anything + 3,247 Skills) -->
+  <div class="skills-suite-card">
+    <div class="skills-suite-header">
+      <div class="skills-suite-title">
+        <span>⚡ Global Skills & Intelligence Engine</span>
+      </div>
+      <div class="skills-active-count-badge">
+        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#c084fc;box-shadow:0 0 6px #c084fc;"></span>
+        <span>3,247 SKILLS ACTIVE</span>
+      </div>
+    </div>
+
+    <!-- Understand-Anything Interactive Codebase Knowledge Explorer -->
+    <div class="understand-graph-banner">
+      <div class="understand-graph-info">
+        <div class="understand-graph-title">
+          <span>🧠 Understand-Anything Knowledge Graph</span>
+        </div>
+        <div class="understand-graph-sub">Full AST codebase parsing, architectural map, and live flow tracing active</div>
+      </div>
+      <div class="understand-live-chip">● GRAPH LOADED</div>
+    </div>
+
+    <!-- 4 Main Skill Clusters -->
+    <div class="skills-category-grid">
+      <div class="skill-category-box">
+        <div class="skill-cat-head">
+          <span>🏛️ Architecture & Code</span>
+          <span style="color:#93c5fd;font-size:9px;">9 modules</span>
+        </div>
+        <div class="skill-cat-desc">Deep comprehension, diff audits & architectural mapping</div>
+        <div class="skill-pills-wrap">
+          <span class="skill-tag-pill">understand-knowledge</span>
+          <span class="skill-tag-pill">understand-dashboard</span>
+          <span class="skill-tag-pill">understand-explain</span>
+        </div>
+      </div>
+
+      <div class="skill-category-box">
+        <div class="skill-cat-head">
+          <span>📈 Market & Trading Desks</span>
+          <span style="color:#4ade80;font-size:9px;">HyperGrok Suite</span>
+        </div>
+        <div class="skill-cat-desc">Real-time orderbook, risk sizing, and autonomous execution</div>
+        <div class="skill-pills-wrap">
+          <span class="skill-tag-pill">desk-execution</span>
+          <span class="skill-tag-pill">hyperliquid-market</span>
+          <span class="skill-tag-pill">desk-risk-limits</span>
+        </div>
+      </div>
+
+      <div class="skill-category-box">
+        <div class="skill-cat-head">
+          <span>🛡️ Security & Audits</span>
+          <span style="color:#f59e0b;font-size:9px;">Enterprise</span>
+        </div>
+        <div class="skill-cat-desc">Zero-trust verification, API guardrails & credentials sanity</div>
+        <div class="skill-pills-wrap">
+          <span class="skill-tag-pill">credentials-guard</span>
+          <span class="skill-tag-pill">security-auditor</span>
+          <span class="skill-tag-pill">harness-eval</span>
+        </div>
+      </div>
+
+      <div class="skill-category-box">
+        <div class="skill-cat-head">
+          <span>🚀 Autonomous Swarm</span>
+          <span style="color:#c084fc;font-size:9px;">3,000+ AAS</span>
+        </div>
+        <div class="skill-cat-desc">End-to-end task automation, web agents, multi-agent workflows</div>
+        <div class="skill-pills-wrap">
+          <span class="skill-tag-pill">swarm-monitor</span>
+          <span class="skill-tag-pill">agentic-awesome</span>
+          <span class="skill-tag-pill">run-workflow</span>
+        </div>
+      </div>
     </div>
   </div>
 
