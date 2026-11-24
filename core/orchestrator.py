@@ -597,6 +597,7 @@ class MasterOrchestrator:
                 # CRITICAL: Automatically update risk equity directly from real live exchange balance
                 if net_equity > 0:
                     self.risk.update_equity(net_equity)
+                    self._last_ex_error = "OK (Connected)"
             except Exception as e:
                 log.error("Error fetching live exchange data: %s", e)
                 self._last_ex_error = str(e)
