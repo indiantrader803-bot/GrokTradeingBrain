@@ -986,8 +986,37 @@ body {
   background: #ef4444;
   border-color: #ef4444;
 }
-.chart-iframe-wrap {
-  flex: 1;
+.chart-pos-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #191c24;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 8px 18px;
+  font-size: 11.5px;
+  color: #fff;
+}
+.chart-pos-metrics {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.chart-pos-metric-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.chart-pos-metric-item .lbl {
+  color: var(--text-dim);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.chart-pos-metric-item .val {
+  font-weight: 800;
+  font-family: var(--font-sans);
+}
   width: 100%;
   height: 100%;
   position: relative;
@@ -1278,6 +1307,31 @@ body {
         </div>
       </div>
       <button class="chart-close-btn" onclick="closeChartModal()" title="Close Chart">✕</button>
+    </div>
+    <!-- Live Position Telemetry Bar inside Chart Popup -->
+    <div class="chart-pos-bar">
+      <div class="chart-pos-metrics">
+        <div class="chart-pos-metric-item">
+          <span class="lbl">ENTRY:</span>
+          <span class="val" id="cp-entry">$0.00</span>
+        </div>
+        <div class="chart-pos-metric-item">
+          <span class="lbl">MARK:</span>
+          <span class="val" id="cp-mark" style="color:#38bdf8;">$0.00</span>
+        </div>
+        <div class="chart-pos-metric-item">
+          <span class="lbl">SIZE:</span>
+          <span class="val" id="cp-size">1.0</span>
+        </div>
+        <div class="chart-pos-metric-item">
+          <span class="lbl">LIVE P&L:</span>
+          <span class="val" id="cp-pnl" style="color:#4ade80;">+$0.00</span>
+        </div>
+      </div>
+      <div style="font-size:10.5px;font-weight:700;color:#94a3b8;display:flex;align-items:center;gap:4px;">
+        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;"></span>
+        <span>LIVE POSITION ACTIVE</span>
+      </div>
     </div>
     <div class="chart-iframe-wrap" id="chart-widget-container">
       <!-- TradingView Live Chart widget injected here -->
@@ -1640,7 +1694,6 @@ async function fetchLiveStatus() {
               <div>
                 <div class="trade-symbol-text">$${cleanSym}</div>
                 <div class="trade-summary-text">${sideText} · entry $${entryPrice}</div>
-                <div class="trade-view-chart-hint">📈 View Live Chart</div>
               </div>
             </div>
             <div class="trade-badge-right ${pnlClass}">${pnlFormatted}</div>
@@ -1705,7 +1758,14 @@ function openPositionChart(symbol, side, entryPrice, markPrice, size, pnlFormatt
   posSide.textContent = side;
   posSide.className = `chart-pos-side-badge ${side.toLowerCase()}`;
 
-  posDetails.innerHTML = `Entry: <b>$${entryPrice}</b> · Mark: <b>$${markPrice}</b> · Size: <b>${size}</b> · PnL: <span style="color: ${pnlClass === 'gain' ? '#4ade80' : '#f87171'}; font-weight:800;">${pnlFormatted}</span>`;
+  posDetails.innerHTML = `Position Active · Real-Time Market Feed`;
+
+  document.getElementById('cp-entry').textContent = `$${entryPrice}`;
+  document.getElementById('cp-mark').textContent = `$${markPrice}`;
+  document.getElementById('cp-size').textContent = size;
+  const cpPnl = document.getElementById('cp-pnl');
+  cpPnl.textContent = pnlFormatted;
+  cpPnl.style.color = pnlClass === 'gain' ? '#4ade80' : '#f87171';
 
   // Determine standard TradingView symbol mapping
   let tvSymbol = `BINANCE:${clean}USDT`;
