@@ -887,10 +887,10 @@ body {
   animation: fadeIn 0.25s ease forwards;
 }
 .chart-modal-container {
-  width: 100%;
-  max-width: 900px;
+  width: 95vw;
+  max-width: 1040px;
   height: 85vh;
-  max-height: 680px;
+  max-height: 720px;
   background: #12141a;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 20px;
@@ -982,24 +982,25 @@ body {
   justify-content: space-between;
   background: #191c24;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 8px 18px;
-  font-size: 11.5px;
+  padding: 10px 18px;
+  font-size: 12px;
   color: #fff;
+  flex-shrink: 0;
 }
 .chart-pos-metrics {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
   flex-wrap: wrap;
 }
 .chart-pos-metric-item {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
 .chart-pos-metric-item .lbl {
   color: var(--text-dim);
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -1007,15 +1008,22 @@ body {
   font-weight: 800;
   font-family: var(--font-sans);
 }
+.chart-iframe-wrap {
+  flex: 1 1 0%;
   width: 100%;
   height: 100%;
+  min-height: 400px;
   position: relative;
   background: #0f1115;
+  overflow: hidden;
 }
 .chart-iframe-wrap iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  border: none !important;
+  display: block;
 }
 
 /* Toast Notification */
@@ -1769,6 +1777,7 @@ function openPositionChart(symbol, side, entryPrice, markPrice, size, pnlFormatt
   widgetContainer.innerHTML = `
     <iframe 
       src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_widget&symbol=${encodeURIComponent(tvSymbol)}&interval=15&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=171920&studies=%5B%5D&theme=dark&style=1&timezone=Asia%2FKolkata&studies_overrides=%7B%7D&overrides=%7B%22paneProperties.background%22%3A%22%230f1115%22%2C%22paneProperties.vertGridProperties.color%22%3A%22%231b1e26%22%2C%22paneProperties.horzGridProperties.color%22%3A%22%231b1e26%22%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en"
+      style="width: 100%; height: 100%; min-height: 480px; border: 0;"
       allowtransparency="true" 
       scrolling="no" 
       allowfullscreen="true">
