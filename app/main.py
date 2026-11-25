@@ -196,7 +196,7 @@ async def lifespan(app: FastAPI):
                     except Exception as de:
                         log.debug("Server Delta background sync error: %s", de)
 
-                # 2. Binance Live Sync
+                # 2. Binance Live Sync (Only overwrite if b_eq > 0 or not already set by Indian relay)
                 if orchestrator and "binance" in orchestrator.adapters:
                     b_adapter = orchestrator.adapters["binance"]
                     try:
@@ -204,14 +204,15 @@ async def lifespan(app: FastAPI):
                         b_pos = await b_adapter.get_open_positions()
                         if not hasattr(orchestrator, "_synced_exchanges") or not orchestrator._synced_exchanges:
                             orchestrator._synced_exchanges = {}
-                        orchestrator._synced_exchanges["binance"] = {
-                            "name": "Binance Futures (USDT-M)",
-                            "net_equity": b_eq,
-                            "available_cash": b_eq,
-                            "wallets": {"USDT": {"balance": b_eq, "available": b_eq, "inr": round(b_eq * 85.0, 2)}},
-                            "open_positions": b_pos,
-                            "open_positions_count": len(b_pos)
-                        }
+                        if b_eq > 0 or "binance" not in orchestrator._synced_exchanges:
+                            orchestrator._synced_exchanges["binance"] = {
+                                "name": "Binance Futures (USDT-M)",
+                                "net_equity": b_eq,
+                                "available_cash": b_eq,
+                                "wallets": {"USDT": {"balance": b_eq, "available": b_eq, "inr": round(b_eq * 85.0, 2)}},
+                                "open_positions": b_pos,
+                                "open_positions_count": len(b_pos)
+                            }
                     except Exception as be:
                         log.debug("Server Binance background sync error: %s", be)
             except Exception as e:
