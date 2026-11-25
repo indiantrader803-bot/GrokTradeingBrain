@@ -141,11 +141,18 @@ async def lifespan(app: FastAPI):
 
 
     async def server_unified_relayer_loop():
-        """Embedded 24/7 server background task: continuously syncs live Delta Exchange & Binance data."""
-        log.info("Starting embedded server-side unified relayer background loop...")
+        """Embedded 24/7 server background task: continuously syncs live Delta Exchange & Binance data autonomously."""
+        log.info("Starting embedded server-side unified relayer background loop (24/7 real-time autonomous)...")
+        # Contract value multipliers for accurate PnL computation
+        c_vals = {
+            "ETHUSD": 0.01, "AVAXUSD": 1.0, "NEARUSD": 1.0, "ARBUSD": 1.0,
+            "LDOUSD": 1.0, "NEIROUSD": 1000.0, "GOATUSD": 10.0, "SONICUSD": 10.0,
+            "AKEUSD": 10000.0, "BTCUSD": 0.001, "SOLUSD": 0.1, "PAXGUSD": 0.001
+        }
+        
         while True:
             try:
-                # 1. Delta Live Sync
+                # 1. Delta Live Sync (Direct API or Autonomous Public Ticker Feed)
                 if orchestrator and "delta" in orchestrator.adapters:
                     d_adapter = orchestrator.adapters["delta"]
                     try:
@@ -194,9 +201,46 @@ async def lifespan(app: FastAPI):
                                 "open_positions_count": len(positions)
                             }
                     except Exception as de:
-                        log.debug("Server Delta background sync error: %s", de)
+                        # Fallback: Autonomous 24/7 Public Market Price Update on Existing Active Positions
+                        existing_pos = getattr(orchestrator, "_synced_live_positions", None) or []
+                        if existing_pos:
+                            try:
+                                async with httpx.AsyncClient(timeout=4.0) as hc:
+                                    r_tk = await hc.get("https://api.india.delta.exchange/v2/tickers")
+                                    if r_tk.status_code == 200:
+                                        t_map = {t.get("symbol"): float(t.get("mark_price") or t.get("close") or 0.0) for t in r_tk.json().get("result", [])}
+                                        tot_pnl = 0.0
+                                        for p in existing_pos:
+                                            s = p.get("symbol", "")
+                                            clean_s = s.upper().replace("/", "").replace("-PERPETUAL", "")
+                                            if not clean_s.endswith("USD") and not clean_s.endswith("USDT"):
+                                                clean_s += "USD"
+                                            mp = t_map.get(clean_s, 0.0)
+                                            if mp > 0:
+                                                p["mark_price"] = mp
+                                                ep = float(p.get("entry_price", mp) or mp)
+                                                sz = float(p.get("size", 1.0) or 1.0)
+                                                sd = p.get("side", "BUY").upper()
+                                                cv = c_vals.get(clean_s, 1.0)
+                                                pnl = (mp - ep) * cv * sz if sd == "BUY" else (ep - mp) * cv * sz
+                                                p["unrealized_pnl"] = round(pnl, 4)
+                                                tot_pnl += pnl
 
-                # 2. Binance Live Sync (Only overwrite if b_eq > 0 or not already set by Indian relay)
+                                        # Update delta exchange state
+                                        base_eq = float(getattr(orchestrator, "_synced_available_cash", 4.22) or 4.22)
+                                        base_margin = sum(float(p.get("margin", 0.0) or 0.0) for p in existing_pos)
+                                        updated_equity = round(base_eq + base_margin + tot_pnl, 4)
+                                        if updated_equity > 0:
+                                            orchestrator._synced_live_equity = updated_equity
+                                            orchestrator.risk.update_equity(updated_equity)
+                                            if hasattr(orchestrator, "_synced_exchanges") and "delta" in orchestrator._synced_exchanges:
+                                                orchestrator._synced_exchanges["delta"]["net_equity"] = updated_equity
+                                                orchestrator._synced_exchanges["delta"]["open_positions"] = existing_pos
+                            except Exception as pub_err:
+                                log.debug("Public ticker fallback error: %s", pub_err)
+                        log.debug("Server Delta background sync notice: %s", de)
+
+                # 2. Binance Live Sync (Direct API or fallback)
                 if orchestrator and "binance" in orchestrator.adapters:
                     b_adapter = orchestrator.adapters["binance"]
                     try:
@@ -218,7 +262,7 @@ async def lifespan(app: FastAPI):
             except Exception as e:
                 log.debug("Embedded relayer loop tick error: %s", e)
 
-            await asyncio.sleep(4)
+            await asyncio.sleep(3)
 
     orchestrator = MasterOrchestrator(config, adapters)
     background_task = asyncio.create_task(orchestrator.start())
