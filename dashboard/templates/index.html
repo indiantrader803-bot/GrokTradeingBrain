@@ -203,10 +203,10 @@ body::before {
   border-color: var(--green);
 }
 
-/* 2. Top Balance Card with Cyber Aura */
+/* 2. Top Balance Card with Cyber Aura & Animated Border Beam */
 .balance-card {
   background: linear-gradient(145deg, #16181d 0%, #111215 100%);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
   padding: 22px 22px;
   display: flex;
@@ -215,6 +215,11 @@ body::before {
   position: relative;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.balance-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(59, 130, 246, 0.25);
 }
 .balance-card::before {
   content: "";
@@ -223,9 +228,26 @@ body::before {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 60%);
   animation: auraFloat 8s infinite ease-in-out;
   pointer-events: none;
+}
+.balance-card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 24px;
+  padding: 1.5px;
+  background: linear-gradient(90deg, transparent 20%, #3b82f6 50%, #10b981 70%, transparent 95%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: borderBeam 4s linear infinite;
+  pointer-events: none;
+}
+@keyframes borderBeam {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 @keyframes auraFloat {
   0%, 100% { transform: translate(0, 0) scale(1); }
@@ -362,18 +384,39 @@ body::before {
   text-align: center;
 }
 
-/* 3. Focus / Active Live Coin Inspection Card */
+/* 3. Focus / Active Live Coin Inspection Card with Cyber Glow */
 .active-coin-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
+  background: linear-gradient(160deg, #16181f 0%, #111317 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
   padding: 22px 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   position: relative;
   overflow: hidden;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.active-coin-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(59, 130, 246, 0.45);
+  box-shadow: 0 12px 38px rgba(0, 0, 0, 0.75), 0 0 25px rgba(59, 130, 246, 0.2);
+}
+.active-coin-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: linear-gradient(90deg, transparent 0%, #3b82f6 40%, #10b981 70%, transparent 100%);
+  animation: scanlineTop 4s ease-in-out infinite;
+}
+@keyframes scanlineTop {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
 }
 
 .coin-top-row {
@@ -704,11 +747,27 @@ body::before {
   top: 32px;
   left: 20px;
   height: 3px;
-  background: linear-gradient(90deg, #22c55e 0%, #3b82f6 80%, #60a5fa 100%);
+  background: linear-gradient(90deg, #22c55e 0%, #3b82f6 50%, #a855f7 100%);
   border-radius: 2px;
   z-index: 2;
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+  box-shadow: 0 0 14px rgba(59, 130, 246, 0.8);
+  position: relative;
+  overflow: hidden;
+}
+.swarm-stepper-line-active::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 30px;
+  background: linear-gradient(90deg, transparent, #fff, transparent);
+  animation: radarBeam 2s linear infinite;
+}
+@keyframes radarBeam {
+  0% { transform: translateX(-30px); }
+  100% { transform: translateX(450px); }
 }
   .swarm-step-item {
   display: flex;
@@ -1097,6 +1156,64 @@ body::before {
   min-height: 100% !important;
   border: none !important;
   display: block;
+}
+
+/* Elegant TradingView Overlay Indicators */
+.chart-tv-level-pill {
+  position: absolute;
+  right: 65px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  z-index: 10;
+  pointer-events: none;
+  animation: fadeIn 0.4s ease;
+}
+.chart-tv-level-pill.entry {
+  background: #2563eb;
+  color: #fff;
+  border: 1px solid #60a5fa;
+  top: 38%;
+}
+.chart-tv-level-pill.tp {
+  background: #059669;
+  color: #fff;
+  border: 1px solid #34d399;
+  top: 15%;
+}
+.chart-tv-level-pill.sl {
+  background: #dc2626;
+  color: #fff;
+  border: 1px solid #f87171;
+  top: 72%;
+}
+.chart-tv-hairline {
+  position: absolute;
+  left: 0;
+  right: 60px;
+  height: 1px;
+  z-index: 9;
+  pointer-events: none;
+  opacity: 0.65;
+}
+.chart-tv-hairline.entry {
+  background: #3b82f6;
+  border-top: 1px solid #3b82f6;
+  top: calc(38% + 12px);
+}
+.chart-tv-hairline.tp {
+  border-top: 1px dashed #10b981;
+  top: calc(15% + 12px);
+}
+.chart-tv-hairline.sl {
+  border-top: 1px dashed #ef4444;
+  top: calc(72% + 12px);
 }
 
 /* Toast Notification */
@@ -1846,8 +1963,35 @@ function openPositionChart(symbol, side, entryPrice, markPrice, size, pnlFormatt
     tvSymbol = `NASDAQ:TSLA`;
   }
 
-  // Inject responsive TradingView Advanced Real-Time Chart
+  const isShort = side.toUpperCase() === 'SELL';
+  const entryNum = parseFloat(entryPrice) || 0;
+  const tpNum = isShort ? (entryNum * 0.96) : (entryNum * 1.04);
+  const slNum = isShort ? (entryNum * 1.025) : (entryNum * 0.975);
+  const fmtDec = entryNum < 0.1 ? 6 : (entryNum < 10 ? 4 : 2);
+
+  // Inject responsive TradingView Advanced Real-Time Chart with clean exchange order lines
   widgetContainer.innerHTML = `
+    <div class="chart-tv-hairline entry"></div>
+    <div class="chart-tv-level-pill entry">
+      <span>${isShort ? 'SHORT' : 'BUY'} ${size}</span>
+      <span style="opacity:0.85;">$${entryNum.toFixed(fmtDec)}</span>
+      <span style="font-size:9.5px;opacity:0.75;margin-left:2px;">✕</span>
+    </div>
+
+    <div class="chart-tv-hairline tp"></div>
+    <div class="chart-tv-level-pill tp">
+      <span>TP</span>
+      <span style="opacity:0.85;">$${tpNum.toFixed(fmtDec)}</span>
+      <span style="font-size:9.5px;opacity:0.75;margin-left:2px;">✕</span>
+    </div>
+
+    <div class="chart-tv-hairline sl"></div>
+    <div class="chart-tv-level-pill sl">
+      <span>SL</span>
+      <span style="opacity:0.85;">$${slNum.toFixed(fmtDec)}</span>
+      <span style="font-size:9.5px;opacity:0.75;margin-left:2px;">✕</span>
+    </div>
+
     <iframe 
       src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_widget&symbol=${encodeURIComponent(tvSymbol)}&interval=15&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=171920&studies=%5B%5D&theme=dark&style=1&timezone=Asia%2FKolkata&studies_overrides=%7B%7D&overrides=%7B%22paneProperties.background%22%3A%22%230f1115%22%2C%22paneProperties.vertGridProperties.color%22%3A%22%231b1e26%22%2C%22paneProperties.horzGridProperties.color%22%3A%22%231b1e26%22%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en"
       style="width: 100%; height: 100%; min-height: 480px; border: 0;"

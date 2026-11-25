@@ -653,43 +653,76 @@ class MasterOrchestrator:
                 except Exception as ce:
                     log.warning("Delta cache read error: %s", ce)
 
-        # Dynamic real-time mark price & PnL updater for open positions via Delta's public ticker
-        if exchange_positions:
-            try:
-                import httpx
-                total_unrealized_pnl = 0.0
-                async with httpx.AsyncClient(timeout=4.0) as http_c:
-                    for pos in exchange_positions:
-                        sym = pos.get("symbol", "")
-                        clean_sym = sym.upper().replace("/", "").replace("-PERPETUAL", "")
-                        if "USD" not in clean_sym:
-                            clean_sym += "USD"
-                        try:
-                            tk_res = await http_c.get(f"https://api.india.delta.exchange/v2/tickers/{clean_sym}")
-                            if tk_res.status_code == 200:
-                                res_data = tk_res.json().get("result", {})
-                                mark_p = float(res_data.get("mark_price", 0) or 0)
-                                if mark_p > 0:
-                                    pos["mark_price"] = mark_p
-                                    # If exchange did not already supply exact unrealized_pnl, calculate it
-                                    if "unrealized_pnl" not in pos or pos.get("unrealized_pnl") is None:
-                                        entry_p = float(pos.get("entry_price", mark_p) or mark_p)
-                                        p_size = float(pos.get("size", 1.0) or 1.0)
-                                        side = pos.get("side", "BUY").upper()
-                                        c_val = 0.001 if any(k in clean_sym for k in ["BTC", "PAXG", "XAUT"]) else 1.0
-                                        pnl = (mark_p - entry_p) * c_val * p_size if side == "BUY" else (entry_p - mark_p) * c_val * p_size
-                                        pos["unrealized_pnl"] = round(pnl, 4)
-                        except Exception as ticker_err:
-                            log.debug("Mark price fetch error for %s: %s", sym, ticker_err)
-            except Exception as dyn_err:
-                log.debug("Dynamic mark price calculation error: %s", dyn_err)
-
         # Priority 1: Check active synced live data relayed from local verified environment
         if getattr(self, "_synced_live_equity", 0) > 0:
             net_equity = getattr(self, "_synced_live_equity")
             available_balance = getattr(self, "_synced_available_cash", 0.0)
             if getattr(self, "_synced_live_positions", None) is not None:
                 exchange_positions = getattr(self, "_synced_live_positions")
+
+        # Dynamic real-time mark price & PnL updater for open positions via Delta's public ticker (no auth required)
+        if exchange_positions:
+            try:
+                import httpx
+                # Product contract values mapping for accurate PnL
+                contract_values = {
+                    "ETHUSD": 0.01,
+                    "AVAXUSD": 1.0,
+                    "NEARUSD": 1.0,
+                    "ARBUSD": 1.0,
+                    "LDOUSD": 1.0,
+                    "NEIROUSD": 1000.0,
+                    "GOATUSD": 10.0,
+                    "SONICUSD": 10.0,
+                    "AKEUSD": 10000.0,
+                    "BTCUSD": 0.001,
+                    "SOLUSD": 0.1,
+                    "PAXGUSD": 0.001,
+                    "XAUTUSD": 0.001
+                }
+                async with httpx.AsyncClient(timeout=4.0) as http_c:
+                    # Fetch live tickers in bulk or individually
+                    tk_bulk_res = await http_c.get("https://api.india.delta.exchange/v2/tickers")
+                    if tk_bulk_res.status_code == 200:
+                        all_tickers = {t.get("symbol"): float(t.get("mark_price") or t.get("close") or 0.0) for t in tk_bulk_res.json().get("result", [])}
+                    else:
+                        all_tickers = {}
+
+                    total_unrealized_pnl = 0.0
+                    for pos in exchange_positions:
+                        sym = pos.get("symbol", "")
+                        clean_sym = sym.upper().replace("/", "").replace("-PERPETUAL", "").replace("_USDC", "")
+                        if not clean_sym.endswith("USD") and not clean_sym.endswith("USDT"):
+                            clean_sym += "USD"
+
+                        mark_p = all_tickers.get(clean_sym, 0.0)
+                        if mark_p <= 0.0:
+                            try:
+                                tk_res = await http_c.get(f"https://api.india.delta.exchange/v2/tickers/{clean_sym}")
+                                if tk_res.status_code == 200:
+                                    mark_p = float(tk_res.json().get("result", {}).get("mark_price", 0.0) or 0.0)
+                            except Exception:
+                                pass
+
+                        if mark_p > 0:
+                            pos["mark_price"] = mark_p
+                            entry_p = float(pos.get("entry_price", mark_p) or mark_p)
+                            p_size = float(pos.get("size", 1.0) or 1.0)
+                            side = pos.get("side", "BUY").upper()
+                            c_val = contract_values.get(clean_sym, 1.0)
+                            # PnL = (Mark - Entry) * Contract_Value * Size for BUY, inverse for SELL
+                            pnl = (mark_p - entry_p) * c_val * p_size if side == "BUY" else (entry_p - mark_p) * c_val * p_size
+                            pos["unrealized_pnl"] = round(pnl, 4)
+                            total_unrealized_pnl += pnl
+
+                    # Recalculate dynamic equity if we have open positions
+                    initial_margin_total = sum(float(p.get("margin", 0.0) or 0.0) for p in exchange_positions)
+                    if available_balance > 0 and initial_margin_total > 0:
+                        dynamic_eq = available_balance + initial_margin_total + total_unrealized_pnl
+                        if dynamic_eq > 0:
+                            net_equity = dynamic_eq
+            except Exception as dyn_err:
+                log.debug("Dynamic mark price calculation error: %s", dyn_err)
 
         base_status = self.get_status()
         if net_equity > 0:
@@ -748,16 +781,17 @@ class MasterOrchestrator:
                 if ex_name == "delta":
                     d_eq = float(ex_info.get("net_equity", 0.0) or 0.0)
                     d_avail = float(ex_info.get("available_cash", 0.0) or 0.0)
-                    d_positions = ex_info.get("open_positions", [])
+                    # If we already updated open_positions dynamically above with live tickers, preserve the updated mark_price and unrealized_pnl!
+                    d_positions = exchange_positions if exchange_positions else ex_info.get("open_positions", [])
                     exchanges_data["delta"] = {
                         "name": "Delta Exchange India",
-                        "net_equity": d_eq,
+                        "net_equity": round(net_equity if net_equity > 0 else d_eq, 4),
                         "available_cash": d_avail,
-                        "wallets": {"USD": {"balance": d_eq, "available": d_avail, "inr": round(d_eq * 85.0, 2)}},
+                        "wallets": {"USD": {"balance": round(net_equity if net_equity > 0 else d_eq, 4), "available": d_avail, "inr": round((net_equity if net_equity > 0 else d_eq) * 85.0, 2)}},
                         "open_positions": d_positions,
                         "open_positions_count": len(d_positions)
                     }
-                    base_status["equity"] = round(d_eq, 2)
+                    base_status["equity"] = round(net_equity if net_equity > 0 else d_eq, 2)
                     base_status["open_positions"] = d_positions
                 elif ex_name == "binance":
                     eq = float(ex_info.get("net_equity", 0.0) or 0.0)
