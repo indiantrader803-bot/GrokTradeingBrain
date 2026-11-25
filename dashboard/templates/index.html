@@ -1380,9 +1380,32 @@ async function fetchLiveStatus() {
       liveEquity = 0.00;
     }
 
-    const startingCapital = currentSelectedExchange === 'binance' ? (liveEquity > 0 ? liveEquity : 1.00) : 3.00;
-    const netProfit = liveEquity - startingCapital;
-    const multiple = (startingCapital > 0 && liveEquity > 0) ? (liveEquity / startingCapital).toFixed(1) + 'x' : '1.0x';
+    // Daily PnL tracking with automatic midnight IST reset
+    const now = new Date();
+    // Convert to IST date string (YYYY-MM-DD in UTC+5:30)
+    const istOffsetMs = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(now.getTime() + istOffsetMs).toISOString().slice(0, 10);
+
+    const baseKey = `grok_day_open_${currentSelectedExchange}`;
+    const dateKey = `grok_day_date_${currentSelectedExchange}`;
+
+    let savedDate = localStorage.getItem(dateKey);
+    let savedOpenEquity = parseFloat(localStorage.getItem(baseKey) || '0');
+
+    // If new day in IST or no record exists yet, lock in today's opening equity
+    if (savedDate !== istDate || isNaN(savedOpenEquity) || savedOpenEquity <= 0) {
+      if (liveEquity > 0) {
+        savedOpenEquity = liveEquity;
+        localStorage.setItem(baseKey, String(liveEquity));
+        localStorage.setItem(dateKey, istDate);
+      } else {
+        savedOpenEquity = (currentSelectedExchange === 'binance' ? 1.00 : 3.00);
+      }
+    }
+
+    const dayStartEquity = savedOpenEquity > 0 ? savedOpenEquity : (liveEquity > 0 ? liveEquity : 3.00);
+    const netProfit = liveEquity - dayStartEquity;
+    const multiple = (dayStartEquity > 0 && liveEquity > 0) ? (liveEquity / dayStartEquity).toFixed(1) + 'x' : '1.0x';
 
     const USD_INR_RATE = 85.0;
     const availCash = Number(ex.available_cash !== undefined ? ex.available_cash : (data.available_cash || 0.0));
@@ -1394,7 +1417,7 @@ async function fetchLiveStatus() {
     
     // Calculate and render Daily Profit below balance
     const sign = netProfit >= 0 ? '+' : '-';
-    const profitPct = startingCapital > 0 ? ((netProfit / startingCapital) * 100).toFixed(1) : '0.0';
+    const profitPct = dayStartEquity > 0 ? ((netProfit / dayStartEquity) * 100).toFixed(1) : '0.0';
     const profitBadge = document.getElementById('daily-profit-badge');
     const profitIcon = document.getElementById('daily-profit-icon');
     const profitText = document.getElementById('daily-profit-text');
