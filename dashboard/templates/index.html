@@ -669,18 +669,29 @@ body::before {
   color: var(--green);
 }
 
-/* Autonomous Multi-Agent Swarm Section */
+/* Autonomous Multi-Agent Swarm Section with 3D Cyber Holo-Deck */
 .swarm-pipeline-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
+  background: linear-gradient(165deg, #15171e 0%, #0e1014 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
-  padding: 20px 18px;
+  padding: 22px 18px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   position: relative;
   overflow: hidden;
+  perspective: 1000px;
+}
+.swarm-pipeline-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #8b5cf6, #3b82f6, transparent);
+  animation: scanlineTop 4s ease-in-out infinite;
 }
 .swarm-pipeline-header {
   display: flex;
@@ -701,14 +712,15 @@ body::before {
   display: flex;
   align-items: center;
   gap: 5px;
-  background: rgba(34, 197, 94, 0.12);
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
   color: var(--green);
   font-size: 10px;
   font-weight: 800;
-  padding: 3px 8px;
+  padding: 3px 10px;
   border-radius: 20px;
   letter-spacing: 0.04em;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.25);
 }
 .swarm-live-dot {
   width: 6px;
@@ -723,18 +735,25 @@ body::before {
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
 }
 
-/* Innovative Swarm Stepper - Modern Glassmorphic Track */
+/* 3D Glassmorphic Agent Stepper with Horizontal Scroll / Responsive Layout */
 .swarm-stepper-wrap {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   position: relative;
-  padding: 12px 6px;
+  padding: 14px 4px 6px 4px;
   margin-top: 4px;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.swarm-stepper-wrap::-webkit-scrollbar {
+  display: none;
 }
 .swarm-stepper-line {
   position: absolute;
-  top: 32px;
+  top: 36px;
   left: 20px;
   right: 20px;
   height: 3px;
@@ -744,15 +763,14 @@ body::before {
 }
 .swarm-stepper-line-active {
   position: absolute;
-  top: 32px;
+  top: 36px;
   left: 20px;
   height: 3px;
   background: linear-gradient(90deg, #22c55e 0%, #3b82f6 50%, #a855f7 100%);
   border-radius: 2px;
   z-index: 2;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 0 14px rgba(59, 130, 246, 0.8);
-  position: relative;
   overflow: hidden;
 }
 .swarm-stepper-line-active::after {
@@ -767,9 +785,10 @@ body::before {
 }
 @keyframes radarBeam {
   0% { transform: translateX(-30px); }
-  100% { transform: translateX(450px); }
+  100% { transform: translateX(500px); }
 }
-  .swarm-step-item {
+
+.swarm-step-item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -777,52 +796,70 @@ body::before {
   position: relative;
   z-index: 3;
   cursor: pointer;
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 0;
+  min-width: 52px;
+  padding: 0 2px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.swarm-step-item:hover {
+  transform: translateY(-4px);
 }
 .swarm-step-bubble {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: #181a20;
-  border: 2px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(145deg, #1f222a 0%, #131418 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  font-size: 17px;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  position: relative;
 }
 .swarm-step-item.active .swarm-step-bubble {
   border-color: #3b82f6;
-  background: radial-gradient(circle, #1d4ed8 0%, #1e1b4b 100%);
-  transform: scale(1.18);
-  box-shadow: 0 0 18px rgba(59, 130, 246, 0.7), inset 0 0 10px rgba(96, 165, 250, 0.5);
+  background: radial-gradient(circle, #2563eb 0%, #1e1b4b 100%);
+  transform: translateY(-4px) scale(1.15);
+  box-shadow: 0 0 22px rgba(59, 130, 246, 0.8), 0 8px 16px rgba(0, 0, 0, 0.6), inset 0 0 12px rgba(147, 197, 253, 0.6);
+  animation: activeBubble3D 2.5s infinite ease-in-out;
+}
+@keyframes activeBubble3D {
+  0%, 100% { transform: translateY(-4px) scale(1.15) rotate(0deg); box-shadow: 0 0 20px rgba(59, 130, 246, 0.8); }
+  50% { transform: translateY(-7px) scale(1.2) rotate(3deg); box-shadow: 0 0 30px rgba(96, 165, 250, 1), 0 12px 24px rgba(59, 130, 246, 0.4); }
 }
 .swarm-step-item.success .swarm-step-bubble {
   border-color: #22c55e;
-  background: radial-gradient(circle, #15803d 0%, #064e3b 100%);
-  box-shadow: 0 0 12px rgba(34, 197, 94, 0.45);
+  background: radial-gradient(circle, #16a34a 0%, #064e3b 100%);
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.5), inset 0 0 8px rgba(134, 239, 172, 0.4);
 }
 .swarm-step-label {
   font-size: 10px;
   font-weight: 800;
   color: #fff;
-  margin-top: 6px;
+  margin-top: 8px;
   letter-spacing: -0.01em;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 .swarm-step-status {
   font-size: 8px;
   font-weight: 700;
   color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  margin-top: 2px;
+  letter-spacing: 0.02em;
+  margin-top: 3px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 .swarm-step-item.active .swarm-step-label {
   color: #60a5fa;
+  text-shadow: 0 0 8px rgba(96, 165, 250, 0.6);
 }
 .swarm-step-item.active .swarm-step-status {
   color: #93c5fd;
@@ -832,41 +869,53 @@ body::before {
   color: #4ade80;
 }
 
-/* Flying Token Animation Track */
+/* 3D Flying Token Animation Track */
 .agent-flying-track {
   position: relative;
-  height: 28px;
-  margin: -6px 8px -2px 8px;
+  height: 32px;
+  margin: -2px 8px -2px 8px;
   display: flex;
   align-items: center;
 }
 .agent-track-rail {
   width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, #3b82f6 0%, #a855f7 50%, #22c55e 100%);
-  opacity: 0.3;
-  border-radius: 2px;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #22c55e 100%);
+  opacity: 0.4;
+  border-radius: 3px;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
 }
 .flying-coin-orb {
   position: absolute;
   top: 50%;
   left: 12.5%;
   transform: translate(-50%, -50%);
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: #f59e0b;
-  border: 2px solid #fff;
-  box-shadow: 0 0 14px rgba(245, 158, 11, 0.8), 0 0 24px rgba(59, 130, 246, 0.4);
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  border: 2px solid #60a5fa;
+  box-shadow: 0 0 18px rgba(96, 165, 250, 0.9), 0 0 30px rgba(168, 85, 247, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 900;
-  color: #000;
+  color: #fff;
   z-index: 5;
-  transition: left 1.2s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s ease;
+  transition: left 1.2s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.4s ease;
   overflow: hidden;
+  animation: orb3DPulse 2s infinite ease-in-out;
+}
+@keyframes orb3DPulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) rotateY(0deg) scale(1);
+    box-shadow: 0 0 16px rgba(96, 165, 250, 0.8), 0 0 24px rgba(168, 85, 247, 0.4);
+  }
+  50% {
+    transform: translate(-50%, -50%) rotateY(180deg) scale(1.12);
+    box-shadow: 0 0 24px rgba(96, 165, 250, 1), 0 0 36px rgba(168, 85, 247, 0.7);
+  }
 }
 .flying-coin-orb img {
   width: 100%;
