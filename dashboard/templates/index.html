@@ -815,10 +815,28 @@ body {
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-  transition: transform 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
 .trade-item-pill:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.15);
+}
+.trade-item-pill:active {
+  transform: scale(0.98);
+}
+.trade-view-chart-hint {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #60a5fa;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 2px;
+  opacity: 0.85;
 }
 .trade-item-left {
   display: flex;
@@ -860,6 +878,126 @@ body {
 }
 .trade-badge-right.gain { color: var(--green); }
 .trade-badge-right.loss { color: var(--red); }
+
+/* Fullscreen / Modal Interactive Chart */
+.chart-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 11, 14, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.25s ease forwards;
+}
+.chart-modal-container {
+  width: 100%;
+  max-width: 900px;
+  height: 85vh;
+  max-height: 680px;
+  background: #12141a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(59, 130, 246, 0.2);
+}
+.chart-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: #171920;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.chart-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.chart-coin-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #252830;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chart-coin-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.chart-title-main {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.chart-pos-side-badge {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+.chart-pos-side-badge.buy {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+.chart-pos-side-badge.sell {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+.chart-sub-details {
+  font-size: 11.5px;
+  color: var(--text-dim);
+  font-weight: 600;
+  margin-top: 2px;
+}
+.chart-close-btn {
+  background: #222631;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.chart-close-btn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+.chart-iframe-wrap {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #0f1115;
+}
+.chart-iframe-wrap iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
 
 /* Toast Notification */
 #trade-toast {
@@ -1119,6 +1257,32 @@ body {
     Connected to Delta India & Binance Futures · 24/7 Autonomous Trading Active Today & Tomorrow
   </div>
 
+</div>
+
+<!-- Interactive Real-Time Chart Modal -->
+<div class="chart-modal-overlay" id="chart-modal" onclick="onChartOverlayClick(event)">
+  <div class="chart-modal-container" onclick="event.stopPropagation()">
+    <div class="chart-modal-header">
+      <div class="chart-header-left">
+        <div class="chart-coin-avatar">
+          <img id="modal-coin-img" src="" alt="coin">
+        </div>
+        <div>
+          <div class="chart-title-main">
+            <span id="modal-coin-symbol">BTC/USD</span>
+            <span class="chart-pos-side-badge buy" id="modal-pos-side">BUY</span>
+          </div>
+          <div class="chart-sub-details" id="modal-pos-details">
+            Entry: $0.00 · Mark: $0.00 · Size: 1.0 · PnL: +$0.00
+          </div>
+        </div>
+      </div>
+      <button class="chart-close-btn" onclick="closeChartModal()" title="Close Chart">✕</button>
+    </div>
+    <div class="chart-iframe-wrap" id="chart-widget-container">
+      <!-- TradingView Live Chart widget injected here -->
+    </div>
+  </div>
 </div>
 
 <div id="trade-toast"></div>
@@ -1459,11 +1623,15 @@ async function fetchLiveStatus() {
         const pnlClass = isUp ? 'gain' : 'loss';
         const cleanSym = p.symbol.replace('USD', '').replace('-USD', '').replace('-PERPETUAL', '').replace('_USDC', '');
         const sideText = (p.side || 'BUY').toLowerCase();
+        const sideUpper = (p.side || 'BUY').toUpperCase();
         const pnlFormatted = `${pnlSign}$${Math.abs(pnl).toFixed(3)}`;
         const iconUrl = getCoinIconUrl(cleanSym);
+        const entryPrice = Number(p.entry_price || 0).toFixed(4);
+        const markPrice = Number(p.mark_price || 0).toFixed(4);
+        const pSize = Number(p.size || 1).toFixed(2);
 
         return `
-          <div class="trade-item-pill">
+          <div class="trade-item-pill" onclick="openPositionChart('${cleanSym}', '${sideUpper}', '${entryPrice}', '${markPrice}', '${pSize}', '${pnlFormatted}', '${pnlClass}')" title="Click to view live TradingView chart for $${cleanSym}">
             <div class="trade-item-left">
               <div class="trade-coin-avatar">
                 <img src="${iconUrl}" alt="${cleanSym}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
@@ -1471,7 +1639,8 @@ async function fetchLiveStatus() {
               </div>
               <div>
                 <div class="trade-symbol-text">$${cleanSym}</div>
-                <div class="trade-summary-text">${sideText} · entry $${Number(p.entry_price || 0).toFixed(4)}</div>
+                <div class="trade-summary-text">${sideText} · entry $${entryPrice}</div>
+                <div class="trade-view-chart-hint">📈 View Live Chart</div>
               </div>
             </div>
             <div class="trade-badge-right ${pnlClass}">${pnlFormatted}</div>
@@ -1519,6 +1688,63 @@ function showToast(msg) {
   t.style.display = 'block';
   setTimeout(() => { t.style.display = 'none'; }, 3500);
 }
+
+// Interactive Real-Time Chart Modal Functions
+function openPositionChart(symbol, side, entryPrice, markPrice, size, pnlFormatted, pnlClass) {
+  const modal = document.getElementById('chart-modal');
+  const coinImg = document.getElementById('modal-coin-img');
+  const coinSym = document.getElementById('modal-coin-symbol');
+  const posSide = document.getElementById('modal-pos-side');
+  const posDetails = document.getElementById('modal-pos-details');
+  const widgetContainer = document.getElementById('chart-widget-container');
+
+  const clean = symbol.toUpperCase().replace('$', '').replace('USD', '').replace('USDT', '').trim();
+  coinImg.src = getCoinIconUrl(clean);
+  coinSym.textContent = `${clean}/USD`;
+
+  posSide.textContent = side;
+  posSide.className = `chart-pos-side-badge ${side.toLowerCase()}`;
+
+  posDetails.innerHTML = `Entry: <b>$${entryPrice}</b> · Mark: <b>$${markPrice}</b> · Size: <b>${size}</b> · PnL: <span style="color: ${pnlClass === 'gain' ? '#4ade80' : '#f87171'}; font-weight:800;">${pnlFormatted}</span>`;
+
+  // Determine standard TradingView symbol mapping
+  let tvSymbol = `BINANCE:${clean}USDT`;
+  if (clean === 'XAUT' || clean === 'PAXG') {
+    tvSymbol = `OANDA:XAUUSD`;
+  } else if (clean === 'TSLAB') {
+    tvSymbol = `NASDAQ:TSLA`;
+  }
+
+  // Inject responsive TradingView Advanced Real-Time Chart
+  widgetContainer.innerHTML = `
+    <iframe 
+      src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_widget&symbol=${encodeURIComponent(tvSymbol)}&interval=15&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=171920&studies=%5B%5D&theme=dark&style=1&timezone=Asia%2FKolkata&studies_overrides=%7B%7D&overrides=%7B%22paneProperties.background%22%3A%22%230f1115%22%2C%22paneProperties.vertGridProperties.color%22%3A%22%231b1e26%22%2C%22paneProperties.horzGridProperties.color%22%3A%22%231b1e26%22%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en"
+      allowtransparency="true" 
+      scrolling="no" 
+      allowfullscreen="true">
+    </iframe>
+  `;
+
+  modal.style.display = 'flex';
+}
+
+function closeChartModal() {
+  const modal = document.getElementById('chart-modal');
+  const widgetContainer = document.getElementById('chart-widget-container');
+  modal.style.display = 'none';
+  widgetContainer.innerHTML = ''; // Stop iframe memory load
+}
+
+function onChartOverlayClick(e) {
+  if (e.target.id === 'chart-modal') {
+    closeChartModal();
+  }
+}
+
+// Close chart on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeChartModal();
+});
 
 async function executeQuickTrade(side) {
   const currentSymbol = document.getElementById('active-coin-sym').textContent.replace('$', '');
