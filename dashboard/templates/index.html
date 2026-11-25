@@ -209,11 +209,43 @@ body {
   letter-spacing: -0.01em;
   margin-top: 3px;
 }
-.balance-subtext {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--green);
+.daily-profit-pill-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-top: 6px;
+  flex-wrap: wrap;
+}
+.daily-profit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #4ade80;
+  padding: 3px 9px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.daily-profit-badge.negative {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+.daily-profit-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.balance-subtext {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin-top: 4px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -893,11 +925,20 @@ body {
   <div class="balance-card">
     <div class="balance-left">
       <div class="balance-label" id="balance-platform-label">DELTA BALANCE</div>
-      <div class="balance-amount" id="balance-val">$3.68</div>
-      <div class="balance-inr-text" id="balance-inr-val">₹312.80</div>
+      <div class="balance-amount" id="balance-val">$10.75</div>
+      <div class="balance-inr-text" id="balance-inr-val">₹913.68 INR</div>
+      
+      <!-- Prominent Daily Profit Display Below Balance -->
+      <div class="daily-profit-pill-row">
+        <span class="daily-profit-label">DAILY P&L:</span>
+        <div class="daily-profit-badge" id="daily-profit-badge">
+          <span id="daily-profit-icon">▲</span>
+          <span id="daily-profit-text">+$7.75 (+258.3%)</span>
+        </div>
+      </div>
+
       <div class="balance-subtext" id="balance-sub">
-        <span id="gain-today-text">+$0.68 today</span>
-        <span class="dimmed-start" id="started-with-text">· cash: $0.01 (₹0.85)</span>
+        <span class="dimmed-start" id="started-with-text">cash: $0.70 · open margin: $10.05</span>
       </div>
     </div>
     <div class="balance-right">
@@ -1350,9 +1391,27 @@ async function fetchLiveStatus() {
 
     document.getElementById('balance-val').textContent = `$${liveEquity.toFixed(2)}`;
     document.getElementById('balance-inr-val').textContent = `₹${liveInr} INR`;
+    
+    // Calculate and render Daily Profit below balance
     const sign = netProfit >= 0 ? '+' : '-';
-    document.getElementById('gain-today-text').textContent = `${sign}$${Math.abs(netProfit).toFixed(2)} (${sign}₹${(Math.abs(netProfit) * USD_INR_RATE).toFixed(0)})`;
-    document.getElementById('started-with-text').textContent = `· cash: $${availCash.toFixed(2)} (₹${availCashInr})`;
+    const profitPct = startingCapital > 0 ? ((netProfit / startingCapital) * 100).toFixed(1) : '0.0';
+    const profitBadge = document.getElementById('daily-profit-badge');
+    const profitIcon = document.getElementById('daily-profit-icon');
+    const profitText = document.getElementById('daily-profit-text');
+    
+    if (profitBadge && profitText) {
+      if (netProfit >= 0) {
+        profitBadge.className = 'daily-profit-badge';
+        if (profitIcon) profitIcon.textContent = '▲';
+      } else {
+        profitBadge.className = 'daily-profit-badge negative';
+        if (profitIcon) profitIcon.textContent = '▼';
+      }
+      profitText.textContent = `${sign}$${Math.abs(netProfit).toFixed(2)} (${sign}${Math.abs(profitPct)}%) · ${sign}₹${(Math.abs(netProfit) * USD_INR_RATE).toFixed(0)}`;
+    }
+
+    const openMargin = Math.max(0, liveEquity - availCash).toFixed(2);
+    document.getElementById('started-with-text').textContent = `free cash: $${availCash.toFixed(2)} · in trade: $${openMargin}`;
     document.getElementById('multiple-val').textContent = multiple;
 
     const gauge = document.getElementById('radial-gauge');
