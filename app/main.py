@@ -79,22 +79,11 @@ async def lifespan(app: FastAPI):
     delta_url = os.getenv("DELTA_INDIA_BASE_URL", "https://api.india.delta.exchange").strip()
 
     # If env vars are set to the outdated blocked key or empty, override with verified working key
-    if not delta_key or not delta_secret or delta_key.startswith("Y3rk"):
-        super_data = get_user_data("superadmin") or {}
-        super_keys = super_data.get("api_keys", {}).get("delta", {})
-        if super_keys.get("api_key") and super_keys.get("api_secret") and not super_keys.get("api_key", "").startswith("Y3rk"):
-            delta_key = super_keys["api_key"]
-            delta_secret = super_keys["api_secret"]
-            if super_keys.get("base_url"):
-                delta_url = super_keys["base_url"]
-            log.info("Loaded Delta credentials from superadmin configuration")
-
-    # Hardcoded fallback credentials to guarantee 24/7 cloud connection even without env vars
-    if not delta_key or not delta_secret or delta_key.startswith("Y3rk"):
+    if not delta_key or not delta_secret or delta_key.startswith("Y3rk") or delta_key.startswith("Tr1cK"):
         delta_key = "TXkS5Zk9gPlPXGDH7XJtyoxyvLyK9R"
         delta_secret = "d38xS6NgMWaZlusaVYpoYTaNYcpzaZuhICmzDLRYwlhWKRO9FcrX7O08HpA2"
         delta_url = "https://api.india.delta.exchange"
-        log.info("Loaded default Delta Exchange credentials for 24/7 autonomous monitoring")
+        log.info("Loaded permanent active Delta Exchange credentials for 24/7 autonomous monitoring")
 
     if delta_key and delta_secret:
         delta_adapter = DeltaAdapter(
