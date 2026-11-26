@@ -1825,9 +1825,14 @@ async function fetchLiveStatus() {
     const exchanges = data.exchanges || {};
     const ex = exchanges[currentSelectedExchange] || (currentSelectedExchange === 'delta' ? (data.exchange || {}) : {});
     
+    // Direct from exchange live wallet if present
+    const usdWallet = (ex.wallets && ex.wallets.USD) ? ex.wallets.USD : null;
     let liveEquity = Number(ex.net_equity || 0.0);
+    if (liveEquity <= 0 && usdWallet && usdWallet.balance) {
+      liveEquity = Number(usdWallet.balance);
+    }
     if (currentSelectedExchange === 'delta' && liveEquity <= 0) {
-      liveEquity = Number(data.equity || 3.70);
+      liveEquity = Number(data.equity || 0.55);
     } else if (currentSelectedExchange === 'binance' && liveEquity <= 0) {
       liveEquity = 0.00;
     }
@@ -1851,17 +1856,21 @@ async function fetchLiveStatus() {
         localStorage.setItem(baseKey, String(liveEquity));
         localStorage.setItem(dateKey, istDate);
       } else {
-        savedOpenEquity = (currentSelectedExchange === 'binance' ? 1.00 : 3.00);
+        savedOpenEquity = (currentSelectedExchange === 'binance' ? 0.29 : 0.55);
       }
     }
 
-    const dayStartEquity = savedOpenEquity > 0 ? savedOpenEquity : (liveEquity > 0 ? liveEquity : 3.00);
+    const dayStartEquity = savedOpenEquity > 0 ? savedOpenEquity : (liveEquity > 0 ? liveEquity : 0.55);
     const netProfit = liveEquity - dayStartEquity;
     const multiple = (dayStartEquity > 0 && liveEquity > 0) ? (liveEquity / dayStartEquity).toFixed(1) + 'x' : '1.0x';
 
+    // Prioritize direct live INR from exchange wallet API if provided by Delta
     const USD_INR_RATE = 85.0;
+    let liveInr = (usdWallet && usdWallet.inr && Number(usdWallet.inr) > 0)
+      ? Number(usdWallet.inr).toFixed(2)
+      : (liveEquity * USD_INR_RATE).toFixed(2);
+    
     const availCash = Number(ex.available_cash !== undefined ? ex.available_cash : (data.available_cash || 0.0));
-    const liveInr = (liveEquity * USD_INR_RATE).toFixed(2);
     const availCashInr = (availCash * USD_INR_RATE).toFixed(2);
 
     document.getElementById('balance-val').textContent = `$${liveEquity.toFixed(2)}`;
