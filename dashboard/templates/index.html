@@ -1436,18 +1436,6 @@ body::before {
     </div>
   </div>
 
-  <!-- 🇮🇳 🌍 Real-Time Dual Exchange Telemetry -->
-  <div class="dual-exchange-badges">
-    <div class="exchange-mini-pill selected" id="mini-pill-delta" onclick="onExchangeChange('delta')" style="cursor:pointer;">
-      <span class="lbl">🇮🇳 DELTA</span>
-      <span class="val" id="mini-val-delta">₹46.85</span>
-    </div>
-    <div class="exchange-mini-pill" id="mini-pill-binance" onclick="onExchangeChange('binance')" style="cursor:pointer;">
-      <span class="lbl">🌍 BINANCE</span>
-      <span class="val" id="mini-val-binance">$0.29</span>
-    </div>
-  </div>
-
   <!-- Exchange Switcher Dropdown Bar -->
   <div class="exchange-dropdown-bar">
     <div class="exchange-label-left">
@@ -2071,7 +2059,7 @@ async function fetchLiveStatus() {
       }
     }
 
-    // Update Mini Telemetry Badges
+    // Update Mini Telemetry Badges if present
     const dValEl = document.getElementById('mini-val-delta');
     const bValEl = document.getElementById('mini-val-binance');
     const deltaEx = (data.exchanges && data.exchanges.delta) || data.exchange || {};
