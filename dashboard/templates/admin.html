@@ -48,16 +48,16 @@ tr:hover td{background:rgba(255,255,255,.01)}
 <div class="container">
   <header>
     <div>
-      <div class="brand">SWARM<span>DESK</span> // SUPERADMIN</div>
+      <div class="brand">AETHER // <span>SUPERADMIN COMMAND</span></div>
       <div style="font-size:10px;color:var(--dim)">Mission Control & Broker Node Management</div>
     </div>
     <div class="nav">
-      <a href="/">3D Terminal</a>
+      <a href="/">Terminal</a>
       <a href="/admin" class="active">Admin Dashboard</a>
-      <a href="/strategy">My Strategy</a>
-      <a href="/api-keys">API Keys</a>
+      <a href="/strategy">Strategy Config</a>
+      <a href="/api-keys">API Keys Vault</a>
       <a href="/positions">Open Positions</a>
-      <a href="/coins">Monitored Assets</a>
+      <a href="/coins">Market Screener</a>
       <a href="/logout" style="color:var(--down)">Logout</a>
     </div>
   </header>
@@ -135,15 +135,15 @@ tr:hover td{background:rgba(255,255,255,.01)}
       <form method="POST" action="/api/weekend-flags">
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
           <label style="display:flex;align-items:center;gap:8px">
-            <input type="checkbox" name="strong_order_flow" value="true" {% if status.weekend_flags.strong_order_flow %}checked{% endif %}>
+            <input type="checkbox" name="strong_order_flow" value="true" {% if status.weekend_flags and status.weekend_flags.strong_order_flow %}checked{% endif %}>
             Enable Strong Order Flow Aggression
           </label>
           <label style="display:flex;align-items:center;gap:8px">
-            <input type="checkbox" name="high_volume" value="true" {% if status.weekend_flags.high_volume %}checked{% endif %}>
+            <input type="checkbox" name="high_volume" value="true" {% if status.weekend_flags and status.weekend_flags.high_volume %}checked{% endif %}>
             Enable High Volume Surge Mode
           </label>
           <label style="display:flex;align-items:center;gap:8px">
-            <input type="checkbox" name="high_impact_news" value="true" {% if status.weekend_flags.high_impact_news %}checked{% endif %}>
+            <input type="checkbox" name="high_impact_news" value="true" {% if status.weekend_flags and status.weekend_flags.high_impact_news %}checked{% endif %}>
             High-Impact News Safe Mode
           </label>
         </div>
