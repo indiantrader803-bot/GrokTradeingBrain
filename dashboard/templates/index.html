@@ -1288,9 +1288,116 @@ body::before {
   text-align: center;
   margin-top: 4px;
 }
+
+/* 🌌 Futuristic Cyber Matrix Background Canvas */
+#matrix-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+/* 🕒 High-Tech Global Market Session Ribbon */
+.session-ribbon-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(15, 20, 28, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 8px;
+  padding: 6px 14px;
+  margin-bottom: 12px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+.session-ribbon-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.15), transparent);
+  animation: sessionScanner 4s infinite linear;
+}
+@keyframes sessionScanner {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+.session-node {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-muted);
+}
+.session-node.active {
+  color: #38bdf8;
+  font-weight: 800;
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+}
+.session-dot-mini {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #475569;
+}
+.session-node.active .session-dot-mini {
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+  animation: pulseDot 1.5s infinite;
+}
+
+/* 🇮🇳 🌍 Dual Mini-Exchange Telemetry Badges */
+.dual-exchange-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.exchange-mini-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(18, 22, 31, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(12px);
+}
+.exchange-mini-pill.selected {
+  border-color: rgba(56, 189, 248, 0.5);
+  background: rgba(14, 30, 48, 0.85);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
+}
+.exchange-mini-pill .lbl {
+  color: var(--text-muted);
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.exchange-mini-pill .val {
+  font-weight: 800;
+  color: #fff;
+}
 </style>
 </head>
 <body>
+
+<!-- Interactive Particle Grid Canvas -->
+<canvas id="matrix-canvas"></canvas>
 
 <div class="desk-screen">
 
@@ -1309,6 +1416,36 @@ body::before {
 
   <div class="sub-tagline" id="exchange-sub-tagline">
     Delta Exchange India terminal · powered by AETHER · 24/7 autonomous
+  </div>
+
+  <!-- 🕒 Live Global Forex / Crypto Session Bar -->
+  <div class="session-ribbon-bar">
+    <div class="session-node" id="sn-asia">
+      <div class="session-dot-mini"></div>
+      <span>TOKYO / ASIA</span>
+    </div>
+    <div style="opacity:0.3;">/</div>
+    <div class="session-node" id="sn-london">
+      <div class="session-dot-mini"></div>
+      <span>LONDON</span>
+    </div>
+    <div style="opacity:0.3;">/</div>
+    <div class="session-node" id="sn-ny">
+      <div class="session-dot-mini"></div>
+      <span>NEW YORK</span>
+    </div>
+  </div>
+
+  <!-- 🇮🇳 🌍 Real-Time Dual Exchange Telemetry -->
+  <div class="dual-exchange-badges">
+    <div class="exchange-mini-pill selected" id="mini-pill-delta" onclick="onExchangeChange('delta')" style="cursor:pointer;">
+      <span class="lbl">🇮🇳 DELTA</span>
+      <span class="val" id="mini-val-delta">₹46.85</span>
+    </div>
+    <div class="exchange-mini-pill" id="mini-pill-binance" onclick="onExchangeChange('binance')" style="cursor:pointer;">
+      <span class="lbl">🌍 BINANCE</span>
+      <span class="val" id="mini-val-binance">$0.29</span>
+    </div>
   </div>
 
   <!-- Exchange Switcher Dropdown Bar -->
@@ -1901,22 +2038,65 @@ async function fetchLiveStatus() {
     // Real-time Global Forex/Crypto Market Session detection (UTC)
     const utcHour = now.getUTCHours();
     const sessionLabel = document.getElementById('session-timing-label');
+    const snAsia = document.getElementById('sn-asia');
+    const snLondon = document.getElementById('sn-london');
+    const snNy = document.getElementById('sn-ny');
+
+    if (snAsia) snAsia.classList.remove('active');
+    if (snLondon) snLondon.classList.remove('active');
+    if (snNy) snNy.classList.remove('active');
+
     if (sessionLabel) {
       if (utcHour >= 0 && utcHour < 8) {
         sessionLabel.textContent = 'asia session';
         sessionLabel.title = 'Tokyo/Sydney Asian liquidity hours (00:00 - 08:00 UTC)';
+        if (snAsia) snAsia.classList.add('active');
       } else if (utcHour >= 8 && utcHour < 13) {
         sessionLabel.textContent = 'london session';
         sessionLabel.title = 'European/London core liquidity hours (08:00 - 13:00 UTC)';
+        if (snLondon) snLondon.classList.add('active');
       } else if (utcHour >= 13 && utcHour < 16) {
         sessionLabel.textContent = 'london / ny overlap';
         sessionLabel.title = 'Peak global liquidity: London & New York market overlap (13:00 - 16:00 UTC)';
+        if (snLondon) snLondon.classList.add('active');
+        if (snNy) snNy.classList.add('active');
       } else if (utcHour >= 16 && utcHour < 21) {
         sessionLabel.textContent = 'new york session';
         sessionLabel.title = 'Wall Street / New York active hours (16:00 - 21:00 UTC)';
+        if (snNy) snNy.classList.add('active');
       } else {
         sessionLabel.textContent = 'asia / pacific open';
         sessionLabel.title = 'Pacific & early Asian opening transition (21:00 - 00:00 UTC)';
+        if (snAsia) snAsia.classList.add('active');
+      }
+    }
+
+    // Update Mini Telemetry Badges
+    const dValEl = document.getElementById('mini-val-delta');
+    const bValEl = document.getElementById('mini-val-binance');
+    const deltaEx = (data.exchanges && data.exchanges.delta) || data.exchange || {};
+    const binanceEx = (data.exchanges && data.exchanges.binance) || {};
+    
+    if (dValEl) {
+      const dInr = (deltaEx.wallets && deltaEx.wallets.USD && deltaEx.wallets.USD.inr) 
+        ? deltaEx.wallets.USD.inr 
+        : (Number(deltaEx.net_equity || 0.55) * 85.0);
+      dValEl.textContent = `₹${Number(dInr).toFixed(2)}`;
+    }
+    if (bValEl) {
+      const bEq = Number(binanceEx.net_equity || 0.29);
+      bValEl.textContent = `$${bEq.toFixed(2)}`;
+    }
+
+    const pillDelta = document.getElementById('mini-pill-delta');
+    const pillBinance = document.getElementById('mini-pill-binance');
+    if (pillDelta && pillBinance) {
+      if (currentSelectedExchange === 'delta') {
+        pillDelta.classList.add('selected');
+        pillBinance.classList.remove('selected');
+      } else {
+        pillBinance.classList.add('selected');
+        pillDelta.classList.remove('selected');
       }
     }
 
@@ -2137,6 +2317,60 @@ async function executeQuickTrade(side) {
     showToast(`Order submission error: ${err}`);
   }
 }
+
+// Interactive Cyber Matrix Background
+(function initCyberMatrix() {
+  const canvas = document.getElementById('matrix-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let width = canvas.width = window.innerWidth;
+  let height = canvas.height = window.innerHeight;
+
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+
+  const particles = Array.from({ length: 45 }, () => ({
+    x: Math.random() * width,
+    y: Math.random() * height,
+    vx: (Math.random() - 0.5) * 0.4,
+    vy: (Math.random() - 0.5) * 0.4,
+    size: Math.random() * 1.5 + 1
+  }));
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
+
+    particles.forEach((p, i) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = width;
+      if (p.x > width) p.x = 0;
+      if (p.y < 0) p.y = height;
+      if (p.y > height) p.y = 0;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+
+      for (let j = i + 1; j < particles.length; j++) {
+        const p2 = particles[j];
+        const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+        if (dist < 110) {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+      }
+    });
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
 
 fetchLiveStatus();
 setInterval(fetchLiveStatus, 3000);
