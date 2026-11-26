@@ -2081,8 +2081,19 @@ async function fetchLiveStatus() {
       }
     }
 
-    const dayStartEquity = savedOpenEquity > 0 ? savedOpenEquity : (liveEquity > 0 ? liveEquity : 0.55);
-    const netProfit = liveEquity - dayStartEquity;
+    // Calculate total unrealized live PnL across all open positions
+    const posList = (ex && ex.open_positions) || (currentSelectedExchange === 'delta' ? (data.open_positions || []) : []);
+    const sumLivePosPnl = posList.reduce((acc, p) => acc + (parseFloat(p.unrealized_pnl || 0) || 0.0), 0.0);
+
+    // Dynamic Daily Profit calculation:
+    // If there is net unrealized profit from positions, reflect real active P&L directly
+    let netProfit = sumLivePosPnl;
+    let profitPct = 0.0;
+    if (dayStartEquity > 0) {
+      profitPct = ((netProfit / dayStartEquity) * 100).toFixed(1);
+    } else if (liveEquity > 0) {
+      profitPct = ((netProfit / liveEquity) * 100).toFixed(1);
+    }
     const multiple = (dayStartEquity > 0 && liveEquity > 0) ? (liveEquity / dayStartEquity).toFixed(1) + 'x' : '1.0x';
 
     // Prioritize direct live INR from exchange wallet API if provided by Delta
@@ -2099,7 +2110,6 @@ async function fetchLiveStatus() {
     
     // Calculate and render Daily Profit below balance
     const sign = netProfit >= 0 ? '+' : '-';
-    const profitPct = dayStartEquity > 0 ? ((netProfit / dayStartEquity) * 100).toFixed(1) : '0.0';
     const profitBadge = document.getElementById('daily-profit-badge');
     const profitIcon = document.getElementById('daily-profit-icon');
     const profitText = document.getElementById('daily-profit-text');
@@ -2112,7 +2122,7 @@ async function fetchLiveStatus() {
         profitBadge.className = 'daily-profit-badge negative';
         if (profitIcon) profitIcon.textContent = '▼';
       }
-      profitText.textContent = `${sign}$${Math.abs(netProfit).toFixed(2)} (${sign}${Math.abs(profitPct)}%) · ${sign}₹${(Math.abs(netProfit) * USD_INR_RATE).toFixed(0)}`;
+      profitText.textContent = `${sign}$${Math.abs(netProfit).toFixed(3)} (${sign}${Math.abs(profitPct)}%) · ${sign}₹${(Math.abs(netProfit) * USD_INR_RATE).toFixed(2)}`;
     }
 
     const openMargin = Math.max(0, liveEquity - availCash).toFixed(2);
