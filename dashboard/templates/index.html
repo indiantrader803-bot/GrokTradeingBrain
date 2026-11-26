@@ -1223,24 +1223,23 @@ body::before {
   z-index: 10;
   pointer-events: none;
   animation: fadeIn 0.4s ease;
+  transform: translateY(-50%);
 }
 .chart-tv-level-pill.entry {
   background: #2563eb;
   color: #fff;
   border: 1px solid #60a5fa;
-  top: 38%;
+  top: 45%;
 }
 .chart-tv-level-pill.tp {
   background: #059669;
   color: #fff;
   border: 1px solid #34d399;
-  top: 15%;
 }
 .chart-tv-level-pill.sl {
   background: #dc2626;
   color: #fff;
   border: 1px solid #f87171;
-  top: 72%;
 }
 .chart-tv-hairline {
   position: absolute;
@@ -1254,15 +1253,13 @@ body::before {
 .chart-tv-hairline.entry {
   background: #3b82f6;
   border-top: 1px solid #3b82f6;
-  top: calc(38% + 12px);
+  top: 45%;
 }
 .chart-tv-hairline.tp {
   border-top: 1px dashed #10b981;
-  top: calc(15% + 12px);
 }
 .chart-tv-hairline.sl {
   border-top: 1px dashed #ef4444;
-  top: calc(72% + 12px);
 }
 
 /* Toast Notification */
@@ -2014,9 +2011,19 @@ function openPositionChart(symbol, side, entryPrice, markPrice, size, pnlFormatt
 
   const isShort = side.toUpperCase() === 'SELL';
   const entryNum = parseFloat(entryPrice) || 0;
+  // Dynamic calculation based on trade direction:
+  // For SHORT (SELL): TP is lower price (below entry), SL is higher price (above entry)
+  // For LONG (BUY):   TP is higher price (above entry), SL is lower price (below entry)
   const tpNum = isShort ? (entryNum * 0.96) : (entryNum * 1.04);
   const slNum = isShort ? (entryNum * 1.025) : (entryNum * 0.975);
   const fmtDec = entryNum < 0.1 ? 6 : (entryNum < 10 ? 4 : 2);
+
+  // Visual vertical positions on chart:
+  // Top of screen is high price (approx 20%), bottom is low price (approx 72%)
+  // For SHORT: SL is above entry (top: 20%), TP is below entry (top: 70%)
+  // For LONG:  TP is above entry (top: 20%), SL is below entry (top: 70%)
+  const tpTop = isShort ? '70%' : '20%';
+  const slTop = isShort ? '20%' : '70%';
 
   // Inject responsive TradingView Advanced Real-Time Chart with clean exchange order lines
   widgetContainer.innerHTML = `
@@ -2027,15 +2034,15 @@ function openPositionChart(symbol, side, entryPrice, markPrice, size, pnlFormatt
       <span style="font-size:9.5px;opacity:0.75;margin-left:2px;">✕</span>
     </div>
 
-    <div class="chart-tv-hairline tp"></div>
-    <div class="chart-tv-level-pill tp">
+    <div class="chart-tv-hairline tp" style="top:${tpTop};"></div>
+    <div class="chart-tv-level-pill tp" style="top:${tpTop};">
       <span>TP</span>
       <span style="opacity:0.85;">$${tpNum.toFixed(fmtDec)}</span>
       <span style="font-size:9.5px;opacity:0.75;margin-left:2px;">✕</span>
     </div>
 
-    <div class="chart-tv-hairline sl"></div>
-    <div class="chart-tv-level-pill sl">
+    <div class="chart-tv-hairline sl" style="top:${slTop};"></div>
+    <div class="chart-tv-level-pill sl" style="top:${slTop};">
       <span>SL</span>
       <span style="opacity:0.85;">$${slNum.toFixed(fmtDec)}</span>
       <span style="font-size:9.5px;opacity:0.75;margin-left:2px;">✕</span>
