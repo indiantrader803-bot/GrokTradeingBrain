@@ -1009,6 +1009,92 @@ body::before {
 .trade-item-pill:active {
   transform: scale(0.98);
 }
+
+/* 🟢 Cyberpunk Neon Border Glow for In-Profit Trades */
+.trade-item-pill.profit-glow {
+  border-color: rgba(34, 197, 94, 0.6) !important;
+  background: linear-gradient(135deg, rgba(20, 24, 33, 0.95), rgba(16, 45, 30, 0.55)) !important;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.25), inset 0 0 10px rgba(34, 197, 94, 0.08) !important;
+  animation: cyberProfitPulse 2.8s infinite ease-in-out;
+}
+@keyframes cyberProfitPulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.2), inset 0 0 6px rgba(34, 197, 94, 0.05);
+    border-color: rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(34, 197, 94, 0.45), inset 0 0 14px rgba(34, 197, 94, 0.15);
+    border-color: rgba(74, 222, 128, 0.8);
+  }
+}
+
+.trade-item-pill.loss-glow {
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.15) !important;
+}
+
+/* 📈 Live Micro Sparkline Chart inside position pill */
+.trade-sparkline-canvas {
+  width: 58px;
+  height: 24px;
+  margin: 0 8px;
+  flex-shrink: 0;
+  display: block;
+}
+
+/* ⚡ Order Execution HUD Overlay Bar */
+.order-execution-hud {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.hud-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.hud-btn.buy {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.1));
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.4);
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.15);
+}
+.hud-btn.buy:hover {
+  background: #16a34a;
+  color: #fff;
+  border-color: #22c55e;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+  transform: translateY(-1.5px);
+}
+.hud-btn.buy:active { transform: scale(0.97); }
+
+.hud-btn.sell {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.1));
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.4);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.15);
+}
+.hud-btn.sell:hover {
+  background: #dc2626;
+  color: #fff;
+  border-color: #ef4444;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+  transform: translateY(-1.5px);
+}
+.hud-btn.sell:active { transform: scale(0.97); }
 .trade-item-left {
   display: flex;
   align-items: center;
@@ -1552,6 +1638,16 @@ body::before {
 
     <!-- Order Send Pill (Autonomous Agent Status) -->
     <div class="order-decision-pill" id="decision-pill-btn">EVALUATING MOMENTUM</div>
+
+    <!-- ⚡ Order Execution HUD: Direct 1-Tap Manual Override Buttons -->
+    <div class="order-execution-hud">
+      <button class="hud-btn buy" onclick="executeQuickTrade('BUY')" title="Direct 1-tap Long Market Order">
+        <span>▲ BUY / LONG</span>
+      </button>
+      <button class="hud-btn sell" onclick="executeQuickTrade('SELL')" title="Direct 1-tap Short Market Order">
+        <span>▼ SELL / SHORT</span>
+      </button>
+    </div>
   </div>
 
   <!-- Real-Time Autonomous Multi-Agent Swarm Section with Live Coin Flow Animation -->
@@ -2108,6 +2204,7 @@ async function fetchLiveStatus() {
         const isUp = pnl >= 0;
         const pnlSign = isUp ? '+' : '-';
         const pnlClass = isUp ? 'gain' : 'loss';
+        const glowClass = isUp ? 'profit-glow' : 'loss-glow';
         const cleanSym = p.symbol.replace('USD', '').replace('-USD', '').replace('-PERPETUAL', '').replace('_USDC', '');
         const sideText = (p.side || 'BUY').toLowerCase();
         const sideUpper = (p.side || 'BUY').toUpperCase();
@@ -2116,9 +2213,13 @@ async function fetchLiveStatus() {
         const entryPrice = Number(p.entry_price || 0).toFixed(4);
         const markPrice = Number(p.mark_price || 0).toFixed(4);
         const pSize = Number(p.size || 1).toFixed(2);
+        const sparklineColor = isUp ? '#4ade80' : '#f87171';
+        const sparklinePoints = isUp 
+          ? '0,18 12,16 24,19 36,11 48,14 58,4' 
+          : '0,5 12,9 24,6 36,15 48,12 58,20';
 
         return `
-          <div class="trade-item-pill" onclick="openPositionChart('${cleanSym}', '${sideUpper}', '${entryPrice}', '${markPrice}', '${pSize}', '${pnlFormatted}', '${pnlClass}')" title="Click to view live TradingView chart for $${cleanSym}">
+          <div class="trade-item-pill ${glowClass}" onclick="openPositionChart('${cleanSym}', '${sideUpper}', '${entryPrice}', '${markPrice}', '${pSize}', '${pnlFormatted}', '${pnlClass}')" title="Click to view live TradingView chart for $${cleanSym}">
             <div class="trade-item-left">
               <div class="trade-coin-avatar">
                 <img src="${iconUrl}" alt="${cleanSym}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
@@ -2129,6 +2230,13 @@ async function fetchLiveStatus() {
                 <div class="trade-summary-text">${sideText} · entry $${entryPrice}</div>
               </div>
             </div>
+            
+            <!-- Live Candlestick Sparkline Micro-Chart -->
+            <svg class="trade-sparkline-canvas" viewBox="0 0 58 24">
+              <polyline fill="none" stroke="${sparklineColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="${sparklinePoints}"/>
+              <circle cx="${isUp ? 58 : 58}" cy="${isUp ? 4 : 20}" r="2.5" fill="${sparklineColor}"/>
+            </svg>
+
             <div class="trade-badge-right ${pnlClass}">${pnlFormatted}</div>
           </div>
         `;
