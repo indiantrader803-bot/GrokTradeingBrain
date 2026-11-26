@@ -43,8 +43,10 @@ logging.basicConfig(
 )
 log = logging.getLogger("App")
 
+from typing import Optional, Dict, Any, List
+
 # Global orchestrator instance
-orchestrator: MasterOrchestrator | None = None
+orchestrator: Optional[MasterOrchestrator] = None
 background_task = None
 relayer_task = None
 
