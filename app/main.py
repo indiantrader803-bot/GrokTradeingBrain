@@ -280,10 +280,13 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Grok Capital Growth Trading Brain",
+    title="AETHER Quant Desk",
     description="Autonomous multi-asset trading core with web dashboard",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    docs_url=None,       # Disable public Swagger /docs
+    redoc_url=None,      # Disable public Redoc /redoc
+    openapi_url=None     # Disable public openapi.json schema
 )
 
 
@@ -610,6 +613,13 @@ async def get_binance_debug():
 async def api_status(request: Request):
     if not orchestrator:
         return {"error": "Orchestrator not running"}
+
+    # Security: If a user directly types /api/status in their browser address bar,
+    # redirect them seamlessly to the clean UI instead of showing raw code/JSON!
+    accept_header = request.headers.get("accept", "")
+    sec_fetch_dest = request.headers.get("sec-fetch-dest", "")
+    if "text/html" in accept_header and (sec_fetch_dest == "document" or "application/json" not in accept_header):
+        return RedirectResponse("/", status_code=302)
     
     # Check if a user is logged in
     token = request.cookies.get("session_token")
