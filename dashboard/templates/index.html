@@ -1898,6 +1898,28 @@ async function fetchLiveStatus() {
     document.getElementById('started-with-text').textContent = `free cash: $${availCash.toFixed(2)} · in trade: $${openMargin}`;
     document.getElementById('multiple-val').textContent = multiple;
 
+    // Real-time Global Forex/Crypto Market Session detection (UTC)
+    const utcHour = now.getUTCHours();
+    const sessionLabel = document.getElementById('session-timing-label');
+    if (sessionLabel) {
+      if (utcHour >= 0 && utcHour < 8) {
+        sessionLabel.textContent = 'asia session';
+        sessionLabel.title = 'Tokyo/Sydney Asian liquidity hours (00:00 - 08:00 UTC)';
+      } else if (utcHour >= 8 && utcHour < 13) {
+        sessionLabel.textContent = 'london session';
+        sessionLabel.title = 'European/London core liquidity hours (08:00 - 13:00 UTC)';
+      } else if (utcHour >= 13 && utcHour < 16) {
+        sessionLabel.textContent = 'london / ny overlap';
+        sessionLabel.title = 'Peak global liquidity: London & New York market overlap (13:00 - 16:00 UTC)';
+      } else if (utcHour >= 16 && utcHour < 21) {
+        sessionLabel.textContent = 'new york session';
+        sessionLabel.title = 'Wall Street / New York active hours (16:00 - 21:00 UTC)';
+      } else {
+        sessionLabel.textContent = 'asia / pacific open';
+        sessionLabel.title = 'Pacific & early Asian opening transition (21:00 - 00:00 UTC)';
+      }
+    }
+
     const gauge = document.getElementById('radial-gauge');
     const pct = Math.min(1.0, (liveEquity / 5.0));
     const offset = 188 - (188 * pct);
