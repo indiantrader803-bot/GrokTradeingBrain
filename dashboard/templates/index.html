@@ -1918,18 +1918,28 @@ function cycleScanCard() {
       const isUp = pnl >= 0;
       const pnlSign = isUp ? '+' : '-';
       const sideText = (p.side || 'BUY').toUpperCase();
-      const markPr = p.mark_price || p.entry_price || 0;
+      const markPr = Number(p.mark_price || p.entry_price || 0);
+      const entryPr = Number(p.entry_price || 0);
+      const fmtDec = entryPr < 0.001 ? 6 : (entryPr < 10 ? 4 : 2);
+
+      // Dynamic authentic liquidation price estimate if not returned by exchange
+      let liqPrice = Number(p.liquidation_price || p.liq_price || 0);
+      if (liqPrice <= 0 && entryPr > 0) {
+        // At 1x-3x leverage, liquidation is far from entry:
+        const lev = Number(p.leverage || 2.0);
+        liqPrice = sideText === 'BUY' ? (entryPr * (1 - 0.9 / lev)) : (entryPr * (1 + 0.9 / lev));
+      }
 
       item = {
         sym: `$${cleanSym}`,
         clean: cleanSym,
-        meta: `live contract · entry $${Number(p.entry_price || 0).toFixed(4)} · ${sideText}`,
-        metric1: `${p.leverage || 1.0}x LEV`,
+        meta: `live contract · entry $${entryPr.toFixed(fmtDec)} · mark $${markPr.toFixed(fmtDec)}`,
+        metric1: `${p.leverage || 2.0}x LEV`,
         metric2: `$${Number(p.margin || 0).toFixed(2)} MARGIN`,
         metric3: `${pnlSign}$${Math.abs(pnl).toFixed(3)} PNL`,
         emoji: EMOJIS[currentIdx % EMOJIS.length],
         verdict: isUp ? 'LIVE IN PROFIT' : 'ACTIVE TRADE RUNNING',
-        sub: `liquidation: $${Number(p.liquidation_price || 0).toFixed(4)} · real live order`,
+        sub: `mark: $${markPr.toFixed(fmtDec)} · liq: $${liqPrice.toFixed(fmtDec)} · live order`,
         pill: `CONTRACT ACTIVE (${sideText})`,
         pillClass: isUp ? 'green' : '',
         step: 3
