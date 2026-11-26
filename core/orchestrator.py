@@ -580,7 +580,9 @@ class MasterOrchestrator:
                         })
                 raw_wallets = await delta._request("GET", "/v2/wallet/balances")
                 meta = raw_wallets.get("meta", {})
-                net_equity = float(meta.get("net_equity", 0) or 0)
+                real_meta_eq = float(meta.get("net_equity", 0) or 0)
+                if real_meta_eq > 0:
+                    net_equity = real_meta_eq
                 for item in raw_wallets.get("result", []):
                     sym = item.get("asset_symbol")
                     bal = float(item.get("balance", 0) or 0)
@@ -678,7 +680,8 @@ class MasterOrchestrator:
                     "BTCUSD": 0.001,
                     "SOLUSD": 0.1,
                     "PAXGUSD": 0.001,
-                    "XAUTUSD": 0.001
+                    "XAUTUSD": 0.001,
+                    "WDCBUSD": 0.01
                 }
                 async with httpx.AsyncClient(timeout=4.0) as http_c:
                     # Fetch live tickers in bulk or individually
@@ -715,9 +718,9 @@ class MasterOrchestrator:
                             pos["unrealized_pnl"] = round(pnl, 4)
                             total_unrealized_pnl += pnl
 
-                    # Recalculate dynamic equity if we have open positions
+                    # Recalculate dynamic equity if we have open positions and no direct real_meta_eq
                     initial_margin_total = sum(float(p.get("margin", 0.0) or 0.0) for p in exchange_positions)
-                    if available_balance > 0 and initial_margin_total > 0:
+                    if net_equity <= 0 and available_balance > 0 and initial_margin_total > 0:
                         dynamic_eq = available_balance + initial_margin_total + total_unrealized_pnl
                         if dynamic_eq > 0:
                             net_equity = dynamic_eq
